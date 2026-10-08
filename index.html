@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>SIPNASIA XR // Portal de Experiencias PC PUMA UNAM</title>
+
+  <!-- Meta Tags para Meta Quest Browser, WebXR y PWA -->
+  <meta name="theme-color" content="#00172D" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Sipnasia XR" />
+  <meta name="application-name" content="Sipnasia XR" />
+  <meta name="description" content="Portal interactivo WebXR para acceder al Simulador de Operador PC PUMA, Shooter Virus Purge y Visor Arquitectónico XR." />
+
+  <!-- Tipografías Cyber-Tech -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <!-- Hoja de Estilos -->
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Import Map para Three.js y Módulos WebXR Modernos -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Contenedor 3D WebXR (Three.js Canvas) -->
+  <div id="webxr-canvas-container"></div>
+
+  <!-- Rejilla cibernética de fondo -->
+  <div class="cyber-grid-overlay"></div>
+
+  <!-- HUD Flotante cuando se navega en el entorno 3D -->
+  <div id="xr-scene-hud">
+    <div class="hud-pill-info">
+      <span class="pulse-dot"></span>
+      <span>MODO EXPLORACIÓN 3D // APUNTA O HAZ CLIC EN LOS MONOLITOS</span>
+    </div>
+    <button id="btn-exit-3d" class="btn-exit-3d">✕ VOLVER AL PORTAL</button>
+  </div>
+
+  <!-- Raíz de la Interfaz 2D -->
+  <div id="ui-root">
+
+    <!-- Navegación Superior -->
+    <header class="top-nav">
+      <div class="brand-wrapper">
+        <div class="brand-icon-shield">
+          <!-- Escudo estilizado Puma / UNAM -->
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>SIPNASIA <span class="gold-text">XR</span></h1>
+          <p>PORTAL WEBXR // ECOSISTEMA DIGITAL PC PUMA UNAM</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Badge de estado de hardware WebXR -->
+        <div id="xr-status-pill" class="status-badge">
+          <div id="xr-status-dot" class="pulse-dot"></div>
+          <span id="xr-status-text">Detectando WebXR...</span>
+        </div>
+
+        <!-- Botón de Silencio / Audio FX -->
+        <button id="btn-sound-toggle" class="btn-header btn-sound-toggle" title="Activar/Desactivar Sonido">
+          🔊 <span id="sound-status-text">AUDIO ON</span>
+        </button>
+
+        <!-- Botón para ver en Modo 3D -->
+        <button id="btn-view-3d" class="btn-header" title="Explorar en 3D en pantalla">
+          🌐 VISTA 3D HUB
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner Principal Hero -->
+    <section class="hero-banner">
+      <span class="hero-tag">CONECTIVIDAD MÓVIL // DGTIC UNAM</span>
+      <h2>ECOSISTEMA INMERSIVO PC PUMA</h2>
+      <p>
+        Bienvenido al portal centralizado de experiencias de cómputo inmersivo de PC PUMA. Accede a los módulos de capacitación operativa, defensa de sistemas y visualización arquitectónica 3D espacial con soporte nativo para visores Meta Quest y navegadores web.
+      </p>
+      <div class="hero-cta-group">
+        <button class="btn-primary" onclick="document.getElementById('official-vr-button')?.click() || document.getElementById('btn-view-3d').click()">
+          🥽 ENTRAR A MODO VR / WEBXR
+        </button>
+        <a href="#modulo-dinamica" class="btn-secondary">
+          ⚡ DINÁMICA INTERACTIVA XR
+        </a>
+      </div>
+    </section>
+
+    <!-- Sección de Experiencias PC PUMA -->
+    <section>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">EXPERIENCIAS VIRTUALES DESTACADAS</h2>
+          <p class="section-subtitle">// SELECCIONA UNA EXPERIENCIA PARA LANZARLA, PROBARLA O ESCANEAR SU QR</p>
+        </div>
+      </div>
+
+      <div class="experiences-grid">
+
+        <!-- TARJETA 1: SIMULADOR DE OPERADOR PC PUMA -->
+        <article class="experience-card">
+          <div class="card-banner">
+            <svg class="card-banner-graphic" viewBox="0 0 400 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gradSim" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#022b49" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#011424" stop-opacity="0.95"/>
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gradSim)"/>
+              <circle cx="200" cy="100" r="75" stroke="#00f0ff" stroke-width="2" fill="none" opacity="0.3"/>
+              <circle cx="200" cy="100" r="45" stroke="#d59b2d" stroke-width="3" fill="none" opacity="0.5"/>
+              <path d="M 170 120 L 230 120 L 225 130 L 175 130 Z" fill="#00f0ff" opacity="0.8"/>
+              <rect x="175" y="80" width="50" height="35" rx="3" stroke="#00f0ff" stroke-width="2" fill="#021426"/>
+            </svg>
+            <span class="card-category-badge">CAPACITACIÓN & OPERACIÓN</span>
+            <span class="card-badge-xr">WEBXR / PC</span>
+          </div>
+
+          <div class="card-body">
+            <h3 class="card-title">SIMULADOR DE OPERADOR PC PUMA</h3>
+            <p class="card-description">
+              Simulador interactivo para el entrenamiento en el proceso de préstamo y recepción de laptops en los módulos PC PUMA. Incluye validación de credenciales, carritos de carga, escaneo NFC y dinámicas de servicio en 3D.
+            </p>
+
+            <div class="card-meta-list">
+              <span class="meta-pill highlight">Meta Quest 2/3/Pro</span>
+              <span class="meta-pill">Controles WASD + Mouse</span>
+              <span class="meta-pill">Lector NFC Virtual</span>
+              <span class="meta-pill">Gestión de Inventario</span>
+            </div>
+
+            <div class="card-actions">
+              <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
+                🚀 LANZAR AHORA
+              </a>
+              <button class="btn-card-tool btn-preview" data-url="https://vickman123.github.io/Simulador-operador-pcpuma/" data-title="Simulador de Operador PC PUMA" title="Vista Previa Rápida">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+              <button class="btn-card-tool btn-qr" data-url="https://vickman123.github.io/Simulador-operador-pcpuma/" data-title="Simulador de Operador PC PUMA" title="Código QR para Visor Quest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- TARJETA 2: SHOOTER PC PUMA (VIRUS PURGE) -->
+        <article class="experience-card">
+          <div class="card-banner">
+            <svg class="card-banner-graphic" viewBox="0 0 400 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gradShoot" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2a0820" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#090514" stop-opacity="0.95"/>
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gradShoot)"/>
+              <polygon points="200,60 235,130 165,130" stroke="#ff007f" stroke-width="2.5" fill="none" opacity="0.8"/>
+              <circle cx="200" cy="105" r="14" fill="#ff007f" opacity="0.6"/>
+              <line x1="200" y1="40" x2="200" y2="150" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="4,4"/>
+              <line x1="150" y1="95" x2="250" y2="95" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="4,4"/>
+            </svg>
+            <span class="card-category-badge">CYBER DEFENSE ARCADE</span>
+            <span class="card-badge-xr">QUEST 6DOF / PC</span>
+          </div>
+
+          <div class="card-body">
+            <h3 class="card-title">SHOOTER PC PUMA (VIRUS PURGE)</h3>
+            <p class="card-description">
+              Videojuego arcade FPS de ciberseguridad en WebXR. Neutraliza ciberamenazas, purga troyanos de la memoria de los equipos y defiende la infraestructura frente a oleadas y al temible Ransomware Lockbit.
+            </p>
+
+            <div class="card-meta-list">
+              <span class="meta-pill highlight">Mandos 6DoF Hápticos</span>
+              <span class="meta-pill">Armamento Antivirus</span>
+              <span class="meta-pill">Sistema de Combos</span>
+              <span class="meta-pill">Fases de Boss Fight</span>
+            </div>
+
+            <div class="card-actions">
+              <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
+                🚀 LANZAR AHORA
+              </a>
+              <button class="btn-card-tool btn-preview" data-url="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" data-title="Shooter PC PUMA (Virus Purge)" title="Vista Previa Rápida">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+              <button class="btn-card-tool btn-qr" data-url="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" data-title="Shooter PC PUMA (Virus Purge)" title="Código QR para Visor Quest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- TARJETA 3: VISOR ARQUITECTÓNICO DE PC PUMA -->
+        <article class="experience-card">
+          <div class="card-banner">
+            <svg class="card-banner-graphic" viewBox="0 0 400 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gradVisor" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1e1804" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#0a0802" stop-opacity="0.95"/>
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#gradVisor)"/>
+              <polygon points="200,50 270,90 270,140 200,170 130,140 130,90" stroke="#d59b2d" stroke-width="2" fill="none" opacity="0.7"/>
+              <line x1="200" y1="50" x2="200" y2="170" stroke="#d59b2d" stroke-width="1.5" opacity="0.4"/>
+              <line x1="130" y1="90" x2="200" y2="110" stroke="#d59b2d" stroke-width="1.5" opacity="0.4"/>
+              <line x1="270" y1="90" x2="200" y2="110" stroke="#d59b2d" stroke-width="1.5" opacity="0.4"/>
+            </svg>
+            <span class="card-category-badge">VISUALIZACIÓN ESPACIAL</span>
+            <span class="card-badge-xr">QUEST 3S / WEBXR</span>
+          </div>
+
+          <div class="card-body">
+            <h3 class="card-title">VISOR ARQUITECTÓNICO DE PC PUMA</h3>
+            <p class="card-description">
+              Recorrido inmersivo y renderizado espacial 3D arquitectónico para la inspección precisa de espacios, distribución de mobiliario e infraestructura de los centros de préstamo PC PUMA en realidad virtual y mixta.
+            </p>
+
+            <div class="card-meta-list">
+              <span class="meta-pill highlight">Meta Quest 3/3S Passthrough</span>
+              <span class="meta-pill">Render 3D de Alta Fidelidad</span>
+              <span class="meta-pill">Inspección de Módulos</span>
+              <span class="meta-pill">Medición Espacial</span>
+            </div>
+
+            <div class="card-actions">
+              <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
+                🚀 LANZAR AHORA
+              </a>
+              <button class="btn-card-tool btn-preview" data-url="https://vickman123.github.io/visor-xr/" data-title="Visor Arquitectónico de PC PUMA" title="Vista Previa Rápida">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+              <button class="btn-card-tool btn-qr" data-url="https://vickman123.github.io/visor-xr/" data-title="Visor Arquitectónico de PC PUMA" title="Código QR para Visor Quest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Módulo de Dinámica WebXR (Preparado para dinámicas educativas/formativas) -->
+    <section id="modulo-dinamica" class="xr-dynamic-panel">
+      <div class="panel-header-badge">
+        <span class="pulse-dot"></span>
+        <span>MÓDULO DE DINÁMICA INTERACTIVA WEBXR // API SIPNASIA</span>
+      </div>
+
+      <div class="xr-dynamic-grid">
+        <div class="dynamic-info">
+          <h3>CALIBRACIÓN Y SINCRONIZACIÓN SINÁPTICA</h3>
+          <p>
+            Entorno preparado para dinámicas grupales, evaluaciones o talleres interactivos en WebXR. Al activar la dinámica, se generarán orbes de energía en el espacio 3D que los participantes pueden sincronizar usando sus controladores de realidad virtual o el cursor.
+          </p>
+
+          <div class="dynamic-stats-row">
+            <div class="stat-item">
+              <div class="stat-label">PUNTUACIÓN</div>
+              <div id="dyn-score" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">NODOS CALIBRADOS</div>
+              <div id="dyn-nodes" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">TIEMPO RESTANTE</div>
+              <div id="dyn-timer" class="stat-value">60s</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dynamic-controls-col">
+          <h4 class="control-title">⚙️ PANEL DE CONTROL DE DINÁMICA</h4>
+          <div class="dynamic-action-btns">
+            <button id="btn-start-dynamic" class="btn-dynamic-trigger">
+              <span>▶ INICIAR DINÁMICA SINÁPTICA</span>
+              <span>[ 3D / VR ]</span>
+            </button>
+            <button id="btn-stop-dynamic" class="btn-dynamic-trigger">
+              <span>⏹ FINALIZAR ACTIVIDAD</span>
+              <span>[ STOP ]</span>
+            </button>
+            <button id="btn-reset-stats" class="btn-dynamic-trigger">
+              <span>🔄 REINICIAR CONTADORES</span>
+              <span>[ RESET ]</span>
+            </button>
+          </div>
+
+          <!-- Consola en vivo de eventos -->
+          <div id="dynamic-log" class="dynamic-live-log">
+            <div>[SIPNASIA-XR] Sistema listo para la dinámica interactiva.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pie de Página -->
+    <footer class="site-footer">
+      <div class="footer-credits">
+        <span>© UNAM - DGTIC // Programa PC PUMA. Plataforma de Experiencias WebXR.</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/Vickman123/Prototipo-Sipnasia" target="_blank" rel="noopener noreferrer">Repositorio GitHub</a>
+        <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer">Simulador</a>
+        <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer">Shooter Purge</a>
+        <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer">Visor XR</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Modal de Vista Previa (Iframe) -->
+  <div id="preview-modal" class="modal-backdrop">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>👁️</span>
+          <span id="preview-modal-title">Vista Previa</span>
+        </div>
+        <button id="btn-close-preview" class="btn-close-modal" aria-label="Cerrar modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="iframe-container">
+          <iframe id="preview-iframe" src="about:blank" allow="xr-spatial-tracking; fullscreen" loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="preview-launch-external" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary">
+          ABRIR EN PESTAÑA COMPLETA ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Código QR para Meta Quest -->
+  <div id="qr-modal" class="modal-backdrop">
+    <div class="modal-window" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📱</span>
+          <span id="qr-modal-title">Acceso Rápido Meta Quest</span>
+        </div>
+        <button id="btn-close-qr" class="btn-close-modal" aria-label="Cerrar modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body qr-modal-body">
+        <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+          Apunta con la cámara de tu visor Meta Quest, teléfono móvil o tableta para abrir la experiencia directamente:
+        </p>
+        <div class="qr-code-box">
+          <img id="qr-code-img" src="" alt="Código QR de Acceso" width="220" height="220" />
+        </div>
+        <div id="qr-target-url-text" class="qr-target-url"></div>
+        <button id="btn-copy-url" class="btn-secondary" style="width: 100%; justify-content: center;">
+          COPIAR ENLACE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts del Ecosistema Sipnasia XR -->
+  <script src="js/audio.js"></script>
+  <script src="js/dynamics.js"></script>
+  <script type="module" src="js/xr-scene.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
