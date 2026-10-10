@@ -125,7 +125,7 @@ function initModals() {
 
   let currentTargetUrl = '';
 
-  // Abrir Vista Previa
+  // Abrir Vista Previa / Mini-Hub de la Experiencia
   document.querySelectorAll('.btn-preview').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -134,6 +134,24 @@ function initModals() {
       currentTargetUrl = url;
 
       if (window.xrAudio) window.xrAudio.playSelect();
+
+      if (window.XRSceneManager && typeof window.XRSceneManager.openPortalMiniHub === 'function') {
+        const id = url.includes('simulador') ? 'simulador' : url.includes('shooter') ? 'shooter' : 'visor';
+        const cardBody = btn.closest('.card-body');
+        const desc = cardBody?.querySelector('.card-description')?.textContent?.trim() || '';
+        const expCard = btn.closest('.experience-card');
+        const cat = expCard?.querySelector('.card-category-badge')?.textContent?.trim() || 'EXPERIENCIA XR';
+
+        window.XRSceneManager.openPortalMiniHub({
+          id,
+          title,
+          url,
+          category: cat,
+          desc
+        });
+        return;
+      }
+
       if (previewTitle) previewTitle.textContent = title;
       if (previewIframe) previewIframe.src = url;
       if (previewLaunchBtn) previewLaunchBtn.href = url;

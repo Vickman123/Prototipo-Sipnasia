@@ -521,14 +521,19 @@ class XRSceneController {
     this.portalArtifacts.push(artifact);
 
     // Guardar referencia interactiva para el Raycaster de WebXR
-    screenMesh.userData = {
+    const portalUserData = {
       isPortal: true,
       portalData: exp,
       parentGroup: group,
       baseY: exp.pos.y
     };
+    screenMesh.userData = portalUserData;
+    frameBack.userData = portalUserData;
+    pedestal.userData = portalUserData;
 
     this.registerInteractable(screenMesh);
+    this.registerInteractable(frameBack);
+    this.registerInteractable(pedestal);
 
     return group;
   }
@@ -999,13 +1004,13 @@ class XRSceneController {
       }
 
       // CASO 2: Portales Activos (Simulador, Shooter, Visor)
-      if (window.xrAudio) window.xrAudio.playSelect();
+      if (window.xrAudio) window.xrAudio.playWarp();
       if (window.SipnasiaXR) {
-        window.SipnasiaXR.log(`Abriendo Mini-Hub de: ${data.title}...`);
+        window.SipnasiaXR.log(`Accediendo de inmediato a: ${data.title}...`);
       }
 
-      // Abrir Mini-Hub con los menús y capacidades de la experiencia sin cambiar de pestaña
-      this.openPortalMiniHub(data);
+      // Navegar DIRECTAMENTE a la experiencia sin bloqueos ni ventanas extra
+      this.navigateDirectly(data.url);
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.handleNodeHit(object);
@@ -1014,7 +1019,7 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Mini-Hub Holográfico de Portales (Sin Cambio de Pestaña)
+     Mini-Hub Holográfico de Portales (Modal de Vista Previa)
      ---------------------------------------------------- */
   openPortalMiniHub(data) {
     const modal = document.getElementById('portal-mini-hub-modal');
@@ -1090,16 +1095,37 @@ class XRSceneController {
   }
 
   navigateDirectly(url) {
+    const targetUrl = new URL(url, window.location.href).href;
+
+    if (window.xrAudio) window.xrAudio.playWarp();
+    if (window.SipnasiaXR) {
+      window.SipnasiaXR.log(`Cargando experiencia: ${targetUrl}...`);
+    }
+
     if (this.isVR) {
       const session = this.renderer.xr.getSession();
       if (session) {
-        session.end().finally(() => {
-          window.location.href = url;
-        });
+        let finished = false;
+        const doGo = () => {
+          if (!finished) {
+            finished = true;
+            window.location.href = targetUrl;
+          }
+        };
+
+        // Redirección inmediata con fallback seguro de 120ms
+        setTimeout(doGo, 120);
+
+        try {
+          session.end().then(doGo).catch(doGo);
+        } catch (e) {
+          doGo();
+        }
         return;
       }
     }
-    window.location.href = url;
+
+    window.location.href = targetUrl;
   }
 
   /* ----------------------------------------------------
