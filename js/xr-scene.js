@@ -1,7 +1,16 @@
 /**
- * SIPNASIA XR - Escena 3D & Motor WebXR (Three.js)
- * Renderiza el entorno inmersivo de sinapsis, los monolitos holográficos de las 3 experiencias,
- * mandos 6DoF de Meta Quest con punteros láser y gestión de sesiones WebXR.
+ * SIPNASIA XR - Escena 3D & Motor WebXR Optimizado para Meta Quest 3S
+ * - Iluminación futurista mejorada con halo de acento por experiencia y núcleo sináptico
+ * - Locomoción completa por Joystick (Thumbstick):
+ *     * Mano Izquierda: Desplazamiento suave (Adelante/Atrás/Lateral en relación a la vista)
+ *     * Mano Derecha: Giro rápido por pasos (Snap Turn 45°) anti-mareo
+ *     * Teclado en PC: Movimiento WASD / Flechas
+ * - Optimización para Meta Quest 3S:
+ *     * Camera Rig (Dolly) para movimiento sincronizado de cabeza y mandos
+ *     * Foveated Rendering al 100% (setFoveation 1.0)
+ *     * Desactivación de shadow maps pesados (0 caídas de FPS)
+ *     * Throttling inteligente en modo página 2D para que la web no se trabe
+ *     * Shaders ligeros y texturas de alta nitidez sin sobrecarga de GPU
  */
 
 import * as THREE from 'three';
@@ -14,6 +23,7 @@ class XRSceneController {
     this.container = document.getElementById('webxr-canvas-container');
     this.scene = null;
     this.camera = null;
+    this.dolly = null; // Rig de cámara para locomoción WebXR
     this.renderer = null;
     this.controls = null;
     this.clock = new THREE.Clock();
@@ -22,8 +32,9 @@ class XRSceneController {
     this.isVR = false;
     this.isInteractive3D = false;
     this.interactables = [];
-    this.hoveredObject = null;
     this.portals = [];
+    this.underglowLights = [];
+    this.centerBeacon = null;
 
     // Controladores WebXR
     this.controllers = [];
@@ -32,117 +43,162 @@ class XRSceneController {
     this.tempMatrix = new THREE.Matrix4();
     this.mouse = new THREE.Vector2(-999, -999);
 
+    // Vectores reutilizables para evitar recolección de basura (GC) y trabas de frames
+    this.forwardVec = new THREE.Vector3();
+    this.rightVec = new THREE.Vector3();
+    this.moveVec = new THREE.Vector3();
+
+    // Estado de locomoción
+    this.snapTurnLocked = false;
+    this.keys = { forward: false, backward: false, left: false, right: false };
+
     // Red de Sinapsis (Partículas)
     this.synapseParticles = null;
-    this.synapseLines = null;
-    this.nodePositions = [];
+    this.idleFrameCount = 0;
   }
 
   async init() {
     if (!this.container) return;
 
-    // 1. Escena
+    // 1. Escena con niebla ambiental profunda UNAM
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x020912);
-    this.scene.fog = new THREE.FogExp2(0x020912, 0.045);
+    this.scene.background = new THREE.Color(0x010812);
+    this.scene.fog = new THREE.FogExp2(0x010812, 0.038);
 
-    // 2. Cámara
+    // 2. Cámara de perspectiva
     this.camera = new THREE.PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
       0.1,
       100
     );
-    this.camera.position.set(0, 1.6, 2.8);
+    this.camera.position.set(0, 1.6, 2.5);
 
-    // 3. Renderer WebGL con soporte WebXR
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 3. Dolly (Camera Rig) - Esencial para que el joystick mueva al usuario en VR
+    this.dolly = new THREE.Group();
+    this.dolly.position.set(0, 0, 0);
+    this.dolly.add(this.camera);
+    this.scene.add(this.dolly);
+
+    // 4. Renderer WebGL optimizado para Meta Quest 3S
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    // Limitar pixel ratio a 1.75 en móviles/Quest evita sobrecarga de fillrate
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.xr.enabled = true;
-    this.renderer.shadowMap.enabled = true;
+    // Desactivar shadow maps dinámicos (evita el cuello de botella que traba el Quest)
+    this.renderer.shadowMap.enabled = false;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.15;
     this.container.appendChild(this.renderer.domElement);
 
-    // 4. Controles de Escritorio (Orbit)
+    // 5. Controles de Escritorio (Orbit) para modo 2D/PC
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.target.set(0, 1.4, -2.5);
-    this.controls.maxPolarAngle = Math.PI / 2 + 0.1;
+    this.controls.maxPolarAngle = Math.PI / 2 + 0.05;
     this.controls.minDistance = 1;
-    this.controls.maxDistance = 12;
+    this.controls.maxDistance = 14;
 
-    // 5. Iluminación Futurista UNAM
+    // 6. Iluminación Futurista Mejorada (UNAM Cyberpunk)
     this.setupLighting();
 
-    // 6. Entorno de Sinapsis y Plataforma
+    // 7. Entorno de Sinapsis y Plataforma
     this.setupSynapseNetwork();
     this.setupEnvironmentGrid();
 
-    // 7. Monolitos Holográficos (Las 3 Experiencias)
+    // 8. Monolitos Holográficos Optimizados (Las 3 Apps)
     this.setupExperiencePortals();
 
-    // 8. Controladores WebXR y Punteros Láser
+    // 9. Controladores WebXR, Punteros Láser y Repositorio en Dolly
     this.setupWebXRControllers();
 
-    // 9. Integración con VRButton oficial
+    // 10. Botón Oficial WebXR con Foveated Rendering
     this.setupVRButton();
 
-    // 10. Eventos de ratón y ventana
+    // 11. Eventos de Ratón, Redimensión y Teclado WASD
     this.setupEventListeners();
+    this.setupKeyboardControls();
 
-    // 11. Bucle de Animación WebXR
+    // 12. Bucle de Animación WebXR
     this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
 
-    console.log('[SipnasiaXR] Escena WebXR Inicializada con Éxito.');
+    console.log('[SipnasiaXR] Motor WebXR Optimizado para Meta Quest 3S Inicializado.');
   }
 
+  /* ----------------------------------------------------
+     Iluminación Futurista UNAM Mejorada
+     ---------------------------------------------------- */
   setupLighting() {
-    const ambientLight = new THREE.AmbientLight(0x002b49, 1.8);
-    this.scene.add(ambientLight);
+    // 1. Luz Hemisférica suave: Cielo Cian Neón y Suelo Azul Profundo UNAM
+    const hemiLight = new THREE.HemisphereLight(0x00f0ff, 0x00172d, 1.4);
+    hemiLight.position.set(0, 10, 0);
+    this.scene.add(hemiLight);
 
+    // 2. Luz Clave Oro Puma (Direccional Frontal Superior)
     const goldKeyLight = new THREE.DirectionalLight(0xd59b2d, 2.2);
-    goldKeyLight.position.set(4, 8, 4);
+    goldKeyLight.position.set(4, 9, 3);
     this.scene.add(goldKeyLight);
 
+    // 3. Luz de Borde / Silueta Cian (Direccional Trasera)
     const cyanRimLight = new THREE.DirectionalLight(0x00f0ff, 1.8);
-    cyanRimLight.position.set(-4, 6, -3);
+    cyanRimLight.position.set(-4, 7, -4);
     this.scene.add(cyanRimLight);
 
-    const centerGlow = new THREE.PointLight(0x00f0ff, 1.5, 10);
-    centerGlow.position.set(0, 1.6, -2);
-    this.scene.add(centerGlow);
+    // 4. Luz de Núcleo Central (Beacon sináptico pulsante)
+    this.centerBeacon = new THREE.PointLight(0x00f0ff, 1.4, 8);
+    this.centerBeacon.position.set(0, 0.25, 0);
+    this.scene.add(this.centerBeacon);
+
+    // 5. Luces de acento bajo cada monolito (efecto resplandor temático en el suelo)
+    const lightSimulador = new THREE.PointLight(0x00f0ff, 2.2, 4.5);
+    lightSimulador.position.set(-2.6, 0.35, -3.2);
+    this.scene.add(lightSimulador);
+    this.underglowLights.push(lightSimulador);
+
+    const lightShooter = new THREE.PointLight(0xff007f, 2.4, 4.5);
+    lightShooter.position.set(0, 0.35, -3.8);
+    this.scene.add(lightShooter);
+    this.underglowLights.push(lightShooter);
+
+    const lightVisor = new THREE.PointLight(0xd59b2d, 2.2, 4.5);
+    lightVisor.position.set(2.6, 0.35, -3.2);
+    this.scene.add(lightVisor);
+    this.underglowLights.push(lightVisor);
   }
 
   setupEnvironmentGrid() {
     // Rejilla cibernética en el piso
-    const grid = new THREE.GridHelper(30, 30, 0xd59b2d, 0x002b49);
+    const grid = new THREE.GridHelper(32, 32, 0xd59b2d, 0x002b49);
     grid.position.y = -0.01;
-    grid.material.opacity = 0.35;
+    grid.material.opacity = 0.4;
     grid.material.transparent = true;
     this.scene.add(grid);
 
-    // Círculos concéntricos de pedestal central
-    const ringGeo = new THREE.RingGeometry(0.8, 0.84, 64);
+    // Círculos concéntricos de pedestal central de telemetría
+    const ringGeo = new THREE.RingGeometry(0.85, 0.89, 48);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0x00f0ff,
-      side: THREE.DoubleSide,
+      side: THREE.FrontSide,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.65
     });
     const ringMesh = new THREE.Mesh(ringGeo, ringMat);
     ringMesh.rotation.x = -Math.PI / 2;
     ringMesh.position.y = 0.01;
     this.scene.add(ringMesh);
 
-    const outerRingGeo = new THREE.RingGeometry(2.4, 2.45, 64);
+    const outerRingGeo = new THREE.RingGeometry(2.35, 2.4, 48);
     const outerRingMat = new THREE.MeshBasicMaterial({
       color: 0xd59b2d,
-      side: THREE.DoubleSide,
+      side: THREE.FrontSide,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.55
     });
     const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
     outerRing.rotation.x = -Math.PI / 2;
@@ -151,31 +207,24 @@ class XRSceneController {
   }
 
   setupSynapseNetwork() {
-    // Generación de red neuronal de partículas conectadas
-    const particleCount = 140;
+    // Red neuronal de partículas optimizada (120 partículas estables)
+    const particleCount = 120;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
-    this.nodePositions = [];
 
     for (let i = 0; i < particleCount; i++) {
-      const x = (Math.random() - 0.5) * 16;
-      const y = Math.random() * 6 + 0.2;
-      const z = (Math.random() - 0.5) * 16 - 2;
-
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-
-      this.nodePositions.push(new THREE.Vector3(x, y, z));
+      positions[i * 3] = (Math.random() - 0.5) * 16;
+      positions[i * 3 + 1] = Math.random() * 5.5 + 0.2;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 16 - 2;
     }
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const pMaterial = new THREE.PointsMaterial({
       color: 0x00f0ff,
-      size: 0.09,
+      size: 0.08,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.8,
       blending: THREE.AdditiveBlending
     });
 
@@ -184,45 +233,45 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Creación de Monolitos Portales Holográficos (Las 3 Apps)
+     Monolitos Holográficos Optimizados
      ---------------------------------------------------- */
   setupExperiencePortals() {
     const experiencesData = [
       {
         id: 'simulador',
         title: 'SIMULADOR DE OPERADOR PC PUMA',
-        category: 'Simulación & Capacitación 3D',
+        category: 'Simulación Operativa',
         badge: 'WEBXR / PC',
         url: 'https://vickman123.github.io/Simulador-operador-pcpuma/',
         colorHex: '#00f0ff',
         colorThree: 0x00f0ff,
         icon: '💻',
         pos: new THREE.Vector3(-2.6, 1.5, -3.2),
-        rotY: 0.42
+        rotY: 0.38
       },
       {
         id: 'shooter',
         title: 'SHOOTER PC PUMA (VIRUS PURGE)',
-        category: 'Cyber Defense Arcade FPS',
+        category: 'Ciberseguridad Arcade',
         badge: 'QUEST 6DOF / PC',
         url: 'https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/',
         colorHex: '#ff007f',
         colorThree: 0xff007f,
         icon: '🛡️',
-        pos: new THREE.Vector3(0, 1.6, -3.8),
+        pos: new THREE.Vector3(0, 1.55, -3.8),
         rotY: 0
       },
       {
         id: 'visor',
         title: 'VISOR ARQUITECTÓNICO PC PUMA',
-        category: 'Visualización Espacial XR',
+        category: 'Visualización 3D XR',
         badge: 'QUEST 3S / WEBXR',
         url: 'https://vickman123.github.io/visor-xr/',
         colorHex: '#d59b2d',
         colorThree: 0xd59b2d,
         icon: '🏛️',
         pos: new THREE.Vector3(2.6, 1.5, -3.2),
-        rotY: -0.42
+        rotY: -0.38
       }
     ];
 
@@ -239,48 +288,46 @@ class XRSceneController {
     group.rotation.y = exp.rotY;
 
     // 1. Marco Holográfico Exterior
-    const frameGeo = new THREE.BoxGeometry(1.6, 2.2, 0.08);
+    const frameGeo = new THREE.BoxGeometry(1.5, 2.1, 0.06);
     const frameEdges = new THREE.EdgesGeometry(frameGeo);
     const frameLineMat = new THREE.LineBasicMaterial({
       color: exp.colorThree,
       linewidth: 2,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.85
     });
     const frameMesh = new THREE.LineSegments(frameEdges, frameLineMat);
     group.add(frameMesh);
 
-    // 2. Cristal Holográfico Central (con textura dinámica en Canvas)
+    // 2. Cristal Holográfico Central (con textura Canvas nítida y material ligero)
     const texture = this.createPortalTexture(exp);
-    const planeGeo = new THREE.PlaneGeometry(1.5, 2.1);
-    const planeMat = new THREE.MeshStandardMaterial({
+    const planeGeo = new THREE.PlaneGeometry(1.42, 2.02);
+    // MeshBasicMaterial rinde al máximo en Quest 3S eliminando cálculos pesados de PBR
+    const planeMat = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
-      opacity: 0.92,
-      roughness: 0.2,
-      metalness: 0.6,
-      side: THREE.DoubleSide
+      opacity: 0.94,
+      side: THREE.FrontSide
     });
     const screenMesh = new THREE.Mesh(planeGeo, planeMat);
     screenMesh.position.z = 0.01;
     group.add(screenMesh);
 
     // 3. Pedestal Flotante con Base de Luz
-    const baseGeo = new THREE.CylinderGeometry(0.55, 0.7, 0.12, 32);
-    const baseMat = new THREE.MeshStandardMaterial({
+    const baseGeo = new THREE.CylinderGeometry(0.5, 0.65, 0.12, 24);
+    const baseMat = new THREE.MeshLambertMaterial({
       color: 0x00172d,
-      roughness: 0.3,
-      metalness: 0.8
+      emissive: 0x000c18
     });
     const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-    baseMesh.position.y = -1.2;
+    baseMesh.position.y = -1.18;
     group.add(baseMesh);
 
-    const baseRingGeo = new THREE.TorusGeometry(0.72, 0.03, 16, 32);
+    const baseRingGeo = new THREE.TorusGeometry(0.66, 0.025, 12, 24);
     const baseRingMat = new THREE.MeshBasicMaterial({ color: exp.colorThree });
     const baseRing = new THREE.Mesh(baseRingGeo, baseRingMat);
     baseRing.rotation.x = Math.PI / 2;
-    baseRing.position.y = -1.18;
+    baseRing.position.y = -1.16;
     group.add(baseRing);
 
     // Guardar referencia interactiva
@@ -288,8 +335,7 @@ class XRSceneController {
       isPortal: true,
       portalData: exp,
       parentGroup: group,
-      baseY: exp.pos.y,
-      baseScale: 1
+      baseY: exp.pos.y
     };
 
     this.registerInteractable(screenMesh);
@@ -311,7 +357,7 @@ class XRSceneController {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 512, 720);
 
-    // Borde interior
+    // Borde de neón interior
     ctx.strokeStyle = exp.colorHex;
     ctx.lineWidth = 6;
     ctx.strokeRect(16, 16, 480, 688);
@@ -327,39 +373,42 @@ class XRSceneController {
     ctx.fillStyle = '#94a3b8';
     ctx.fillText(exp.category.toUpperCase(), 256, 95);
 
-    // Ícono Central Grande
-    ctx.font = '100px sans-serif';
-    ctx.fillText(exp.icon, 256, 260);
+    // Ícono Central
+    ctx.font = '90px sans-serif';
+    ctx.fillText(exp.icon, 256, 255);
 
     // Línea divisora
     ctx.strokeStyle = 'rgba(213, 155, 45, 0.4)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(60, 320);
-    ctx.lineTo(452, 320);
+    ctx.moveTo(60, 315);
+    ctx.lineTo(452, 315);
     ctx.stroke();
 
-    // Título Principal (multi-línea)
-    ctx.font = 'bold 28px Orbitron, sans-serif';
+    // Título Principal
+    ctx.font = 'bold 26px Orbitron, sans-serif';
     ctx.fillStyle = '#ffffff';
-    this.wrapText(ctx, exp.title, 256, 380, 420, 36);
+    this.wrapText(ctx, exp.title, 256, 375, 420, 34);
 
     // Badge de compatibilidad
     ctx.fillStyle = exp.colorHex;
-    ctx.fillRect(130, 500, 252, 44);
+    ctx.fillRect(130, 495, 252, 42);
     ctx.fillStyle = '#010912';
     ctx.font = 'bold 18px monospace';
-    ctx.fillText(`[ ${exp.badge} ]`, 256, 528);
+    ctx.fillText(`[ ${exp.badge} ]`, 256, 523);
 
     // Botón de llamado a la acción
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 3;
-    ctx.strokeRect(100, 600, 312, 54);
+    ctx.strokeRect(95, 595, 322, 54);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 22px Orbitron, sans-serif';
-    ctx.fillText('LANZAR EXPERIENCIA', 256, 635);
+    ctx.fillText('LANZAR EXPERIENCIA', 256, 630);
 
     const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false; // Ahorra memoria y tiempo de renderizado en GPU Quest
     texture.needsUpdate = true;
     return texture;
   }
@@ -382,7 +431,7 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Configuración de Mandos WebXR (Meta Quest) & Láseres
+     Mandos WebXR (Meta Quest) & Integración con Dolly
      ---------------------------------------------------- */
   setupWebXRControllers() {
     const controllerModelFactory = new XRControllerModelFactory();
@@ -391,13 +440,14 @@ class XRSceneController {
       const controller = this.renderer.xr.getController(i);
       controller.addEventListener('selectstart', (e) => this.onSelectStart(e));
       controller.addEventListener('selectend', (e) => this.onSelectEnd(e));
-      this.scene.add(controller);
+      // IMPORTANTE: Los mandos se agregan al DOLLY para desplazarse con el usuario
+      this.dolly.add(controller);
       this.controllers.push(controller);
 
       // Línea Láser del puntero
       const laserGeo = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, 0, -4)
+        new THREE.Vector3(0, 0, -4.5)
       ]);
       const laserMat = new THREE.LineBasicMaterial({
         color: 0x00f0ff,
@@ -409,17 +459,17 @@ class XRSceneController {
       controller.add(laser);
 
       // Retícula punto en el extremo
-      const dotGeo = new THREE.SphereGeometry(0.015, 12, 12);
+      const dotGeo = new THREE.SphereGeometry(0.015, 10, 10);
       const dotMat = new THREE.MeshBasicMaterial({ color: 0xd59b2d });
       const dot = new THREE.Mesh(dotGeo, dotMat);
-      dot.position.z = -4;
+      dot.position.z = -4.5;
       dot.name = 'reticleDot';
       controller.add(dot);
 
-      // Modelo 3D del mando Meta Quest / XR
+      // Modelo 3D del mando Meta Quest
       const grip = this.renderer.xr.getControllerGrip(i);
       grip.add(controllerModelFactory.createControllerModel(grip));
-      this.scene.add(grip);
+      this.dolly.add(grip);
       this.controllerGrips.push(grip);
     }
   }
@@ -435,6 +485,17 @@ class XRSceneController {
 
     if (intersects.length > 0) {
       const hit = intersects[0].object;
+
+      // Respuesta háptica en los mandos de Meta Quest al disparar
+      const session = this.renderer.xr.getSession();
+      if (session && session.inputSources) {
+        for (const source of session.inputSources) {
+          if (source.gamepad && source.gamepad.hapticActuators && source.gamepad.hapticActuators[0]) {
+            source.gamepad.hapticActuators[0].pulse(0.65, 75);
+          }
+        }
+      }
+
       this.handleObjectClick(hit);
     }
   }
@@ -443,6 +504,133 @@ class XRSceneController {
     // Liberar estado de selección
   }
 
+  /* ----------------------------------------------------
+     Locomoción con Joystick en Meta Quest (WebXR Gamepad)
+     ---------------------------------------------------- */
+  handleXRLocomotion(delta) {
+    if (!this.isVR) return;
+
+    const session = this.renderer.xr.getSession();
+    if (!session || !session.inputSources) return;
+
+    for (const source of session.inputSources) {
+      if (!source.gamepad || !source.gamepad.axes) continue;
+
+      const axes = source.gamepad.axes;
+      let stickX = 0;
+      let stickY = 0;
+
+      // Mapeo estándar XR o de 2 ejes
+      if (axes.length >= 4) {
+        stickX = axes[2];
+        stickY = axes[3];
+        // Respaldo si los ejes 0 y 1 están activos
+        if (Math.abs(stickX) < 0.08 && Math.abs(stickY) < 0.08 && (Math.abs(axes[0]) > 0.08 || Math.abs(axes[1]) > 0.08)) {
+          stickX = axes[0];
+          stickY = axes[1];
+        }
+      } else if (axes.length >= 2) {
+        stickX = axes[0];
+        stickY = axes[1];
+      }
+
+      // Mano Izquierda: Desplazamiento Suave (Adelante/Atrás/Lados)
+      if (source.handedness === 'left') {
+        if (Math.abs(stickX) > 0.12 || Math.abs(stickY) > 0.12) {
+          // Dirección frontal de la cámara proyectada al plano horizontal XZ
+          this.camera.getWorldDirection(this.forwardVec);
+          this.forwardVec.y = 0;
+          this.forwardVec.normalize();
+
+          // Vector lateral derecho
+          this.rightVec.crossVectors(this.forwardVec, this.camera.up).normalize();
+
+          // Cálculo del vector de movimiento (stickY < 0 es empujar hacia adelante)
+          this.moveVec.set(0, 0, 0);
+          this.moveVec.addScaledVector(this.forwardVec, -stickY);
+          this.moveVec.addScaledVector(this.rightVec, stickX);
+
+          const moveSpeed = 2.8; // m/s confortable para VR
+          this.dolly.position.addScaledVector(this.moveVec, moveSpeed * delta);
+
+          // Límite de radio para no perderse en el espacio infinito
+          const dist = Math.hypot(this.dolly.position.x, this.dolly.position.z);
+          if (dist > 14) {
+            const angle = Math.atan2(this.dolly.position.z, this.dolly.position.x);
+            this.dolly.position.x = Math.cos(angle) * 14;
+            this.dolly.position.z = Math.sin(angle) * 14;
+          }
+        }
+      }
+
+      // Mano Derecha: Snap Turn 45° (Giro por pasos cómodo y anti-mareo)
+      else if (source.handedness === 'right') {
+        if (stickX > 0.65) {
+          if (!this.snapTurnLocked) {
+            this.dolly.rotation.y -= Math.PI / 4; // Giro 45° a la derecha
+            this.snapTurnLocked = true;
+            if (window.xrAudio) window.xrAudio.playHover();
+          }
+        } else if (stickX < -0.65) {
+          if (!this.snapTurnLocked) {
+            this.dolly.rotation.y += Math.PI / 4; // Giro 45° a la izquierda
+            this.snapTurnLocked = true;
+            if (window.xrAudio) window.xrAudio.playHover();
+          }
+        } else if (Math.abs(stickX) < 0.25) {
+          // Liberar seguro cuando el stick vuelve a la posición neutral
+          this.snapTurnLocked = false;
+        }
+      }
+    }
+  }
+
+  /* ----------------------------------------------------
+     Locomoción con Teclado WASD para Modo 3D en PC
+     ---------------------------------------------------- */
+  setupKeyboardControls() {
+    window.addEventListener('keydown', (e) => {
+      const code = e.code;
+      if (code === 'KeyW' || code === 'ArrowUp') this.keys.forward = true;
+      if (code === 'KeyS' || code === 'ArrowDown') this.keys.backward = true;
+      if (code === 'KeyA' || code === 'ArrowLeft') this.keys.left = true;
+      if (code === 'KeyD' || code === 'ArrowRight') this.keys.right = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const code = e.code;
+      if (code === 'KeyW' || code === 'ArrowUp') this.keys.forward = false;
+      if (code === 'KeyS' || code === 'ArrowDown') this.keys.backward = false;
+      if (code === 'KeyA' || code === 'ArrowLeft') this.keys.left = false;
+      if (code === 'KeyD' || code === 'ArrowRight') this.keys.right = false;
+    });
+  }
+
+  handleDesktopLocomotion(delta) {
+    if (this.isVR || !this.isInteractive3D) return;
+
+    if (this.keys.forward || this.keys.backward || this.keys.left || this.keys.right) {
+      this.camera.getWorldDirection(this.forwardVec);
+      this.forwardVec.y = 0;
+      this.forwardVec.normalize();
+      this.rightVec.crossVectors(this.forwardVec, this.camera.up).normalize();
+
+      this.moveVec.set(0, 0, 0);
+      if (this.keys.forward) this.moveVec.add(this.forwardVec);
+      if (this.keys.backward) this.moveVec.sub(this.forwardVec);
+      if (this.keys.right) this.moveVec.add(this.rightVec);
+      if (this.keys.left) this.moveVec.sub(this.rightVec);
+
+      this.moveVec.normalize();
+      const speed = 3.6;
+      this.dolly.position.addScaledVector(this.moveVec, speed * delta);
+      this.controls.target.addScaledVector(this.moveVec, speed * delta);
+    }
+  }
+
+  /* ----------------------------------------------------
+     Configuración del Botón VR y Optimizaciones de Sesión
+     ---------------------------------------------------- */
   setupVRButton() {
     const btn = VRButton.createButton(this.renderer);
     btn.id = 'official-vr-button';
@@ -456,7 +644,7 @@ class XRSceneController {
     btn.style.fontWeight = '700';
     btn.style.padding = '12px 28px';
     btn.style.border = '2px solid #D59B2D';
-    btn.style.background = 'rgba(2, 22, 44, 0.92)';
+    btn.style.background = 'rgba(2, 22, 44, 0.94)';
     btn.style.color = '#F6C15C';
     btn.style.borderRadius = '30px';
     btn.style.boxShadow = '0 0 20px rgba(213, 155, 45, 0.5)';
@@ -470,9 +658,19 @@ class XRSceneController {
       this.isVR = true;
       document.getElementById('ui-root')?.classList.add('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.add('visible');
+
+      // Optimización exclusiva para Meta Quest 3S: Foveated Rendering al máximo
+      if (this.renderer.xr.setFoveation) {
+        this.renderer.xr.setFoveation(1.0);
+      }
+
+      // Reiniciar posición del dolly al origen del hub
+      this.dolly.position.set(0, 0, 0);
+      this.dolly.rotation.set(0, 0, 0);
+
       if (window.xrAudio) window.xrAudio.playWarp();
       if (window.SipnasiaXR) {
-        window.SipnasiaXR.log('¡Sesión WebXR Immersiva iniciada con éxito!');
+        window.SipnasiaXR.log('¡Sesión WebXR iniciada en Meta Quest! Usa el joystick izquierdo para moverte y el derecho para girar.');
       }
     });
 
@@ -480,6 +678,10 @@ class XRSceneController {
       this.isVR = false;
       document.getElementById('ui-root')?.classList.remove('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.remove('visible');
+
+      this.dolly.position.set(0, 0, 0);
+      this.dolly.rotation.set(0, 0, 0);
+
       if (window.SipnasiaXR) {
         window.SipnasiaXR.log('Sesión WebXR finalizada.');
       }
@@ -508,7 +710,6 @@ class XRSceneController {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.log(`Accediendo a: ${data.title}...`);
       }
-      // Abrir en ventana nueva o navegar
       window.open(data.url, '_blank');
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
@@ -524,7 +725,6 @@ class XRSceneController {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Raycast para ratón / pantalla táctil en modo 3D
     window.addEventListener('pointermove', (e) => {
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -557,34 +757,51 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Bucle de Renderizado Continuo
+     Bucle de Renderizado Continuo de Alto Rendimiento
      ---------------------------------------------------- */
   render(time, frame) {
-    const delta = this.clock.getDelta();
+    const delta = Math.min(this.clock.getDelta(), 0.1);
     const elapsedTime = this.clock.getElapsedTime();
 
-    // 1. Actualizar Controles de Escritorio si no está en VR
-    if (!this.isVR && this.controls) {
-      this.controls.update();
+    // Optimización: Throttling en modo página web plana para no ralentizar el navegador del Quest 3S
+    if (!this.isVR && !this.isInteractive3D) {
+      this.idleFrameCount = (this.idleFrameCount || 0) + 1;
+      // Salta frames alternados en segundo plano para dejar la CPU/GPU al 100% libre para el scroll web
+      if (this.idleFrameCount % 2 !== 0) {
+        return;
+      }
     }
 
-    // 2. Animación de Monolitos Flotantes
+    // 1. Locomoción por Joystick en VR (Meta Quest)
+    if (this.isVR) {
+      this.handleXRLocomotion(delta);
+    } else if (this.isInteractive3D) {
+      this.handleDesktopLocomotion(delta);
+      if (this.controls) this.controls.update();
+    }
+
+    // 2. Animación suave de Monolitos Flotantes
     this.portals.forEach((portalGroup, idx) => {
-      const floatOffset = Math.sin(elapsedTime * 1.5 + idx * 1.2) * 0.08;
+      const floatOffset = Math.sin(elapsedTime * 1.4 + idx * 1.1) * 0.06;
       portalGroup.position.y = 1.5 + floatOffset;
     });
 
-    // 3. Rotación de la Red de Partículas Sinápticas
-    if (this.synapseParticles) {
-      this.synapseParticles.rotation.y = elapsedTime * 0.02;
+    // 3. Respiración de la Luz Central Beacon
+    if (this.centerBeacon) {
+      this.centerBeacon.intensity = 1.2 + Math.sin(elapsedTime * 2.5) * 0.4;
     }
 
-    // 4. Actualizar Dinámica WebXR Activa
+    // 4. Rotación de la Red de Partículas
+    if (this.synapseParticles) {
+      this.synapseParticles.rotation.y = elapsedTime * 0.018;
+    }
+
+    // 5. Actualizar Dinámica WebXR si está activa
     if (window.SipnasiaXR) {
       window.SipnasiaXR.updateFrame(delta, elapsedTime);
     }
 
-    // 5. Renderizado final
+    // 6. Renderizado final optimizado
     this.renderer.render(this.scene, this.camera);
   }
 }

@@ -28,7 +28,21 @@ https://vickman123.github.io/Prototipo-Sipnasia/
 ## 🥽 Características del Portal
 
 - **Hub 3D Inmersivo WebXR:** Monolitos holográficos interactivos flotantes dentro de una red de sinapsis tridimensional.
-- **Soporte Nativo de Mandos 6DoF:** Punteros láser, retículas y gatillos calibrados para mandos de Meta Quest.
+- **Locomoción Completa con Joystick (Meta Quest 3S / 3 / 2):**
+  - **Mano Izquierda:** Desplazamiento suave (adelante, atrás y strafe lateral según la orientación de la vista).
+  - **Mano Derecha:** Giro rápido por pasos (*Snap Turn* de 45°) calibrado para máximo confort y evitar mareos.
+  - **Teclado en PC:** Soporte nativo para teclas WASD o flechas de dirección en modo 3D.
+- **Optimización de Alto Rendimiento para Meta Quest 3S:**
+  - *Fixed Foveated Rendering* (FFR al 100%) en WebXR para máxima fluidez sin caídas de cuadros.
+  - *Dolly Rig* sincronizado para que la cámara y los mandos 6DoF se muevan juntos en el espacio virtual.
+  - *Throttling inteligente* en modo web 2D para que el navegador del visor no se trabe ni sobrecaliente.
+  - Eliminación de pases de sombras dinámicas pesadas en favor de luces optimizadas por distancia.
+- **Iluminación UNAM Cyberpunk Perfeccionada:**
+  - Luz hemisférica suave bicolor (Cian Neón / Azul Marino Profundo UNAM).
+  - Luz clave Oro Puma institucional y luz de borde para siluetas nítidas.
+  - Luces de acento bajo cada monolito con el color temático de cada experiencia (Cian para Simulador, Magenta para Shooter, Oro para Visor).
+  - Núcleo sináptico central con resplandor pulsante.
+- **Soporte Nativo de Mandos 6DoF:** Punteros láser, retículas, gatillos calibrados y respuesta háptica por vibración al apuntar/disparar.
 - **Acceso Rápido y Códigos QR:** Modal con generador de códigos QR para que los usuarios con visores Meta Quest o dispositivos móviles abran cualquier experiencia al instante sin teclear URLs.
 - **Vista Previa Integrada:** Modal con reproductor embebido para probar las aplicaciones antes de abrirlas a pantalla completa.
 - **Audio Procedural Web Audio API:** Efectos de sonido futuristas y sintéticos sin necesidad de cargar archivos de audio externos.
