@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#002B49" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PC PUMA" />
+  <title>PC PUMA – Simulador de Operación de Préstamo (WebXR)</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+  <link rel="shortcut icon" href="favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <script type="module" crossorigin src="./assets/index-GoOXkaGj.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CCSEst4H.css">
+</head>
+<body>
+  <!-- Canvas 3D Three.js Container -->
+  <div id="app"></div>
+
+  <!-- HUD en Modo Escritorio -->
+  <div id="hud-overlay">
+    <!-- Retícula central interactiva -->
+    <div id="reticle" class="pre-start-hidden"></div>
+
+    <!-- Banner contextual de acción -->
+    <div id="action-prompt" class="hidden">
+      <span class="key-badge">E</span>
+      <span id="prompt-text">Tomar Laptop</span>
+    </div>
+
+    <!-- Cápsula HUD Superior Izquierda (Píldora Ultra-Compacta) -->
+    <div id="status-panel" class="pre-start-hidden hud-pill">
+      <div class="hud-pill-segment brand-segment">
+        <div class="status-indicator"></div>
+        <span class="status-title">PC PUMA</span>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-pill-segment score-segment">
+        <span class="hud-icon">🏆</span>
+        <span id="status-score" class="status-val hud-score-val">1,000 PTS</span>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-pill-segment streak-segment">
+        <span id="status-streak" class="status-val hud-streak-badge">x1</span>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-pill-segment timer-segment">
+        <span class="hud-icon">⏱</span>
+        <span id="status-timer" class="status-val hud-timer-val">00:00</span>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-pill-segment state-segment">
+        <span id="status-state" class="status-val hud-state-val">Operador Activo</span>
+      </div>
+      <div id="status-holding-container" class="hud-pill-segment holding-segment">
+        <span class="hud-icon">📦</span>
+        <span id="status-holding" class="status-val hud-holding-val">Libre</span>
+      </div>
+      <span id="status-mode" class="hud-mode-hidden">Escritorio (WASD)</span>
+    </div>
+
+    <!-- Contenedor de notificaciones flotantes de puntuación -->
+    <div id="floating-scores-container"></div>
+
+    <!-- Guía de Controles Minimalista y Discreta -->
+    <div id="controls-guide" class="pre-start-hidden">
+      <div class="controls-pill">
+        <span class="ctrl-tag"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Mover</span>
+        <span class="ctrl-dot">•</span>
+        <span class="ctrl-tag"><kbd>Mouse</kbd> Mirar</span>
+        <span class="ctrl-dot">•</span>
+        <span class="ctrl-tag"><kbd>E</kbd> Tomar / Soltar</span>
+        <span class="ctrl-dot">•</span>
+        <span class="ctrl-tag"><kbd>Q</kbd><kbd>R</kbd> Rotar</span>
+        <span class="ctrl-dot">•</span>
+        <span class="ctrl-tag"><kbd>F</kbd> NFC / Carro</span>
+      </div>
+    </div>
+
+    <!-- Pantalla de Inicio y Menú Principal -->
+    <div id="blocker">
+      <div id="main-menu-card">
+        <div class="menu-branding-logo">
+          <img src="pc_puma_logo.png" alt="PC PUMA Programa de Conectividad Móvil - Simulador de Operador" class="menu-logo-img" />
+        </div>
+
+        <div class="menu-actions">
+          <button id="btn-start" class="menu-btn pill-btn-primary">
+            <span class="btn-icon-box">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5.14v13.72a1 1 0 001.55.83l11-6.86a1 1 0 000-1.66l-11-6.86A1 1 0 008 5.14z"/>
+              </svg>
+            </span>
+            <span class="btn-divider-v"></span>
+            <span class="btn-text">EMPEZAR</span>
+            <span class="btn-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </span>
+          </button>
+
+          <button id="btn-controls" class="menu-btn pill-btn-secondary">
+            <span class="btn-icon-box">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 6H3a2 2 0 00-2 2v8a2 2 0 002 2h18a2 2 0 002-2V8a2 2 0 00-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 2a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-3a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+              </svg>
+            </span>
+            <span class="btn-divider-v"></span>
+            <span class="btn-text">CONTROLES</span>
+            <span class="btn-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </span>
+          </button>
+
+          <button id="btn-settings" class="menu-btn pill-btn-secondary">
+            <span class="btn-icon-box">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.484.484 0 0014.9 3h-3.8c-.24 0-.44.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.75 9.47a.47.47 0 00.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.8c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 110-7.2 3.6 3.6 0 010 7.2z"/>
+              </svg>
+            </span>
+            <span class="btn-divider-v"></span>
+            <span class="btn-text">CONFIGURACIÓN</span>
+            <span class="btn-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </span>
+          </button>
+
+          <button id="btn-scores" class="menu-btn pill-btn-secondary">
+            <span class="btn-icon-box">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zM16.2 13H19v6h-2.8z"/>
+              </svg>
+            </span>
+            <span class="btn-divider-v"></span>
+            <span class="btn-text">MARCADORES</span>
+            <span class="btn-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <div class="menu-footer-clean">
+          <span class="footer-line"></span>
+          <div class="footer-credit-block">
+            <span class="credit-sub">Desarrollado por</span>
+            <span class="credit-name">Victor M. Carreño G.</span>
+          </div>
+          <span class="footer-line"></span>
+        </div>
+      </div>
+
+      <!-- Modal de Controles -->
+      <div id="modal-controls" class="modal-overlay hidden">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h3>🎮 Guía de Controles</h3>
+            <button id="btn-close-controls" class="modal-close-btn">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="controls-columns">
+              <!-- Columna Meta Quest 3S -->
+              <div class="controls-col">
+                <div class="col-header">
+                  <span class="col-icon">🥽</span>
+                  <h4>Meta Quest 3S (WebXR)</h4>
+                </div>
+                <ul class="controls-list">
+                  <li><strong>Grip o Trigger:</strong> Apretar para agarrar credencial o laptop; soltar para depositar en mesa o acoplar al lector NFC/carro.</li>
+                  <li><strong>Botón B (Mando Der.):</strong> Rotar objeto sostenido en sentido horario (+Y).</li>
+                  <li><strong>Botón A (Mando Der.):</strong> Rotar objeto sostenido en sentido inverso (-Y).</li>
+                  <li><strong>Botón X (Mando Izq.):</strong> Acercar objeto hacia ti (zoom in).</li>
+                  <li><strong>Botón Y (Mando Izq.):</strong> Alejar objeto hacia el frente (zoom out).</li>
+                  <li><strong>Stick Izquierdo:</strong> Desplazarse suavemente tras el mostrador.</li>
+                  <li><strong>Stick Derecho:</strong> Giro de cámara o rotación analógica.</li>
+                  <li><strong>Hand Tracking:</strong> Pellizco (Pinch) para tomar y soltar.</li>
+                </ul>
+              </div>
+
+              <!-- Columna Computadora / Laptop -->
+              <div class="controls-col">
+                <div class="col-header">
+                  <span class="col-icon">💻</span>
+                  <h4>Computadora (Escritorio)</h4>
+                </div>
+                <ul class="controls-list">
+                  <li><strong>W, A, S, D:</strong> Caminar tras el mostrador.</li>
+                  <li><strong>Mouse:</strong> Mirar alrededor en 360°.</li>
+                  <li><strong>Clic Izquierdo o [E]:</strong> Tomar o soltar equipos e interactuar con la pantalla.</li>
+                  <li><strong>[F]:</strong> Acción rápida inteligente (Guardar en Carro 01 / Acoplar a lector NFC).</li>
+                  <li><strong>[Q] y [R]:</strong> Rotar objeto sostenido para examinar frente y reverso.</li>
+                  <li><strong>[X], [Y] o Rueda del Mouse:</strong> Acercar y alejar objeto en manos (zoom).</li>
+                  <li><strong>ESC:</strong> Liberar cursor del ratón.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btn-modal-controls-ok" class="modal-btn">Entendido</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de Configuración -->
+      <div id="modal-settings" class="modal-overlay hidden">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h3>⚙️ Configuración del Simulador</h3>
+            <button id="btn-close-settings" class="modal-close-btn">&times;</button>
+          </div>
+          <div class="modal-body settings-body">
+            <div class="setting-row">
+              <label for="setting-volume">Volumen de Audio General:</label>
+              <div class="slider-group">
+                <input type="range" id="setting-volume" min="0" max="100" value="85" />
+                <span id="volume-val">85%</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label for="setting-audio-chimes">Efectos y Chimes Institucionales UNAM:</label>
+              <input type="checkbox" id="setting-audio-chimes" checked />
+            </div>
+            <div class="setting-row">
+              <label for="setting-sensitivity">Sensibilidad de Mouse:</label>
+              <select id="setting-sensitivity">
+                <option value="low">Baja</option>
+                <option value="normal" selected>Normal</option>
+                <option value="high">Alta</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="setting-shadows">Calidad de Sombras 3D:</label>
+              <select id="setting-shadows">
+                <option value="high" selected>Alta (Soft Shadows)</option>
+                <option value="medium">Rendimiento (Standard)</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btn-modal-settings-save" class="modal-btn">Guardar y Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de Marcadores / Historial de Operaciones -->
+      <div id="modal-scores" class="modal-overlay hidden">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h3>📊 Desempeño Operativo UNAM</h3>
+            <button id="btn-close-scores" class="modal-close-btn">&times;</button>
+          </div>
+          <div class="modal-body scores-modal-body">
+            <div class="score-summary-grid">
+              <div class="stat-summary-card">
+                <span class="stat-sub">Puntaje Total</span>
+                <span id="modal-score-val" class="stat-big-val">1,000</span>
+              </div>
+              <div class="stat-summary-card highlight">
+                <span class="stat-sub">Rango Oficial UNAM</span>
+                <span id="modal-rank-val" class="stat-rank-text">OPERADOR CAPACITADO</span>
+              </div>
+              <div class="stat-summary-card">
+                <span class="stat-sub">Racha Máxima</span>
+                <span id="modal-streak-val" class="stat-big-val">x1</span>
+              </div>
+            </div>
+
+            <div class="metrics-two-cols">
+              <div class="metric-box">
+                <span class="metric-icon">💻</span>
+                <div class="metric-info">
+                  <span class="metric-title">Préstamos Conformes</span>
+                  <span id="modal-loans-count" class="metric-number">0</span>
+                </div>
+              </div>
+              <div class="metric-box">
+                <span class="metric-icon">🔍</span>
+                <div class="metric-info">
+                  <span class="metric-title">Peritajes Técnicos</span>
+                  <span id="modal-inspections-count" class="metric-number">0</span>
+                </div>
+              </div>
+              <div class="metric-box">
+                <span class="metric-icon">⚠️</span>
+                <div class="metric-info">
+                  <span class="metric-title">Incidencias Reportadas</span>
+                  <span id="modal-incidents-count" class="metric-number">0</span>
+                </div>
+              </div>
+              <div class="metric-box">
+                <span class="metric-icon">⏱️</span>
+                <div class="metric-info">
+                  <span class="metric-title">Tiempo de Turno</span>
+                  <span id="modal-shift-time" class="metric-number">00:00</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="history-container">
+              <div class="history-title">Registro de Actividad de Turno</div>
+              <div id="modal-score-history" class="history-items-list">
+                <div class="history-empty">Inicia tu turno pulsando EMPEZAR para registrar actividades.</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btn-modal-scores-ok" class="modal-btn">Entendido</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

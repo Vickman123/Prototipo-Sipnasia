@@ -154,16 +154,17 @@ function initModals() {
   document.querySelectorAll('.btn-qr').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      const url = btn.getAttribute('data-url');
+      const rawUrl = btn.getAttribute('data-url');
+      const absoluteUrl = new URL(rawUrl, window.location.href).href;
       const title = btn.getAttribute('data-title');
-      currentTargetUrl = url;
+      currentTargetUrl = absoluteUrl;
 
       if (window.xrAudio) window.xrAudio.playSelect();
       if (qrTitle) qrTitle.textContent = `Código QR // ${title}`;
-      if (qrUrlText) qrUrlText.textContent = url;
+      if (qrUrlText) qrUrlText.textContent = absoluteUrl;
 
       // Generar URL para código QR vía API de alta resolución y respaldo
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(url)}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(absoluteUrl)}`;
       if (qrImage) {
         qrImage.src = qrApiUrl;
       }

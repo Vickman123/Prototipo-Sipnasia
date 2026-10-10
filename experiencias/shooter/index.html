@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIRUS PURGE - Cybersecurity Arcade FPS</title>
+
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <!-- Meta Tags para PWA y Guardar en Menú / Escritorio de Meta Quest -->
+    <meta name="theme-color" content="#060f1c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VIRUS PURGE" />
+    <meta name="application-name" content="VIRUS PURGE" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Anti-cache meta tags para evitar que Safari / navegadores queden con CSS viejo -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- Open Graph (Meta Quest Browser Feed & Social Preview) -->
+    <meta property="og:title" content="VIRUS PURGE // WebXR Cyber Defense FPS" />
+    <meta property="og:description" content="Videojuego FPS arcade de ciberseguridad en WebXR para Meta Quest y PC" />
+    <meta property="og:image" content="icon-512.png" />
+    <meta property="og:type" content="website" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-Dz22OVI8.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index--z8WGKIP.css">
+  </head>
+  <body>
+    <!-- 3D Canvas Container -->
+    <div id="game-container"></div>
+
+    <!-- PC Crosshair & Hitmarker -->
+    <div id="crosshair-container">
+      <div class="crosshair-dot"></div>
+      <div class="crosshair-line top"></div>
+      <div class="crosshair-line bottom"></div>
+      <div class="crosshair-line left"></div>
+      <div class="crosshair-line right"></div>
+      <div id="hitmarker" class="hitmarker">
+        <div class="hm-line tl"></div>
+        <div class="hm-line tr"></div>
+        <div class="hm-line bl"></div>
+        <div class="hm-line br"></div>
+      </div>
+    </div>
+
+    <!-- Boss Health Bar (Hidden by default, shown in Boss Phase) -->
+    <div id="boss-hud" class="boss-hud hidden">
+      <div class="boss-title-row">
+        <span class="boss-badge">AMENAZA CRÍTICA NIVEL 5</span>
+        <span id="boss-name" class="boss-name">RANSOMWARE.LOCKBIT.CORE</span>
+        <span id="boss-percent" class="boss-percent">100%</span>
+      </div>
+      <div class="boss-bar-container">
+        <div id="boss-bar-fill" class="boss-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Cyber HUD Overlay -->
+    <div id="hud">
+      <!-- Top Status Bar -->
+      <div class="hud-top">
+        <div class="hud-box score-box">
+          <span class="hud-label">PUNTUACIÓN DE PURGA</span>
+          <span id="score-display" class="hud-value">00000</span>
+        </div>
+        <div class="hud-box wave-box">
+          <span class="hud-label">SECTOR DEL SISTEMA</span>
+          <span id="wave-display" class="hud-value cyber-glow">FASE 1 // L1/L2 CACHE</span>
+        </div>
+        <div class="hud-box combo-box">
+          <span class="hud-label">MULTIPLICADOR</span>
+          <span id="combo-display" class="hud-value">x1.0</span>
+        </div>
+        <div class="hud-box bits-box">
+          <span class="hud-label">DATA BITS</span>
+          <span id="bits-display" class="hud-value cyber-bits">0000 💾</span>
+        </div>
+      </div>
+
+      <!-- Center floating alerts (Headshot, Combo, Wave Clear) -->
+      <div id="combat-alerts"></div>
+
+      <!-- Bottom Status Bar -->
+      <div class="hud-bottom">
+        <!-- Health Section -->
+        <div class="hud-box health-box">
+          <div class="hud-label-group">
+            <span class="hud-label">INTEGRIDAD DEL NÚCLEO</span>
+            <span id="health-text" class="hud-label-val">100%</span>
+          </div>
+          <div class="bar-container">
+            <div id="health-bar" class="bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Weapon / Ammo Section -->
+        <div class="hud-box ammo-box">
+          <div class="weapon-name">ANTIVIRUS CANNON // V1</div>
+          <div class="ammo-counter">
+            <span id="ammo-current" class="ammo-current">12</span>
+            <span class="ammo-separator">/</span>
+            <span id="ammo-max" class="ammo-max">12</span>
+          </div>
+          <div id="reload-indicator" class="reload-indicator">RECARGANDO BÚFER [R]</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Antivirus "SYSTEM DEFENDER" Main Menu Overlay -->
+    <div id="overlay" class="overlay main-menu-overlay">
+      <!-- Top Status Bar -->
+      <header class="menu-top-bar">
+        <div class="menu-top-left">
+          <span class="hud-mono-tag">SYSTEM DEFENDER // v4.2</span>
+          <span class="hud-accent-line"></span>
+        </div>
+        <div class="menu-top-right">
+          <span class="hud-mono-tag">SECURE &nbsp;|&nbsp; ISOLATE &nbsp;|&nbsp; PURGE</span>
+          <span class="hud-accent-dash"></span>
+        </div>
+      </header>
+
+      <!-- Center Content & Decals Layout -->
+      <main class="menu-center-container">
+        <!-- Left Flank Decal -->
+        <aside class="menu-flank flank-left">
+          <div class="flank-slashes">//</div>
+          <div class="flank-text">
+            PURGE<br />
+            THE THREAT<br />
+            RESTORE<br />
+            THE FUTURE
+          </div>
+        </aside>
+
+        <!-- Main Hero & Interactive Interface -->
+        <section class="menu-hero-card">
+          <!-- Cyber Shield Emblem with Crimson Core -->
+          <div class="shield-emblem">
+            <svg class="shield-svg" viewBox="0 0 100 120" width="62" height="76" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="shieldRimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#94a3b8"/>
+                  <stop offset="45%" stop-color="#e2e8f0"/>
+                  <stop offset="100%" stop-color="#475569"/>
+                </linearGradient>
+                <linearGradient id="shieldFaceL" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1e293b"/>
+                  <stop offset="100%" stop-color="#0a101d"/>
+                </linearGradient>
+                <linearGradient id="shieldFaceR" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#334155"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+                <filter id="crimsonGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <!-- Outer Metallic Rim -->
+              <path d="M50 6 L88 20 V62 C88 86 68 106 50 114 C32 106 12 86 12 62 V20 Z" fill="url(#shieldRimGrad)" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.7"/>
+              <!-- Left Facet -->
+              <path d="M50 12 L18 24 V62 C18 82 34 99 50 107 V12 Z" fill="url(#shieldFaceL)"/>
+              <!-- Right Facet -->
+              <path d="M50 12 L82 24 V62 C82 82 66 99 50 107 V12 Z" fill="url(#shieldFaceR)"/>
+              <!-- Red Core Breach Slash -->
+              <path d="M50 14 L54 36 L43 54 L55 74 L46 94 L50 104 L45 94 L52 74 L40 54 L51 36 Z" fill="#ff0055" filter="url(#crimsonGlow)"/>
+              <path d="M50 16 L53 36 L44 54 L54 74 L47 92 L50 100" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <!-- Game Title -->
+          <div class="menu-title-block">
+            <h1 class="game-title">
+              <span class="title-virus">VIRUS</span>
+              <span class="title-purge">PURGE</span>
+            </h1>
+            <div class="menu-subtitle">ENDPOINT SHIELD ACTIVE</div>
+          </div>
+
+          <!-- Threat Detected Warning Line -->
+          <div class="threat-detected-container">
+            <span class="threat-hairline left"></span>
+            <div class="threat-badge">
+              <span class="threat-pulsing-dot"></span>
+              <span class="threat-text">THREAT DETECTED</span>
+            </div>
+            <span class="threat-hairline right"></span>
+          </div>
+
+          <!-- Action Buttons Group -->
+          <div class="menu-actions-stack">
+            <!-- Primary Action: START PURGE -->
+            <button id="start-btn" class="cyber-btn-primary">
+              <span class="corner-tick-tl">1"</span>
+              <svg class="play-svg-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <polygon points="4,2 14,8 4,14" fill="#00f3ff"/>
+              </svg>
+              <span class="btn-text">START PURGE</span>
+              <span class="corner-tick-br"></span>
+            </button>
+
+            <!-- Secondary Actions Row: FIRING RANGE + THREAT DATABASE -->
+            <div class="secondary-btn-row">
+              <button id="range-btn" class="cyber-btn-secondary left-cut">
+                <svg class="sec-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="7" stroke="#38bdf8" stroke-width="1.8"/>
+                  <circle cx="12" cy="12" r="2" fill="#38bdf8"/>
+                  <line x1="12" y1="1" x2="12" y2="5" stroke="#38bdf8" stroke-width="1.8"/>
+                  <line x1="12" y1="19" x2="12" y2="23" stroke="#38bdf8" stroke-width="1.8"/>
+                  <line x1="1" y1="12" x2="5" y2="12" stroke="#38bdf8" stroke-width="1.8"/>
+                  <line x1="19" y1="12" x2="23" y2="12" stroke="#38bdf8" stroke-width="1.8"/>
+                </svg>
+                <span class="btn-text">FIRING RANGE</span>
+              </button>
+
+              <button id="wiki-btn" class="cyber-btn-secondary right-cut wiki-trigger-btn">
+                <svg class="sec-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M2 6 C6 4 10 4 12 6 C14 4 18 4 22 6 V19 C18 17 14 17 12 19 C10 17 6 17 2 19 Z" stroke="#38bdf8" stroke-width="1.8" stroke-linejoin="round"/>
+                  <line x1="12" y1="6" x2="12" y2="19" stroke="#38bdf8" stroke-width="1.8"/>
+                </svg>
+                <span class="btn-text">THREAT DATABASE</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Controls Ribbon -->
+          <div class="menu-controls-ribbon">
+            <div class="ctrl-group">
+              <div class="keycap-row">
+                <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+              </div>
+              <span class="ctrl-lbl">MOVE</span>
+            </div>
+            <span class="ctrl-pipe">|</span>
+            <div class="ctrl-group">
+              <svg class="mouse-svg" width="14" height="20" viewBox="0 0 14 20" fill="none">
+                <rect x="1" y="1" width="12" height="18" rx="6" stroke="#38bdf8" stroke-width="1.5"/>
+                <path d="M7 4V8" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="ctrl-lbl">AIM</span>
+            </div>
+            <span class="ctrl-pipe">|</span>
+            <div class="ctrl-group">
+              <svg class="mouse-svg" width="14" height="20" viewBox="0 0 14 20" fill="none">
+                <rect x="1" y="1" width="12" height="18" rx="6" stroke="#38bdf8" stroke-width="1.5"/>
+                <path d="M1 7 C1 3.68 3.68 1 7 1 V9 H1 Z" fill="rgba(0, 243, 255, 0.5)"/>
+                <path d="M7 4V8" stroke="#00f3ff" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="ctrl-lbl">FIRE</span>
+            </div>
+            <span class="ctrl-pipe">|</span>
+            <div class="ctrl-group">
+              <kbd>R</kbd>
+              <span class="ctrl-lbl">RELOAD</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Flank Decal -->
+        <aside class="menu-flank flank-right">
+          <div class="flank-text align-right">
+            GOOD<br />
+            SYSTEMS<br />
+            BETTER<br />
+            PEOPLE
+          </div>
+        </aside>
+      </main>
+
+      <!-- Bottom Footer Bar -->
+      <footer class="menu-footer-bar">
+        <div class="footer-block-left">
+          <span class="footer-line-1">A CLEANER</span>
+          <span class="footer-line-2">DIGITAL TOMORROW <span class="footer-accent-line"></span></span>
+        </div>
+        <div class="footer-block-center">
+          <span class="footer-tag">WEBXR</span>
+          <span class="footer-dot"></span>
+          <span class="footer-tag highlight">DESKTOP MODE</span>
+        </div>
+        <div class="footer-block-right">
+          <span class="footer-line-1">DEVELOPED BY</span>
+          <span class="footer-line-2">VÍCTOR CARREÑO <span class="footer-accent-line"></span></span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Cyber Store Overlay for Desktop -->
+    <div id="store-overlay" class="overlay hidden">
+      <div class="overlay-card store-card">
+        <div class="cyber-header">
+          <div class="antivirus-icon">🛒</div>
+          <div>
+            <div class="cyber-badge">MERCADO NEGRO DEL KERNEL // ACCESO CONCEDIDO</div>
+            <h2 class="game-title" style="font-size: 2.2rem; margin: 0;">CYBER STORE</h2>
+          </div>
+        </div>
+        <div class="store-balance-row">
+          <span>SALDO DISPONIBLE:</span>
+          <span id="store-bits-display" class="highlight-bits">0000 💾 BITS</span>
+        </div>
+        <div id="store-items-container" class="store-grid">
+          <!-- Tarjetas de mejoras y armas generadas por JS -->
+        </div>
+        <button id="store-continue-btn" class="cyber-button pulse-btn" style="margin-top: 18px; width: 100%;">
+          <span class="btn-text">🚀 CONTINUAR PURGA // SIGUIENTE FASE</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cyber Wiki Overlay for Desktop -->
+    <div id="wiki-overlay" class="overlay hidden">
+      <div class="overlay-card wiki-card">
+        <div class="cyber-header">
+          <div class="antivirus-icon">📖</div>
+          <div style="flex: 1;">
+            <div class="cyber-badge">BASE DE CONOCIMIENTO // ENDPOINT THREAT DATABASE v4.2</div>
+            <h2 class="game-title" style="font-size: 1.9rem; margin: 0;">CYBER WIKI & MANUAL</h2>
+          </div>
+          <button id="wiki-close-btn" class="wiki-close-btn">✕ CERRAR</button>
+        </div>
+
+        <!-- Tabs de Navegación -->
+        <div class="wiki-tabs">
+          <button class="wiki-tab-btn active" data-tab="mobs">👾 CIBERAMENAZAS (MOBS)</button>
+          <button class="wiki-tab-btn" data-tab="weapons">🔫 ARSENAL (ARMAS)</button>
+          <button class="wiki-tab-btn" data-tab="mechanics">⚙️ SISTEMA & PUNTOS CRÍTICOS</button>
+        </div>
+
+        <!-- Pestaña 1: Mobs -->
+        <div id="wiki-tab-mobs" class="wiki-tab-content active">
+          <!-- Drone -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">🔍 VIRUS.RECON.DRONE // V-01</span>
+              <span class="wiki-item-badge blue">NIVEL 1 // ENJAMBRE AÉREO</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">SALUD (HP):</span> <span class="stat-val">80 HP</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">VELOCIDAD:</span> <span class="stat-val">2.4 m/s</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">DAÑO:</span> <span class="stat-val">10</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">COMPORTAMIENTO:</span> <span class="stat-val">Vuelo oscilante senoidal</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Sondas voladoras no tripuladas que se desplazan en enjambre. Realizan movimientos continuos de cabeceo y balanceo lateral para dificultar el blanco mientras se aproximan al núcleo.
+            </p>
+            <div class="wiki-weakness-box">
+              <span class="weakness-title">🎯 PUNTO DÉBIL / HEADSHOT:</span>
+              <span class="weakness-text">Sensor óptico frontal (ojo azul central). Un impacto certero aquí inflige <strong>2.5x de daño crítico</strong> (100 de daño con el Cañón V1, destrucción instantánea).</span>
+            </div>
+          </div>
+
+          <!-- Gusano -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">⚡ WORM.WIN32.REPLICATOR // W-02</span>
+              <span class="wiki-item-badge purple">NIVEL 2 // INVASOR RASTRERO</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">SALUD (HP):</span> <span class="stat-val">50 HP</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">VELOCIDAD:</span> <span class="stat-val">3.8 m/s (RÁPIDO)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">DAÑO:</span> <span class="stat-val">8</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">COMPORTAMIENTO:</span> <span class="stat-val">Curva ondulante en 'S'</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Gusano informático biomecánico que repta a ras del suelo a gran velocidad. Se desplaza en zigzag y genera oscilaciones para evitar disparos en línea recta. Si se acerca demasiado, te infecta en segundos.
+            </p>
+            <div class="wiki-weakness-box">
+              <span class="weakness-title">🎯 PUNTO DÉBIL / HEADSHOT:</span>
+              <span class="weakness-text">Nodo cefálico frontal (cabeza). Aunque su movimiento es errático, calcular su curva en 'S' y dispararle a la cabeza lo vaporiza inmediatamente.</span>
+            </div>
+          </div>
+
+          <!-- Tanque Trojan -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">🛡️ TROJAN.DROPPER.CARRIER // T-03</span>
+              <span class="wiki-item-badge orange">NIVEL 3 // TANQUE BLINDADO</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">SALUD (HP):</span> <span class="stat-val">180 HP</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">VELOCIDAD:</span> <span class="stat-val">1.6 m/s</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">DAÑO:</span> <span class="stat-val">18</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">DEFENSA:</span> <span class="stat-val">ESCUDO 80% FRONTAL</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Unidad oruga pesada con chasis blindado y cañón frontal. Avanza directamente hacia el usuario proyectando un escudo de firewall holográfico (svchost.exe) que <strong>absorbe el 80% de todo el daño que reciba de frente</strong>.
+            </p>
+            <div class="wiki-weakness-box critical">
+              <span class="weakness-title">⚠️ VULNERABILIDAD CRÍTICA (NÚCLEO TRASERO):</span>
+              <span class="weakness-text">Su punto crítico es el <strong>núcleo azul expuesto en la parte trasera</strong> del chasis. Muévete en círculo, esquiva su avance frontal o flanquéalo para impactar el motor trasero con <strong>daño crítico x2.5</strong>.</span>
+            </div>
+          </div>
+
+          <!-- Boss Ransomware -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">☣️ RANSOMWARE.LOCKBIT.CORE // R-BOSS</span>
+              <span class="wiki-item-badge red">NIVEL 5 // JEFE DE KERNEL</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">SALUD (HP):</span> <span class="stat-val">850 HP</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">DEFENSA:</span> <span class="stat-val">Barrera Hexagonal Giratoria</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">HABILIDAD:</span> <span class="stat-val">Invocación de Esbirros</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">MODO FURIA:</span> <span class="stat-val">Velocidad aumentada a &lt;35% HP</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Super-entidad hostil que cifra los sectores de la memoria central. Está protegida por anillos reflectantes que giran desviando proyectiles, e invoca periódicamente refuerzos de drones y gusanos. Al caer bajo el 35% de vida entra en sobrecarga de furia (Enrage).
+            </p>
+            <div class="wiki-weakness-box">
+              <span class="weakness-title">🎯 TÁCTICA DE PURGA:</span>
+              <span class="weakness-text">Apunta al núcleo central aprovechando los huecos de rotación del escudo. Cuando entre en modo furia, mantén la distancia y vacía cargadores continuos de SMG o Escopeta para finiquitarlo.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Armas -->
+        <div id="wiki-tab-weapons" class="wiki-tab-content">
+          <!-- Antivirus Cannon -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">🔫 ANTIVIRUS CANNON // V1</span>
+              <span class="wiki-item-badge cyan">ARMA BASE // PISTOLA DE PRECISIÓN</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">DAÑO BASE:</span> <span class="stat-val">40</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">HEADSHOT:</span> <span class="stat-val">100 (2.5x)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CADENCIA:</span> <span class="stat-val">0.18s (~330 RPM)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CARGADOR:</span> <span class="stat-val">12 rondas</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">RECARGA:</span> <span class="stat-val">1.2 segundos</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">MIRA LÁSER:</span> <span class="stat-val" style="color: #00f3ff;">Cyan Neón (#00f3ff)</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Arma de mano reglamentaria del Endpoint Shield. Dispara pulsos de plasma binario con extrema precisión balística sin dispersión. Es la herramienta por excelencia para tiros a la cabeza a media y larga distancia.
+            </p>
+          </div>
+
+          <!-- Scatter Shotgun -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">💥 SCATTER SHOTGUN // PURGE SPREAD</span>
+              <span class="wiki-item-badge amber">TIENDA (50 BITS) // CONTROL DE MASAS</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">DAÑO:</span> <span class="stat-val">132 (22 x 6 perdigones)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CRÍTICO:</span> <span class="stat-val">2.0x por perdigón</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CADENCIA:</span> <span class="stat-val">0.55s</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CARGADOR:</span> <span class="stat-val">8 cartuchos</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">RECARGA:</span> <span class="stat-val">1.5 segundos</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">MIRA LÁSER:</span> <span class="stat-val" style="color: #f59e0b;">Ámbar Balístico (#f59e0b)</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Escopeta de dispersión electromagnética que expulsa 6 perdigones de alta energía en abanico horizontal. Devastadora para aniquilar múltiples gusanos rastreros de un solo cartucho o frenar en seco cualquier enemigo cercano.
+            </p>
+          </div>
+
+          <!-- Plasma SMG -->
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">⚡ PLASMA SMG // RAPID DEFENDER</span>
+              <span class="wiki-item-badge magenta">TIENDA (80 BITS) // ALTO DPS CONTINUO</span>
+            </div>
+            <div class="wiki-stat-grid">
+              <div class="wiki-stat"><span class="stat-lbl">DAÑO BASE:</span> <span class="stat-val">22</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">HEADSHOT:</span> <span class="stat-val">48 (2.2x)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CADENCIA:</span> <span class="stat-val">0.085s (~700 RPM)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">CARGADOR:</span> <span class="stat-val">36 rondas</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">RECARGA:</span> <span class="stat-val">1.1 segundos (Ultrarrápida)</span></div>
+              <div class="wiki-stat"><span class="stat-lbl">MIRA LÁSER:</span> <span class="stat-val" style="color: #ec4899;">Magenta Neón (#ec4899)</span></div>
+            </div>
+            <p class="wiki-item-desc">
+              Subfusil automático de alta cadencia de plasma ionizado. Descarga una ráfaga sostenida de 700 balas por minuto con recargas instantáneas. La mejor opción para flanquear al tanque y pulverizar al Boss rápidamente.
+            </p>
+          </div>
+        </div>
+
+        <!-- Pestaña 3: Mecánicas -->
+        <div id="wiki-tab-mechanics" class="wiki-tab-content">
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">🎯 SISTEMA DE IMPACTOS CRÍTICOS & PUNTOS DÉBILES</span>
+            </div>
+            <p class="wiki-item-desc">
+              Los impactos en zonas vitales multiplican el daño entre <strong>2.0x y 2.5x</strong>, activan un retículo dorado especial (hitmarker) y emiten una alerta sonora instantánea:
+            </p>
+            <ul class="wiki-list">
+              <li><strong>Virus Recon Drone:</strong> Sensor óptico central.</li>
+              <li><strong>Worm Replicator:</strong> Nodo de cabeza frontal.</li>
+              <li><strong>Trojan Carrier:</strong> Núcleo motor trasero (el frente está blindado al 80%).</li>
+              <li><strong>Ransomware Boss:</strong> Núcleo central expuesto entre giros de la barrera.</li>
+            </ul>
+          </div>
+
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">💾 DATA BITS & MULTIPLICADOR DE COMBO</span>
+            </div>
+            <p class="wiki-item-desc">
+              Cada malware destruido recompensa al defensor con fragmentos de memoria <strong>Data Bits</strong>.
+            </p>
+            <ul class="wiki-list">
+              <li>Encadenar bajas sin recibir daño incrementa el multiplicador hasta <strong>x3.0</strong>.</li>
+              <li>A mayor multiplicador, obtienes más Bits y mayor puntuación final.</li>
+              <li>Recibir daño resetea el multiplicador a x1.0.</li>
+            </ul>
+          </div>
+
+          <div class="wiki-item-card">
+            <div class="wiki-item-header">
+              <span class="wiki-item-title">🛒 TIENDA DEL KERNEL & MEJORAS</span>
+            </div>
+            <p class="wiki-item-desc">
+              Al superar un sector, invierte tus Data Bits en la <strong>Cyber Store</strong>:
+            </p>
+            <ul class="wiki-list">
+              <li><strong>Sobretensión de Plasma:</strong> +15% de daño con todas las armas por nivel.</li>
+              <li><strong>Overclock de Búfer:</strong> -20% de tiempo de recarga por nivel.</li>
+              <li><strong>Blindaje de Kernel:</strong> +25 HP de vida máxima por nivel.</li>
+              <li><strong>Desbloqueo de Armas:</strong> Adquiere la Escopeta y el SMG para usarlos cuando quieras.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Damage Screen Flash Vignette -->
+    <div id="damage-vignette"></div>
+
+  </body>
+</html>

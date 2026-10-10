@@ -1,0 +1,56 @@
+[
+  {
+    "id": "enalt",
+    "name": "Escuela Nal. de Lenguas (ENALT)",
+    "description": "Instalaciones y aulas académicas de lenguas, lingüística y traducción de la UNAM.",
+    "thumbnail": "thumbnails/enalt_preview_thumbnail.png",
+    "model": "models/enalt.glb",
+    "category": "Académico",
+    "realScale": 11.5
+  },
+  {
+    "id": "fesi",
+    "name": "FES Iztacala (Edificio Central)",
+    "description": "Complejo arquitectónico universitario de la Facultad de Estudios Superiores Iztacala UNAM.",
+    "thumbnail": "thumbnails/fesi_preview_thumbnail.png",
+    "model": "models/fesi.glb",
+    "category": "Académico",
+    "realScale": 13.5
+  },
+  {
+    "id": "filologicas",
+    "name": "Instituto de Inv. Filológicas",
+    "description": "Complejo de investigación humanística, aulas magnas y bibliotecas especializadas UNAM.",
+    "thumbnail": "thumbnails/filologicas_preview_thumbnail.png",
+    "model": "models/Filologicas.glb",
+    "category": "Investigación",
+    "realScale": 7.5
+  },
+  {
+    "id": "veterinaria",
+    "name": "Facultad de Medicina Veterinaria (FMVZ)",
+    "description": "Instalaciones clínicas, laboratorios y áreas académicas modulares de la FMVZ UNAM.",
+    "thumbnail": "thumbnails/veterinaria_preview_thumbnail.png",
+    "model": "models/fmvz.glb",
+    "category": "Académico",
+    "realScale": 12.0
+  },
+  {
+    "id": "pumaker",
+    "name": "Espacio Puma Maker P5",
+    "description": "Laboratorio de innovación tecnológica Puma Maker con estaciones de trabajo modulares.",
+    "thumbnail": "thumbnails/pumaker_preview_thumbnail.png",
+    "model": "models/pumaker.glb",
+    "category": "Tecnológico",
+    "realScale": 10.5
+  },
+  {
+    "id": "oficina",
+    "name": "Oficinas / Espacio Corporativo",
+    "description": "Espacio de trabajo y áreas de oficinas administrativas con mobiliario y arquitectura modular.",
+    "thumbnail": "thumbnails/oficina_preview_thumbnail.png",
+    "model": "models/Oficina.glb",
+    "category": "Corporativo",
+    "realScale": 1.6
+  }
+]
