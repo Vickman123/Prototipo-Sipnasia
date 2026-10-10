@@ -205,6 +205,22 @@ function initModals() {
       });
     }
   });
+
+  // Manejo de Interacción para la Tarjeta de Próximamente (Módulo en Desarrollo)
+  const upcomingCardBtn = document.getElementById('btn-card-upcoming');
+  const upcomingInfoBtn = document.getElementById('btn-upcoming-info');
+  [upcomingCardBtn, upcomingInfoBtn].forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.xrAudio) window.xrAudio.playHover();
+        alert('🔒 MÓDULO EN DESARROLLO // FASE EXPERIMENTAL\n\nLaboratorio de Innovación XR PC PUMA UNAM:\nNuevas experiencias espaciales de gemelos digitales y simulaciones cuánticas en desarrollo activo.');
+        if (window.SipnasiaXR) {
+          window.SipnasiaXR.log('🔒 Módulo en desarrollo: Nuevas experiencias XR próximamente.');
+        }
+      });
+    }
+  });
 }
 
 /* ----------------------------------------------------

@@ -1,86 +1,109 @@
 /**
- * SIPNASIA XR - Escena 3D & Motor WebXR Optimizado para Meta Quest 3S
- * - Estilo Galería Lujosa UNAM: Blanco arquitectónico luminoso, Negro obsidiana y Oro Puma (#D59B2D / #F6C15C).
- * - Iluminación de alta visibilidad: luz cenital brillante, luz clave dorada y halos en pedestales.
- * - Navegación directa: al ingresar a un portal, navega en la misma ventana sin abrir pestañas externas.
- * - Locomoción completa por Joystick (Thumbstick):
- *     * Mano Izquierda: Desplazamiento suave (adelante/atrás/strafe según vista)
- *     * Mano Derecha: Snap Turn 45° anti-mareo
- *     * Teclado en PC: WASD / Flechas
- * - Optimización para Meta Quest 3S:
- *     * Fixed Foveated Rendering (setFoveation 1.0)
- *     * Camera Rig (Dolly)
- *     * Throttling inteligente en modo 2D para que el navegador no se trabe
+ * SIPNASIA XR - Escena 3D & Motor WebXR Basado en Framework VXR
+ * Integración con Framework VXR (XRRoom / Scenarios) de Vickman123
+ *
+ * Características Clave:
+ * - Laboratorio Futurista Luminoso ("no tan obscuro"):
+ *     * Construido con XRRoom procedural de VXR (suelo técnico, paredes modulares, luminarias integradas).
+ *     * Iluminación de alta visibilidad: luz cenital blanca, reflejos Oro Puma y acentos ciber-cian.
+ *     * Consola central cuántica PC PUMA con anillos giroscópicos y baliza de pulso.
+ * - 4 Puertas / Portales de Experiencias:
+ *     1. Simulador de Operador PC PUMA (Cyan #00f0ff)
+ *     2. Shooter PC PUMA Virus Purge (Magenta #ff007f)
+ *     3. Visor Arquitectónico PC PUMA (Oro Puma #d59b2d)
+ *     4. PRÓXIMAMENTE // NUEVA EXPERIENCIA (Cyber Emerald #10b981) - Módulo de Innovación I+D
+ * - Artefactos Holográficos 3D Rotatorios sobre cada portal inspirados en XRExhibit de VXR.
+ * - Sistema de Navegación Dual:
+ *     * En Meta Quest WebXR: Finaliza la sesión limpiamente y navega en la misma ventana
+ *       (window.location.href) para no abrir ventanas flotantes indeseadas en el sistema operativo de Oculus.
+ *     * En Escritorio / PC 2D: Abre en nueva pestaña (window.open(url, '_blank')) para no perder el portal.
+ * - Locomoción Completa con Joystick y Límites de Sala VXR:
+ *     * Mano Izquierda: Desplazamiento suave 6DoF relativo a la mirada del usuario.
+ *     * Mano Derecha: Snap Turn 45° anti-mareo.
+ *     * PC: Teclado WASD / Flechas.
+ *     * Colisión: Delimitado por getWalkableBounds() de XRRoom para no atravesar muros.
+ * - Optimización Meta Quest 3S: Fixed Foveated Rendering (setFoveation 1.0).
  */
 
 import * as THREE from 'three';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+import { XRRoom } from '../vxr/scenario/XRRoom.js';
 
 class XRSceneController {
   constructor() {
     this.container = document.getElementById('webxr-canvas-container');
     this.scene = null;
     this.camera = null;
-    this.dolly = null; // Rig de cámara para locomoción WebXR
+    this.dolly = null; // Rig de cámara para locomoción en WebXR
     this.renderer = null;
     this.controls = null;
     this.clock = new THREE.Clock();
 
-    // Estado WebXR & Interacción
+    // VXR Room & Elementos del Laboratorio
+    this.labRoom = null;
+    this.quantumCore = null;
+    this.quantumRings = [];
+    this.quantumBeacon = null;
+
+    // Estado WebXR & Interacciones
     this.isVR = false;
     this.isInteractive3D = false;
     this.interactables = [];
     this.portals = [];
+    this.portalArtifacts = [];
     this.underglowLights = [];
-    this.centerBeacon = null;
 
-    // Controladores WebXR
+    // Controladores WebXR y Láser
     this.controllers = [];
     this.controllerGrips = [];
     this.raycaster = new THREE.Raycaster();
     this.tempMatrix = new THREE.Matrix4();
     this.mouse = new THREE.Vector2(-999, -999);
 
-    // Vectores reutilizables para evitar recolección de basura (GC) y trabas
+    // Reutilización de vectores para evitar Garbage Collection en Meta Quest
     this.forwardVec = new THREE.Vector3();
     this.rightVec = new THREE.Vector3();
     this.moveVec = new THREE.Vector3();
 
-    // Estado de locomoción
+    // Locomoción por Joystick & Teclado
     this.snapTurnLocked = false;
     this.keys = { forward: false, backward: false, left: false, right: false };
 
-    // Red de Sinapsis (Partículas)
+    // Partículas de Red Sináptica
     this.synapseParticles = null;
     this.idleFrameCount = 0;
+
+    // Cartel Holográfico en VR para "Próximamente"
+    this.upcomingHoloPanel = null;
+    this.upcomingPanelTimer = null;
   }
 
   async init() {
     if (!this.container) return;
 
-    // 1. Escena luminosa arquitectónica (Blanco Platino + Niebla suave)
+    // 1. Escena de Laboratorio Futurista (Slate Tecnológico + Atmósfera Limpia)
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf6f8fc);
-    this.scene.fog = new THREE.FogExp2(0xf6f8fc, 0.015);
+    this.scene.background = new THREE.Color(0x131d2e);
+    this.scene.fog = new THREE.FogExp2(0x131d2e, 0.012);
 
-    // 2. Cámara de perspectiva
+    // 2. Cámara de Perspectiva
     this.camera = new THREE.PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
       0.1,
-      100
+      120
     );
-    this.camera.position.set(0, 1.6, 2.6);
+    this.camera.position.set(0, 1.6, 2.8);
 
-    // 3. Dolly (Camera Rig) - Permite el movimiento por joystick en VR
+    // 3. Camera Rig (Dolly) para Locomoción en VR
     this.dolly = new THREE.Group();
     this.dolly.position.set(0, 0, 0);
     this.dolly.add(this.camera);
     this.scene.add(this.dolly);
 
-    // 4. Renderer WebGL optimizado para Meta Quest 3S
+    // 4. Renderer WebGL Optimizado para Meta Quest 3S
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -91,153 +114,277 @@ class XRSceneController {
     this.renderer.xr.enabled = true;
     this.renderer.shadowMap.enabled = false;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.toneMappingExposure = 1.25;
     this.container.appendChild(this.renderer.domElement);
 
-    // 5. Controles de Escritorio (Orbit) para modo 2D/PC
+    // 5. Controles de Escritorio (Orbit) para Modo 2D/PC
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
-    this.controls.target.set(0, 1.4, -2.5);
-    this.controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    this.controls.target.set(0, 1.5, -2.5);
+    this.controls.maxPolarAngle = Math.PI / 2 + 0.02;
     this.controls.minDistance = 1;
-    this.controls.maxDistance = 14;
+    this.controls.maxDistance = 16;
 
-    // 6. Iluminación Brillante de Alto Contraste (Blanco, Oro y Negro)
-    this.setupLighting();
+    // 6. Construcción del Laboratorio Futurista con XRRoom de Framework VXR
+    this.setupFuturisticLab();
 
-    // 7. Entorno: Plataforma Circular de Obsidiana y Anillos Dorados
-    this.setupEnvironmentGrid();
+    // 7. Iluminación Brillante de Laboratorio (Blanco, Oro y Cyan)
+    this.setupLaboratoryLighting();
+
+    // 8. Núcleo Cuántico Central PC PUMA UNAM
+    this.setupQuantumCore();
+
+    // 9. Red de Partículas Sinápticas Flotantes
     this.setupSynapseNetwork();
 
-    // 8. Monolitos Holográficos Nítidos de Alto Contraste
+    // 10. Las 4 Puertas / Portales de Experiencias (Incluyendo Próximamente)
     this.setupExperiencePortals();
 
-    // 9. Controladores WebXR en Dolly con Punteros Láser
+    // 11. Mandos WebXR con Rayos Láser y Retroalimentación Háptica
     this.setupWebXRControllers();
 
-    // 10. Botón Oficial WebXR con Foveated Rendering
+    // 12. Botón Oficial WebXR con Foveated Rendering
     this.setupVRButton();
 
-    // 11. Eventos de Ratón, Redimensión y Teclado WASD
+    // 13. Eventos de Ratón, Redimensión y Teclado WASD
     this.setupEventListeners();
     this.setupKeyboardControls();
 
-    // 12. Bucle de Animación WebXR
+    // 14. Bucle de Animación Continuo
     this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
 
-    console.log('[SipnasiaXR] Galería Blanco-Obsidiana-Oro Lista.');
+    console.log('[SipnasiaXR] Laboratorio Futurista VXR Inicializado con Éxito.');
   }
 
   /* ----------------------------------------------------
-     Iluminación Brillante: Blanco, Negro y Oro
+     Construcción de Sala de Laboratorio con Framework VXR
      ---------------------------------------------------- */
-  setupLighting() {
-    // 1. Luz Hemisférica: Blanco puro cenital + Reflejo Oro Puma cálido
+  setupFuturisticLab() {
+    // Instanciar XRRoom del Framework VXR con diseño de Laboratorio de Alta Visibilidad
+    this.labRoom = new XRRoom({
+      id: 'laboratorio-sipnasia-pcpuma',
+      name: 'Laboratorio de Innovación XR PC PUMA',
+      dimensions: {
+        width: 22,
+        depth: 24,
+        height: 5.4
+      },
+      theme: 'scifi',
+      floor: {
+        color: 0x182436,     // Slate técnico con acabado reflectante suave
+        roughness: 0.32,
+        metalness: 0.6,
+        grid: true           // Cuadrícula VXR de alta precisión
+      },
+      walls: {
+        color: 0x24354a,     // Paneles modulares de laboratorio futurista claros y nítidos
+        roughness: 0.45,
+        trimColor: 0x00f0ff, // Marcos y jambas cian emissivo
+        thickness: 0.3
+      },
+      ceiling: {
+        enabled: true,
+        color: 0x162130,
+        lamps: true          // Luminarias cenitales integradas de VXR
+      },
+      lighting: {
+        enabled: true,
+        color: 0xf0f9ff,     // Luz blanca-cian brillante de laboratorio
+        intensity: 2.6,
+        distance: 38
+      },
+      doors: [
+        { wall: 'north', width: 4.2, height: 3.6, offset: 0 },
+        { wall: 'south', width: 4.2, height: 3.6, offset: 0 },
+        { wall: 'east', width: 3.2, height: 3.4, offset: 0 },
+        { wall: 'west', width: 3.2, height: 3.4, offset: 0 }
+      ],
+      spawnPoint: [0, 1.6, 2.8]
+    });
+
+    this.scene.add(this.labRoom.nativeGroup);
+
+    // Decoraciones de Laboratorio adicionales: Barras de Luz Lineal en el Techo
+    const lightStripGeo = new THREE.BoxGeometry(18, 0.08, 0.22);
+    const lightStripMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0x38bdf8,
+      emissiveIntensity: 1.2,
+      roughness: 0.2
+    });
+
+    const ceilingStrip1 = new THREE.Mesh(lightStripGeo, lightStripMat);
+    ceilingStrip1.position.set(0, 5.3, -4.5);
+    this.scene.add(ceilingStrip1);
+
+    const ceilingStrip2 = new THREE.Mesh(lightStripGeo, lightStripMat);
+    ceilingStrip2.position.set(0, 5.3, 4.5);
+    this.scene.add(ceilingStrip2);
+
+    // Plataforma Circular Central en Obsidiana y Oro Puma
+    const labPlatformGeo = new THREE.CylinderGeometry(5.2, 5.2, 0.03, 64);
+    const labPlatformMat = new THREE.MeshStandardMaterial({
+      color: 0x0c1322,
+      roughness: 0.25,
+      metalness: 0.75
+    });
+    const labPlatform = new THREE.Mesh(labPlatformGeo, labPlatformMat);
+    labPlatform.position.y = 0.005;
+    this.scene.add(labPlatform);
+
+    // Anillos concéntricos dorados y cian en el suelo
+    const goldRingGeo = new THREE.RingGeometry(5.05, 5.15, 64);
+    const goldRingMat = new THREE.MeshBasicMaterial({ color: 0xd59b2d, side: THREE.DoubleSide });
+    const goldRing = new THREE.Mesh(goldRingGeo, goldRingMat);
+    goldRing.rotation.x = -Math.PI / 2;
+    goldRing.position.y = 0.022;
+    this.scene.add(goldRing);
+
+    const cyanRingGeo = new THREE.RingGeometry(2.6, 2.68, 64);
+    const cyanRingMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide });
+    const cyanRing = new THREE.Mesh(cyanRingGeo, cyanRingMat);
+    cyanRing.rotation.x = -Math.PI / 2;
+    cyanRing.position.y = 0.022;
+    this.scene.add(cyanRing);
+  }
+
+  /* ----------------------------------------------------
+     Iluminación Brillante de Laboratorio Futurista
+     ---------------------------------------------------- */
+  setupLaboratoryLighting() {
+    // 1. Luz Hemisférica: Blanco puro arriba + Acento Oro Puma cálido abajo
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd59b2d, 1.9);
-    hemiLight.position.set(0, 12, 0);
+    hemiLight.position.set(0, 10, 0);
     this.scene.add(hemiLight);
 
-    // 2. Luz Clave Principal (Blanca brillante directa, elimina sombras oscuras)
-    const mainKeyLight = new THREE.DirectionalLight(0xffffff, 2.7);
-    mainKeyLight.position.set(4, 12, 6);
+    // 2. Luz Clave Principal (Blanca brillante directa, elimina rincones oscuros)
+    const mainKeyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    mainKeyLight.position.set(4, 11, 5);
     this.scene.add(mainKeyLight);
 
-    // 3. Luz de Relleno Oro Puma (Acento cálido dorado institucional)
-    const goldFillLight = new THREE.DirectionalLight(0xd59b2d, 2.2);
-    goldFillLight.position.set(-4, 9, -3);
-    this.scene.add(goldFillLight);
+    // 3. Luz de Relleno Ciber-Cian de Laboratorio
+    const cyanFillLight = new THREE.DirectionalLight(0x38bdf8, 1.4);
+    cyanFillLight.position.set(-5, 9, -4);
+    this.scene.add(cyanFillLight);
 
-    // 4. Luz de Núcleo Central (Beacon Dorado Pulsante)
-    this.centerBeacon = new THREE.PointLight(0xd59b2d, 2.0, 9);
-    this.centerBeacon.position.set(0, 0.35, 0);
-    this.scene.add(this.centerBeacon);
+    // 4. Luces de acento bajo cada bahía de portal
+    const underglowSimulador = new THREE.PointLight(0x00f0ff, 2.5, 6);
+    underglowSimulador.position.set(-5.5, 0.4, -5.0);
+    this.scene.add(underglowSimulador);
+    this.underglowLights.push(underglowSimulador);
 
-    // 5. Luces de acento bajo cada pedestal
-    const lightSimulador = new THREE.PointLight(0x00f0ff, 2.4, 5.5);
-    lightSimulador.position.set(-2.6, 0.45, -3.2);
-    this.scene.add(lightSimulador);
-    this.underglowLights.push(lightSimulador);
+    const underglowShooter = new THREE.PointLight(0xff007f, 2.5, 6);
+    underglowShooter.position.set(-1.8, 0.4, -6.2);
+    this.scene.add(underglowShooter);
+    this.underglowLights.push(underglowShooter);
 
-    const lightShooter = new THREE.PointLight(0xff007f, 2.4, 5.5);
-    lightShooter.position.set(0, 0.45, -3.8);
-    this.scene.add(lightShooter);
-    this.underglowLights.push(lightShooter);
+    const underglowVisor = new THREE.PointLight(0xd59b2d, 2.7, 6);
+    underglowVisor.position.set(1.8, 0.4, -6.2);
+    this.scene.add(underglowVisor);
+    this.underglowLights.push(underglowVisor);
 
-    const lightVisor = new THREE.PointLight(0xd59b2d, 2.6, 5.5);
-    lightVisor.position.set(2.6, 0.45, -3.2);
-    this.scene.add(lightVisor);
-    this.underglowLights.push(lightVisor);
+    const underglowUpcoming = new THREE.PointLight(0x10b981, 2.5, 6);
+    underglowUpcoming.position.set(5.5, 0.4, -5.0);
+    this.scene.add(underglowUpcoming);
+    this.underglowLights.push(underglowUpcoming);
   }
 
-  setupEnvironmentGrid() {
-    // 1. Rejilla dorada sobre el piso blanco exterior
-    const grid = new THREE.GridHelper(36, 36, 0xd59b2d, 0xc8d1dc);
-    grid.position.y = -0.015;
-    grid.material.opacity = 0.55;
-    grid.material.transparent = true;
-    this.scene.add(grid);
+  /* ----------------------------------------------------
+     Núcleo Cuántico Central PC PUMA UNAM
+     ---------------------------------------------------- */
+  setupQuantumCore() {
+    const coreGroup = new THREE.Group();
+    coreGroup.position.set(0, 0, 0);
 
-    // 2. Plataforma circular central de obsidiana negra pulida
-    const platformGeo = new THREE.CylinderGeometry(4.8, 4.8, 0.03, 64);
-    const platformMat = new THREE.MeshStandardMaterial({
-      color: 0x090d16, // Negro obsidiana profundo
-      roughness: 0.25,
+    // Pedestal cilíndrico de alta tecnología
+    const basePillarGeo = new THREE.CylinderGeometry(0.8, 0.95, 0.7, 32);
+    const basePillarMat = new THREE.MeshStandardMaterial({
+      color: 0x08101e,
+      roughness: 0.3,
       metalness: 0.8
     });
-    const platformMesh = new THREE.Mesh(platformGeo, platformMat);
-    platformMesh.position.y = -0.015;
-    this.scene.add(platformMesh);
+    const basePillar = new THREE.Mesh(basePillarGeo, basePillarMat);
+    basePillar.position.y = 0.35;
+    coreGroup.add(basePillar);
 
-    // 3. Anillos concéntricos dorados sobre la plataforma de obsidiana
-    const innerRingGeo = new THREE.RingGeometry(0.9, 0.95, 64);
-    const innerRingMat = new THREE.MeshBasicMaterial({
-      color: 0xd59b2d,
-      side: THREE.FrontSide
+    // Anillo LED dorado en la base del pedestal
+    const baseRingGeo = new THREE.TorusGeometry(0.85, 0.03, 16, 48);
+    const baseRingMat = new THREE.MeshBasicMaterial({ color: 0xd59b2d });
+    const baseRing = new THREE.Mesh(baseRingGeo, baseRingMat);
+    baseRing.rotation.x = Math.PI / 2;
+    baseRing.position.y = 0.68;
+    coreGroup.add(baseRing);
+
+    // Anillo giroscópico exterior (Cian)
+    const ring1Geo = new THREE.TorusGeometry(0.55, 0.02, 16, 48);
+    const ring1Mat = new THREE.MeshStandardMaterial({
+      color: 0x00f0ff,
+      emissive: 0x00f0ff,
+      emissiveIntensity: 0.8,
+      roughness: 0.2
     });
-    const innerRing = new THREE.Mesh(innerRingGeo, innerRingMat);
-    innerRing.rotation.x = -Math.PI / 2;
-    innerRing.position.y = 0.005;
-    this.scene.add(innerRing);
+    const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+    ring1.position.y = 1.05;
+    coreGroup.add(ring1);
+    this.quantumRings.push(ring1);
 
-    const midRingGeo = new THREE.RingGeometry(2.35, 2.42, 64);
-    const midRingMat = new THREE.MeshBasicMaterial({
+    // Anillo giroscópico interior (Oro Puma)
+    const ring2Geo = new THREE.TorusGeometry(0.42, 0.02, 16, 48);
+    const ring2Mat = new THREE.MeshStandardMaterial({
       color: 0xf6c15c,
-      side: THREE.FrontSide
+      emissive: 0xd59b2d,
+      emissiveIntensity: 0.8,
+      roughness: 0.2
     });
-    const midRing = new THREE.Mesh(midRingGeo, midRingMat);
-    midRing.rotation.x = -Math.PI / 2;
-    midRing.position.y = 0.005;
-    this.scene.add(midRing);
+    const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+    ring2.position.y = 1.05;
+    ring2.rotation.x = Math.PI / 4;
+    coreGroup.add(ring2);
+    this.quantumRings.push(ring2);
 
-    const outerRingGeo = new THREE.RingGeometry(4.7, 4.78, 64);
-    const outerRingMat = new THREE.MeshBasicMaterial({
-      color: 0xd59b2d,
-      side: THREE.FrontSide
+    // Cristal octaédrico central de energía
+    const crystalGeo = new THREE.OctahedronGeometry(0.24, 0);
+    const crystalMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.1,
+      metalness: 0.9,
+      emissive: 0xd59b2d,
+      emissiveIntensity: 0.9
     });
-    const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-    outerRing.rotation.x = -Math.PI / 2;
-    outerRing.position.y = 0.005;
-    this.scene.add(outerRing);
+    const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+    crystal.position.y = 1.05;
+    coreGroup.add(crystal);
+    this.quantumRings.push(crystal);
+
+    // Luz de Núcleo Central Pulsante
+    this.quantumBeacon = new THREE.PointLight(0xd59b2d, 2.2, 8);
+    this.quantumBeacon.position.set(0, 1.05, 0);
+    coreGroup.add(this.quantumBeacon);
+
+    this.scene.add(coreGroup);
+    this.quantumCore = coreGroup;
   }
 
+  /* ----------------------------------------------------
+     Red de Partículas Sinápticas
+     ---------------------------------------------------- */
   setupSynapseNetwork() {
-    // Red de partículas doradas flotantes (oro sobre blanco y negro)
-    const particleCount = 120;
+    const particleCount = 140;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 16;
-      positions[i * 3 + 1] = Math.random() * 5.5 + 0.3;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 16 - 2;
+      positions[i * 3] = (Math.random() - 0.5) * 18;
+      positions[i * 3 + 1] = Math.random() * 4.8 + 0.4;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
     }
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const pMaterial = new THREE.PointsMaterial({
-      color: 0xd59b2d, // Partículas de Oro Puma
-      size: 0.08,
+      color: 0xd59b2d,
+      size: 0.085,
       transparent: true,
       opacity: 0.85
     });
@@ -247,7 +394,7 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Monolitos Holográficos de Alto Contraste (Blanco/Negro/Oro)
+     Las 4 Puertas / Portales de Experiencias XR
      ---------------------------------------------------- */
   setupExperiencePortals() {
     const experiencesData = [
@@ -260,8 +407,9 @@ class XRSceneController {
         colorHex: '#00f0ff',
         colorThree: 0x00f0ff,
         icon: '💻',
-        pos: new THREE.Vector3(-2.6, 1.5, -3.2),
-        rotY: 0.38
+        pos: new THREE.Vector3(-5.5, 1.6, -5.0),
+        rotY: 0.38,
+        isUpcoming: false
       },
       {
         id: 'shooter',
@@ -272,8 +420,9 @@ class XRSceneController {
         colorHex: '#ff007f',
         colorThree: 0xff007f,
         icon: '🛡️',
-        pos: new THREE.Vector3(0, 1.55, -3.8),
-        rotY: 0
+        pos: new THREE.Vector3(-1.8, 1.6, -6.2),
+        rotY: 0.12,
+        isUpcoming: false
       },
       {
         id: 'visor',
@@ -284,8 +433,22 @@ class XRSceneController {
         colorHex: '#d59b2d',
         colorThree: 0xd59b2d,
         icon: '🏛️',
-        pos: new THREE.Vector3(2.6, 1.5, -3.2),
-        rotY: -0.38
+        pos: new THREE.Vector3(1.8, 1.6, -6.2),
+        rotY: -0.12,
+        isUpcoming: false
+      },
+      {
+        id: 'proximamente',
+        title: 'PRÓXIMAMENTE // NUEVA EXPERIENCIA',
+        category: 'Laboratorio de Innovación XR',
+        badge: 'EN DESARROLLO',
+        url: '#proximamente',
+        colorHex: '#10b981',
+        colorThree: 0x10b981,
+        icon: '🔒',
+        pos: new THREE.Vector3(5.5, 1.6, -5.0),
+        rotY: -0.38,
+        isUpcoming: true
       }
     ];
 
@@ -301,57 +464,63 @@ class XRSceneController {
     group.position.copy(exp.pos);
     group.rotation.y = exp.rotY;
 
-    // 1. Marco Exterior en Obsidiana Negra con Bordes Dorados
-    const frameGeo = new THREE.BoxGeometry(1.5, 2.1, 0.07);
+    // 1. Marco Exterior en Obsidiana y Acero Pulido
+    const frameGeo = new THREE.BoxGeometry(1.56, 2.15, 0.08);
     const frameMat = new THREE.MeshStandardMaterial({
-      color: 0x070c14,
-      roughness: 0.3,
+      color: 0x08101d,
+      roughness: 0.28,
       metalness: 0.8
     });
     const frameBack = new THREE.Mesh(frameGeo, frameMat);
     group.add(frameBack);
 
-    // Bordes biselados en Oro Puma brillante
+    // Bordes biselados con el color temático de la bahía
     const frameEdges = new THREE.EdgesGeometry(frameGeo);
     const frameLineMat = new THREE.LineBasicMaterial({
-      color: 0xd59b2d,
+      color: exp.colorThree,
       linewidth: 3
     });
     const frameMesh = new THREE.LineSegments(frameEdges, frameLineMat);
     group.add(frameMesh);
 
-    // 2. Cristal Frontal con Textura de Alta Legibilidad (Negro, Oro y Blanco)
+    // 2. Cristal Frontal con Textura de Alta Legibilidad y Contraste
     const texture = this.createPortalTexture(exp);
-    const planeGeo = new THREE.PlaneGeometry(1.42, 2.02);
+    const planeGeo = new THREE.PlaneGeometry(1.48, 2.06);
     const planeMat = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
-      opacity: 0.96,
+      opacity: 0.97,
       side: THREE.FrontSide
     });
     const screenMesh = new THREE.Mesh(planeGeo, planeMat);
-    screenMesh.position.z = 0.04;
+    screenMesh.position.z = 0.045;
     group.add(screenMesh);
 
-    // 3. Pedestal Flotante en Obsidiana Negra con Anillo Dorado
-    const baseGeo = new THREE.CylinderGeometry(0.5, 0.65, 0.12, 32);
-    const baseMat = new THREE.MeshStandardMaterial({
-      color: 0x070c14,
-      roughness: 0.3,
-      metalness: 0.85
+    // 3. Pedestal Arquitectónico Estilo VXR XRExhibit
+    const pedestalGeo = new THREE.BoxGeometry(0.9, 0.35, 0.65);
+    const pedestalMat = new THREE.MeshStandardMaterial({
+      color: 0x0a1424,
+      roughness: 0.35,
+      metalness: 0.75
     });
-    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-    baseMesh.position.y = -1.18;
-    group.add(baseMesh);
+    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
+    pedestal.position.set(0, -1.18, 0);
+    group.add(pedestal);
 
-    const baseRingGeo = new THREE.TorusGeometry(0.66, 0.03, 16, 32);
-    const baseRingMat = new THREE.MeshBasicMaterial({ color: 0xd59b2d });
-    const baseRing = new THREE.Mesh(baseRingGeo, baseRingMat);
-    baseRing.rotation.x = Math.PI / 2;
-    baseRing.position.y = -1.16;
-    group.add(baseRing);
+    // Línea luminosa en la base del pedestal
+    const ledStripeGeo = new THREE.BoxGeometry(0.92, 0.03, 0.04);
+    const ledStripeMat = new THREE.MeshBasicMaterial({ color: exp.colorThree });
+    const ledStripe = new THREE.Mesh(ledStripeGeo, ledStripeMat);
+    ledStripe.position.set(0, -1.02, 0.33);
+    group.add(ledStripe);
 
-    // Guardar referencia interactiva
+    // 4. Artefacto Tridimensional Holográfico Flotante Superior (Inspirado en XRExhibit)
+    const artifact = this.createPortalArtifact(exp);
+    artifact.position.set(0, 1.45, 0.05);
+    group.add(artifact);
+    this.portalArtifacts.push(artifact);
+
+    // Guardar referencia interactiva para el Raycaster de WebXR
     screenMesh.userData = {
       isPortal: true,
       portalData: exp,
@@ -364,75 +533,160 @@ class XRSceneController {
     return group;
   }
 
+  /* ----------------------------------------------------
+     Artefactos 3D Holográficos sobre los Portales (Estilo VXR)
+     ---------------------------------------------------- */
+  createPortalArtifact(exp) {
+    const group = new THREE.Group();
+
+    if (exp.id === 'simulador') {
+      // Laptop Holográfica & Tarjeta NFC
+      const laptopBaseGeo = new THREE.BoxGeometry(0.36, 0.02, 0.26);
+      const laptopMat = new THREE.MeshStandardMaterial({
+        color: 0x00f0ff,
+        emissive: 0x00f0ff,
+        emissiveIntensity: 0.6,
+        roughness: 0.2
+      });
+      const laptopBase = new THREE.Mesh(laptopBaseGeo, laptopMat);
+      group.add(laptopBase);
+
+      const laptopScreenGeo = new THREE.BoxGeometry(0.36, 0.24, 0.015);
+      const laptopScreen = new THREE.Mesh(laptopScreenGeo, laptopMat);
+      laptopScreen.position.set(0, 0.12, -0.12);
+      laptopScreen.rotation.x = -0.2;
+      group.add(laptopScreen);
+    } else if (exp.id === 'shooter') {
+      // Retícula de Disparo & Escudo Anti-Virus
+      const reticleGeo = new THREE.TorusGeometry(0.24, 0.015, 16, 32);
+      const reticleMat = new THREE.MeshStandardMaterial({
+        color: 0xff007f,
+        emissive: 0xff007f,
+        emissiveIntensity: 0.8,
+        roughness: 0.2
+      });
+      const reticle = new THREE.Mesh(reticleGeo, reticleMat);
+      group.add(reticle);
+
+      const coreGeo = new THREE.IcosahedronGeometry(0.12, 0);
+      const core = new THREE.Mesh(coreGeo, reticleMat);
+      group.add(core);
+    } else if (exp.id === 'visor') {
+      // Maqueta Arquitectónica de Pabellón Alámbrico
+      const archGeo = new THREE.CylinderGeometry(0.22, 0.28, 0.28, 6);
+      const archMat = new THREE.MeshStandardMaterial({
+        color: 0xd59b2d,
+        emissive: 0xd59b2d,
+        emissiveIntensity: 0.7,
+        wireframe: true
+      });
+      const arch = new THREE.Mesh(archGeo, archMat);
+      group.add(arch);
+    } else {
+      // PRÓXIMAMENTE: Cubo Cuántico Bloqueado con Anillo Criptográfico
+      const cubeGeo = new THREE.BoxGeometry(0.24, 0.24, 0.24);
+      const cubeMat = new THREE.MeshStandardMaterial({
+        color: 0x10b981,
+        emissive: 0x10b981,
+        emissiveIntensity: 0.8,
+        wireframe: true
+      });
+      const cube = new THREE.Mesh(cubeGeo, cubeMat);
+      group.add(cube);
+
+      const lockRingGeo = new THREE.TorusGeometry(0.32, 0.015, 16, 32);
+      const lockRingMat = new THREE.MeshBasicMaterial({ color: 0x34d399 });
+      const lockRing = new THREE.Mesh(lockRingGeo, lockRingMat);
+      group.add(lockRing);
+    }
+
+    return group;
+  }
+
+  /* ----------------------------------------------------
+     Generador de Textura Canvas 2D para Pantallas de Portal
+     ---------------------------------------------------- */
   createPortalTexture(exp) {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 720;
     const ctx = canvas.getContext('2d');
 
-    // Fondo: Negro Obsidiana Profundo de alto contraste
+    // Fondo: Negro Obsidiana Profundo con degradado nítido
     const bgGrad = ctx.createLinearGradient(0, 0, 0, 720);
-    bgGrad.addColorStop(0, '#0d1527');
-    bgGrad.addColorStop(0.5, '#060a14');
-    bgGrad.addColorStop(1, '#020409');
+    bgGrad.addColorStop(0, '#0e172a');
+    bgGrad.addColorStop(0.5, '#070d18');
+    bgGrad.addColorStop(1, '#02050a');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 512, 720);
 
-    // Borde exterior grueso en Oro Puma
+    // Marco exterior en Oro Puma
     ctx.strokeStyle = '#D59B2D';
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 7;
     ctx.strokeRect(14, 14, 484, 692);
 
-    // Borde interior de acento temático
+    // Borde temático interior
     ctx.strokeStyle = exp.colorHex;
     ctx.lineWidth = 2.5;
     ctx.strokeRect(22, 22, 468, 676);
 
-    // Encabezado Oro Puma UNAM
+    // Encabezado Institucional UNAM
     ctx.font = 'bold 22px Orbitron, sans-serif';
     ctx.fillStyle = '#D59B2D';
     ctx.textAlign = 'center';
     ctx.fillText('PC PUMA // UNAM', 256, 62);
 
-    // Subtítulo Categoría en Oro Claro
+    // Subtítulo de Categoría
     ctx.font = 'bold 16px monospace';
-    ctx.fillStyle = '#F6C15C';
+    ctx.fillStyle = exp.isUpcoming ? '#34d399' : '#F6C15C';
     ctx.fillText(exp.category.toUpperCase(), 256, 95);
 
     // Ícono Central
-    ctx.font = '92px sans-serif';
-    ctx.fillText(exp.icon, 256, 255);
+    ctx.font = '88px sans-serif';
+    ctx.fillText(exp.icon, 256, 250);
 
-    // Línea divisoria dorada
+    // Línea divisoria
     ctx.strokeStyle = 'rgba(213, 155, 45, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(50, 315);
-    ctx.lineTo(462, 315);
+    ctx.moveTo(50, 305);
+    ctx.lineTo(462, 305);
     ctx.stroke();
 
-    // Título Principal en Blanco Puro de Máximo Contraste
-    ctx.font = 'bold 26px Orbitron, sans-serif';
+    // Título Principal de la Experiencia
+    ctx.font = 'bold 25px Orbitron, sans-serif';
     ctx.fillStyle = '#FFFFFF';
-    this.wrapText(ctx, exp.title, 256, 375, 420, 34);
+    this.wrapText(ctx, exp.title, 256, 365, 420, 34);
 
-    // Badge de compatibilidad en Oro con Texto Negro
-    ctx.fillStyle = '#D59B2D';
-    ctx.fillRect(110, 495, 292, 42);
+    // Badge de Estado / Compatibilidad
+    ctx.fillStyle = exp.isUpcoming ? '#059669' : '#D59B2D';
+    ctx.fillRect(110, 485, 292, 42);
     ctx.fillStyle = '#01050e';
     ctx.font = 'bold 17px monospace';
-    ctx.fillText(`[ ${exp.badge} ]`, 256, 523);
+    ctx.fillText(`[ ${exp.badge} ]`, 256, 512);
 
-    // Botón de Llamado a la Acción en Oro Puma con Texto Negro
-    ctx.fillStyle = '#F6C15C';
-    ctx.fillRect(90, 595, 332, 54);
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(90, 595, 332, 54);
+    // Botón de Llamado a la Acción (CTA)
+    if (exp.isUpcoming) {
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(90, 585, 332, 54);
+      ctx.strokeStyle = '#34d399';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(90, 585, 332, 54);
 
-    ctx.fillStyle = '#01050e';
-    ctx.font = 'bold 22px Orbitron, sans-serif';
-    ctx.fillText('LANZAR EXPERIENCIA ↗', 256, 630);
+      ctx.fillStyle = '#01150e';
+      ctx.font = 'bold 20px Orbitron, sans-serif';
+      ctx.fillText('EN DESARROLLO 🔒', 256, 620);
+    } else {
+      ctx.fillStyle = '#F6C15C';
+      ctx.fillRect(90, 585, 332, 54);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(90, 585, 332, 54);
+
+      ctx.fillStyle = '#01050e';
+      ctx.font = 'bold 21px Orbitron, sans-serif';
+      ctx.fillText('LANZAR EXPERIENCIA ↗', 256, 620);
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
@@ -480,21 +734,21 @@ class XRSceneController {
       const laserMat = new THREE.LineBasicMaterial({
         color: 0xd59b2d,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.85
       });
       const laser = new THREE.Line(laserGeo, laserMat);
       laser.name = 'laser';
       controller.add(laser);
 
-      // Retícula punto en el extremo
-      const dotGeo = new THREE.SphereGeometry(0.016, 10, 10);
+      // Retícula en la punta
+      const dotGeo = new THREE.SphereGeometry(0.018, 10, 10);
       const dotMat = new THREE.MeshBasicMaterial({ color: 0xf6c15c });
       const dot = new THREE.Mesh(dotGeo, dotMat);
       dot.position.z = -4.5;
       dot.name = 'reticleDot';
       controller.add(dot);
 
-      // Modelo 3D del mando Meta Quest
+      // Modelo 3D del mando Meta Quest Touch
       const grip = this.renderer.xr.getControllerGrip(i);
       grip.add(controllerModelFactory.createControllerModel(grip));
       this.dolly.add(grip);
@@ -519,7 +773,7 @@ class XRSceneController {
       if (session && session.inputSources) {
         for (const source of session.inputSources) {
           if (source.gamepad && source.gamepad.hapticActuators && source.gamepad.hapticActuators[0]) {
-            source.gamepad.hapticActuators[0].pulse(0.7, 80);
+            source.gamepad.hapticActuators[0].pulse(0.7, 85);
           }
         }
       }
@@ -529,7 +783,7 @@ class XRSceneController {
   }
 
   onSelectEnd(event) {
-    // Liberar estado de selección
+    // Fin de selección
   }
 
   /* ----------------------------------------------------
@@ -576,12 +830,8 @@ class XRSceneController {
           const moveSpeed = 2.8;
           this.dolly.position.addScaledVector(this.moveVec, moveSpeed * delta);
 
-          const dist = Math.hypot(this.dolly.position.x, this.dolly.position.z);
-          if (dist > 14) {
-            const angle = Math.atan2(this.dolly.position.z, this.dolly.position.x);
-            this.dolly.position.x = Math.cos(angle) * 14;
-            this.dolly.position.z = Math.sin(angle) * 14;
-          }
+          // Restringir al límite caminable del Laboratorio VXR
+          this.constrainPlayerToRoom();
         }
       }
 
@@ -646,6 +896,16 @@ class XRSceneController {
       const speed = 3.6;
       this.dolly.position.addScaledVector(this.moveVec, speed * delta);
       this.controls.target.addScaledVector(this.moveVec, speed * delta);
+
+      this.constrainPlayerToRoom();
+    }
+  }
+
+  constrainPlayerToRoom() {
+    if (this.labRoom) {
+      const bounds = this.labRoom.getWalkableBounds(0.7);
+      this.dolly.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, this.dolly.position.x));
+      this.dolly.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, this.dolly.position.z));
     }
   }
 
@@ -691,7 +951,7 @@ class XRSceneController {
 
       if (window.xrAudio) window.xrAudio.playWarp();
       if (window.SipnasiaXR) {
-        window.SipnasiaXR.log('¡Sesión WebXR activa! Usa el joystick izquierdo para moverte y el derecho para girar.');
+        window.SipnasiaXR.log('¡Sesión WebXR activa en Laboratorio VXR! Stick Izq: Mover | Stick Der: Girar.');
       }
     });
 
@@ -710,7 +970,7 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Interacciones y Apertura Directa en Misma Ventana
+     Interacciones, Manejo de Portales y Navegación Dual
      ---------------------------------------------------- */
   registerInteractable(object) {
     if (!this.interactables.includes(object)) {
@@ -727,25 +987,120 @@ class XRSceneController {
 
     if (object.userData.isPortal) {
       const data = object.userData.portalData;
-      if (window.xrAudio) window.xrAudio.playSelect();
-      if (window.SipnasiaXR) {
-        window.SipnasiaXR.log(`Accediendo directamente a: ${data.title}...`);
+
+      // CASO 1: Portal PRÓXIMAMENTE (En desarrollo)
+      if (data.isUpcoming || data.id === 'proximamente') {
+        if (window.xrAudio) window.xrAudio.playHover();
+        this.showUpcomingNotification(data);
+        if (window.SipnasiaXR) {
+          window.SipnasiaXR.log('🔒 Módulo en desarrollo: Próxima Experiencia XR de Innovación PC PUMA UNAM.');
+        }
+        return;
       }
 
-      // Salir limpiamente de WebXR si está en visor y navegar en la misma ventana (sin pestañas nuevas)
-      const session = this.renderer.xr.getSession();
-      if (session) {
-        session.end().finally(() => {
+      // CASO 2: Portales Activos (Simulador, Shooter, Visor)
+      if (window.xrAudio) window.xrAudio.playSelect();
+      if (window.SipnasiaXR) {
+        window.SipnasiaXR.log(`Accediendo a: ${data.title}...`);
+      }
+
+      // A) EN REALIDAD VIRTUAL (Meta Quest WebXR):
+      // Navegamos en la misma ventana con window.location.href (previo session.end())
+      // para que el visor no saque al usuario a ventanas flotantes desprendidas en el sistema operativo Oculus.
+      if (this.isVR) {
+        const session = this.renderer.xr.getSession();
+        if (session) {
+          session.end().finally(() => {
+            window.location.href = data.url;
+          });
+        } else {
           window.location.href = data.url;
-        });
-      } else {
-        window.location.href = data.url;
+        }
+      }
+      // B) EN ESCRITORIO PC (Modo 2D):
+      // Abrimos en nueva pestaña (_blank) para conservar el Hub Sipnasia abierto.
+      else {
+        window.open(data.url, '_blank');
       }
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.handleNodeHit(object);
       }
     }
+  }
+
+  /* ----------------------------------------------------
+     Cartel Holográfico en 3D para Módulo "Próximamente"
+     ---------------------------------------------------- */
+  showUpcomingNotification(data) {
+    // Si ya existe un panel previo, removerlo
+    if (this.upcomingHoloPanel) {
+      this.scene.remove(this.upcomingHoloPanel);
+      this.upcomingHoloPanel = null;
+      if (this.upcomingPanelTimer) clearTimeout(this.upcomingPanelTimer);
+    }
+
+    const panelGroup = new THREE.Group();
+
+    // Crear textura del cartel
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 320;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo
+    ctx.fillStyle = 'rgba(2, 18, 12, 0.95)';
+    ctx.fillRect(0, 0, 640, 320);
+
+    // Borde esmeralda
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(8, 8, 624, 304);
+
+    // Encabezado
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 24px Orbitron, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔒 MÓDULO EN DESARROLLO', 320, 60);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px -apple-system, sans-serif';
+    ctx.fillText('Laboratorio de Innovación XR PC PUMA UNAM', 320, 115);
+
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '17px -apple-system, sans-serif';
+    ctx.fillText('Nuevas simulaciones de gemelos digitales y cómputo cuántico', 320, 160);
+    ctx.fillText('próximamente disponibles en WebXR para Meta Quest 3S.', 320, 195);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('ESTADO: INVESTIGACIÓN ACTIVA // FASE 2', 320, 260);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const planeGeo = new THREE.PlaneGeometry(2.4, 1.2);
+    const planeMat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.96,
+      side: THREE.DoubleSide
+    });
+    const panelMesh = new THREE.Mesh(planeGeo, planeMat);
+    panelGroup.add(panelMesh);
+
+    // Posicionar frente a la bahía de Próximamente
+    panelGroup.position.set(4.2, 1.6, -3.8);
+    panelGroup.rotation.y = -0.38;
+
+    this.scene.add(panelGroup);
+    this.upcomingHoloPanel = panelGroup;
+
+    // Desvanecer después de 4.5 segundos
+    this.upcomingPanelTimer = setTimeout(() => {
+      if (this.upcomingHoloPanel) {
+        this.scene.remove(this.upcomingHoloPanel);
+        this.upcomingHoloPanel = null;
+      }
+    }, 4500);
   }
 
   setupEventListeners() {
@@ -801,7 +1156,7 @@ class XRSceneController {
       }
     }
 
-    // 1. Locomoción por Joystick en VR (Meta Quest)
+    // 1. Locomoción por Joystick en VR (Meta Quest) o Teclado en PC
     if (this.isVR) {
       this.handleXRLocomotion(delta);
     } else if (this.isInteractive3D) {
@@ -809,28 +1164,42 @@ class XRSceneController {
       if (this.controls) this.controls.update();
     }
 
-    // 2. Animación suave de Monolitos Flotantes
+    // 2. Animación de Monolitos Flotantes
     this.portals.forEach((portalGroup, idx) => {
-      const floatOffset = Math.sin(elapsedTime * 1.4 + idx * 1.1) * 0.06;
-      portalGroup.position.y = 1.5 + floatOffset;
+      const baseY = portalGroup.children[1]?.userData?.baseY ?? 1.6;
+      const floatOffset = Math.sin(elapsedTime * 1.4 + idx * 1.1) * 0.05;
+      portalGroup.position.y = baseY + floatOffset;
     });
 
-    // 3. Respiración del Beacon Central Dorado
-    if (this.centerBeacon) {
-      this.centerBeacon.intensity = 1.8 + Math.sin(elapsedTime * 2.5) * 0.5;
+    // 3. Rotación de Artefactos Holográficos sobre los Portales
+    this.portalArtifacts.forEach((artifact, idx) => {
+      artifact.rotation.y += delta * 0.8;
+      artifact.rotation.x = Math.sin(elapsedTime * 1.2 + idx) * 0.12;
+    });
+
+    // 4. Animación del Núcleo Cuántico Central
+    if (this.quantumRings.length >= 3) {
+      this.quantumRings[0].rotation.z += delta * 0.6;
+      this.quantumRings[1].rotation.x += delta * 0.9;
+      this.quantumRings[2].rotation.y += delta * 0.7;
     }
 
-    // 4. Rotación de Partículas Doradas
+    // 5. Respiración de la Baliza Central
+    if (this.quantumBeacon) {
+      this.quantumBeacon.intensity = 2.0 + Math.sin(elapsedTime * 2.5) * 0.6;
+    }
+
+    // 6. Rotación de la Red Sináptica
     if (this.synapseParticles) {
       this.synapseParticles.rotation.y = elapsedTime * 0.018;
     }
 
-    // 5. Actualizar Dinámica WebXR si está activa
+    // 7. Actualizar Dinámica WebXR si está activa
     if (window.SipnasiaXR) {
       window.SipnasiaXR.updateFrame(delta, elapsedTime);
     }
 
-    // 6. Renderizado final optimizado
+    // 8. Renderizado final optimizado
     this.renderer.render(this.scene, this.camera);
   }
 }

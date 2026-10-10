@@ -22,12 +22,14 @@
   <!-- Hoja de Estilos -->
   <link rel="stylesheet" href="css/styles.css" />
 
-  <!-- Import Map para Three.js y Módulos WebXR Modernos -->
+  <!-- Import Map para Three.js y Framework VXR -->
   <script type="importmap">
     {
       "imports": {
         "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "vxr/": "./vxr/"
       }
     }
   </script>
@@ -168,7 +170,7 @@
             </div>
 
             <div class="card-actions">
-              <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_self" rel="noopener noreferrer" class="btn-card-launch">
+              <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer" class="btn-card-launch" title="Abrir en nueva pestaña">
                 <span>LANZAR AHORA</span>
                 <span class="launch-arrow">↗</span>
               </a>
@@ -221,7 +223,7 @@
             </div>
 
             <div class="card-actions">
-              <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_self" rel="noopener noreferrer" class="btn-card-launch">
+              <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer" class="btn-card-launch" title="Abrir en nueva pestaña">
                 <span>LANZAR AHORA</span>
                 <span class="launch-arrow">↗</span>
               </a>
@@ -272,7 +274,7 @@
             </div>
 
             <div class="card-actions">
-              <a href="https://vickman123.github.io/visor-xr/" target="_self" rel="noopener noreferrer" class="btn-card-launch">
+              <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer" class="btn-card-launch" title="Abrir en nueva pestaña">
                 <span>LANZAR AHORA</span>
                 <span class="launch-arrow">↗</span>
               </a>
@@ -288,6 +290,49 @@
                   <rect x="14" y="3" width="7" height="7"></rect>
                   <rect x="14" y="14" width="7" height="7"></rect>
                   <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- TARJETA 4: PRÓXIMAMENTE // NUEVA EXPERIENCIA (LABORATORIO DE INNOVACIÓN) -->
+        <article class="experience-card card-proximamente">
+          <div class="card-banner">
+            <div class="card-icon-glow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <div class="card-badges">
+              <span class="card-category-badge">I+D INMERSIVO</span>
+              <span class="card-badge-xr badge-upcoming">EN DESARROLLO</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <h3 class="card-title">PRÓXIMAMENTE // NUEVA EXP</h3>
+            <p class="card-description">
+              Módulo de innovación del Laboratorio XR. Nuevos entornos de simulación espacial, gemelos digitales y cómputo cuántico.
+            </p>
+
+            <div class="card-meta-list">
+              <span class="meta-pill highlight">Gemelos Digitales</span>
+              <span class="meta-pill">Simulación Cuántica</span>
+              <span class="meta-pill">Meta Quest 3S</span>
+            </div>
+
+            <div class="card-actions">
+              <button type="button" class="btn-card-launch btn-upcoming-action" id="btn-card-upcoming" title="Próximamente disponible">
+                <span>EN DESARROLLO</span>
+                <span class="launch-arrow">🔒</span>
+              </button>
+              <button class="btn-card-tool btn-upcoming-info" id="btn-upcoming-info" title="Información del Módulo en Desarrollo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
               </button>
             </div>
