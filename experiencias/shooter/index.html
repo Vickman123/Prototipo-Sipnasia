@@ -35,8 +35,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../shared-experience-hub.css" />
-    <script type="module" crossorigin src="./assets/index-CNXBpkgA.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index--z8WGKIP.css">
+    <script type="module" crossorigin src="./assets/index-Cj0ZJjtI.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-B-YQfIj2.css">
   </head>
   <body>
     <!-- BARRA HUD FLOTANTE MINI-HUB SIPNASIA -->
@@ -57,7 +57,7 @@
         </a>
         <a href="../visor/" class="mini-hub-chip">
           <span class="chip-icon">🏛️</span>
-          <span class="chip-text">Visor XR</span>
+          <span class="chip-text">Visor AR</span>
         </a>
       </nav>
     </aside>
@@ -67,17 +67,17 @@
       <div class="quest-vr-card">
         <div class="quest-vr-badge">
           <span class="pulse-dot"></span>
-          <span>META QUEST DETECTADO // 6DOF LISTO</span>
+          <span>META QUEST DETECTADO // FPS 6DOF LISTO</span>
         </div>
         <div class="quest-emblem">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
           </svg>
         </div>
-        <h1 class="quest-title">VIRUS PURGE // <span class="gold-accent">VR DEFENSE</span></h1>
-        <p class="quest-subtitle">SUB-RUTINA DE SEGURIDAD // META QUEST 6DOF</p>
+        <h1 class="quest-title">VIRUS PURGE <span class="gold-accent">VR</span></h1>
+        <p class="quest-subtitle">DEFENSA CIBERNÉTICA EN TIEMPO REAL</p>
         <p class="quest-instruction">
-          Apunta y dispara a las amenazas cibernéticas con tus cyber-blasters 6DoF en Realidad Virtual inmersiva.
+          Apunta con tus pistolas de plasma y neutraliza oleadas de malware directamente en tu visor.
         </p>
         <button id="btn-quest-direct-vr" class="btn-quest-enter-vr" type="button">
           <span class="vr-goggle-icon">🥽</span>
@@ -85,14 +85,20 @@
         </button>
         <div class="quest-nav-row">
           <button id="btn-quest-continue-web" class="btn-quest-web-fallback" type="button">
-            Jugar en PC / 2D ▾
+            Jugar en Pantalla 2D
           </button>
-          <a href="../../index.html" class="btn-quest-back-hub">
-            🏠 Volver al Hub
+          <a href="../../index.html" class="btn-quest-return-hub">
+            Volver al Hub
           </a>
         </div>
       </div>
     </div>
+
+    <!-- Floating Return to Hub Button -->
+    <a id="floating-hub-btn" href="../../index.html" class="floating-hub-btn" title="Volver al Hub Sipnasia">
+      <span class="hub-icon">🚪</span>
+      <span class="hub-text">SALIR AL HUB</span>
+    </a>
 
     <!-- 3D Canvas Container -->
     <div id="game-container"></div>

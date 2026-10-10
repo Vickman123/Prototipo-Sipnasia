@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="../shared-experience-hub.css" />
-  <script type="module" crossorigin src="./assets/index-GoOXkaGj.js"></script>
+  <script type="module" crossorigin src="./assets/index-DHTmcL0a.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-CCSEst4H.css">
 </head>
 <body>
@@ -37,7 +37,7 @@
       </a>
       <a href="../visor/" class="mini-hub-chip">
         <span class="chip-icon">🏛️</span>
-        <span class="chip-text">Visor XR</span>
+        <span class="chip-text">Visor AR</span>
       </a>
     </nav>
   </aside>
@@ -54,10 +54,10 @@
           <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
         </svg>
       </div>
-      <h1 class="quest-title">SIMULADOR PC PUMA <span class="gold-accent">XR</span></h1>
-      <p class="quest-subtitle">CAPACITACIÓN Y OPERACIÓN // UNAM</p>
+      <h1 class="quest-title">SIMULADOR PC PUMA <span class="gold-accent">VR</span></h1>
+      <p class="quest-subtitle">OPERACIÓN DE PRÉSTAMO Y RECEPCIÓN UNAM</p>
       <p class="quest-instruction">
-        Aprende y opera el módulo de préstamo de laptops en Realidad Virtual con tus mandos 6DoF y lector NFC.
+        Toma laptops y credenciales directamente con tus manos o mandos en escala 1:1.
       </p>
       <button id="btn-quest-direct-vr" class="btn-quest-enter-vr" type="button">
         <span class="vr-goggle-icon">🥽</span>
@@ -65,10 +65,10 @@
       </button>
       <div class="quest-nav-row">
         <button id="btn-quest-continue-web" class="btn-quest-web-fallback" type="button">
-          Continuar en modo PC ▾
+          Operar en Pantalla 2D
         </button>
-        <a href="../../index.html" class="btn-quest-back-hub">
-          🏠 Volver al Hub
+        <a href="../../index.html" class="btn-quest-return-hub">
+          Volver al Hub
         </a>
       </div>
     </div>
@@ -116,6 +116,16 @@
         <span class="hud-icon">📦</span>
         <span id="status-holding" class="status-val hud-holding-val">Libre</span>
       </div>
+      <div class="hud-sep"></div>
+      <button id="btn-hud-pause" class="hud-pill-segment action-segment" type="button" title="Pausar turno [P]">
+        <span class="hud-icon">⏸️</span>
+        <span class="status-val">Pausa</span>
+      </button>
+      <div class="hud-sep"></div>
+      <a href="../../index.html" id="btn-hud-hub" class="hud-pill-segment action-segment hub-segment" title="Regresar al Hub Principal Sipnasia">
+        <span class="hud-icon">🚪</span>
+        <span class="status-val">Hub</span>
+      </a>
       <span id="status-mode" class="hud-mode-hidden">Escritorio (WASD)</span>
     </div>
 
@@ -204,6 +214,19 @@
               </svg>
             </span>
           </button>
+
+          <a href="../../index.html" id="btn-menu-hub" class="menu-btn pill-btn-secondary" style="text-decoration: none;">
+            <span class="btn-icon-box">
+              <span style="font-size: 16px;">🚪</span>
+            </span>
+            <span class="btn-divider-v"></span>
+            <span class="btn-text">SALIR AL HUB</span>
+            <span class="btn-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </span>
+          </a>
         </div>
 
         <div class="menu-footer-clean">
@@ -371,6 +394,47 @@
           </div>
           <div class="modal-footer">
             <button id="btn-modal-scores-ok" class="modal-btn">Entendido</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Menú de Pausa -->
+    <div id="modal-pause" class="modal-overlay hidden">
+      <div class="modal-dialog pause-dialog" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3>⏸️ Turno en Pausa — PC PUMA</h3>
+          <button id="btn-close-pause" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body pause-body">
+          <p style="text-align: center; color: #4A5568; margin-bottom: 22px; font-size: 14px; line-height: 1.5;">
+            La simulación de atención y préstamo se encuentra en pausa.
+          </p>
+          <div class="pause-actions-stack" style="display: flex; flex-direction: column; gap: 12px;">
+            <button id="btn-pause-resume" class="menu-btn pill-btn-primary" type="button" style="width: 100%;">
+              <span class="btn-icon-box">
+                <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5.14v13.72a1 1 0 001.55.83l11-6.86a1 1 0 000-1.66l-11-6.86A1 1 0 008 5.14z"/>
+                </svg>
+              </span>
+              <span class="btn-divider-v"></span>
+              <span class="btn-text">REANUDAR TURNO</span>
+            </button>
+            <button id="btn-pause-restart" class="menu-btn pill-btn-secondary" type="button" style="width: 100%;">
+              <span class="btn-icon-box">🔄</span>
+              <span class="btn-divider-v"></span>
+              <span class="btn-text">REINICIAR PRÁCTICA</span>
+            </button>
+            <button id="btn-pause-settings" class="menu-btn pill-btn-secondary" type="button" style="width: 100%;">
+              <span class="btn-icon-box">⚙️</span>
+              <span class="btn-divider-v"></span>
+              <span class="btn-text">CONFIGURACIÓN</span>
+            </button>
+            <a href="../../index.html" id="btn-pause-hub" class="menu-btn pill-btn-secondary" style="width: 100%; text-decoration: none; border-color: rgba(229, 62, 62, 0.4); background: linear-gradient(180deg, #FFF5F5 0%, #FED7D7 100%); color: #C53030;">
+              <span class="btn-icon-box">🚪</span>
+              <span class="btn-divider-v"></span>
+              <span class="btn-text">SALIR AL HUB SIPNASIA</span>
+            </a>
           </div>
         </div>
       </div>

@@ -39,13 +39,13 @@
       enterVrBtn.addEventListener('click', async function () {
         overlay.classList.add('hidden');
 
-        // Estrategia 1: Visor Arquitectónico (React Three XR store global)
-        if (window.xrStore && typeof window.xrStore.enterVR === 'function') {
+        // Estrategia 1: Visor Arquitectónico (React Three XR store - Modo AR Passthrough exclusivo)
+        if (window.xrStore && typeof window.xrStore.enterAR === 'function') {
           try {
-            await window.xrStore.enterVR();
+            await window.xrStore.enterAR();
             return;
           } catch (err) {
-            console.warn('Error launching xrStore.enterVR:', err);
+            console.warn('Error launching xrStore.enterAR:', err);
           }
         }
 
