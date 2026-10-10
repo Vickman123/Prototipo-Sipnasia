@@ -34,6 +34,33 @@
 </head>
 <body>
 
+  <!-- Pantalla Exclusiva para Meta Quest Browser -->
+  <div id="quest-vr-overlay" class="quest-vr-overlay hidden">
+    <div class="quest-vr-card">
+      <div class="quest-vr-badge">
+        <span class="pulse-dot"></span>
+        <span>META QUEST DETECTADO // 6DOF LISTO</span>
+      </div>
+      <div class="quest-emblem">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
+        </svg>
+      </div>
+      <h1 class="quest-title">SIPNASIA <span class="gold-text">XR</span></h1>
+      <p class="quest-subtitle">PORTAL INMERSIVO // PC PUMA UNAM</p>
+      <p class="quest-instruction">
+        Colócate tu visor Meta Quest y pulsa el botón para entrar directamente al Hub en Realidad Virtual.
+      </p>
+      <button id="btn-quest-direct-vr" class="btn-quest-enter-vr" type="button">
+        <span class="vr-goggle-icon">🥽</span>
+        <span>ENTRAR EN VR AHORA</span>
+      </button>
+      <button id="btn-quest-continue-web" class="btn-quest-web-fallback" type="button">
+        Explorar versión web en 2D ▾
+      </button>
+    </div>
+  </div>
+
   <!-- Contenedor 3D WebXR (Three.js Canvas) -->
   <div id="webxr-canvas-container"></div>
 
@@ -141,7 +168,7 @@
             </div>
 
             <div class="card-actions">
-              <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
+              <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_self" rel="noopener noreferrer" class="btn-card-launch">
                 <span>LANZAR AHORA</span>
                 <span class="launch-arrow">↗</span>
               </a>
@@ -194,7 +221,7 @@
             </div>
 
             <div class="card-actions">
-              <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
+              <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_self" rel="noopener noreferrer" class="btn-card-launch">
                 <span>LANZAR AHORA</span>
                 <span class="launch-arrow">↗</span>
               </a>
@@ -245,7 +272,7 @@
             </div>
 
             <div class="card-actions">
-              <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
+              <a href="https://vickman123.github.io/visor-xr/" target="_self" rel="noopener noreferrer" class="btn-card-launch">
                 <span>LANZAR AHORA</span>
                 <span class="launch-arrow">↗</span>
               </a>
@@ -334,10 +361,10 @@
         <span>© UNAM - DGTIC // Programa PC PUMA. Plataforma WebXR.</span>
       </div>
       <div class="footer-links">
-        <a href="https://github.com/Vickman123/Prototipo-Sipnasia" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer">Simulador</a>
-        <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer">Shooter Purge</a>
-        <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer">Visor XR</a>
+        <a href="https://github.com/Vickman123/Prototipo-Sipnasia" target="_self" rel="noopener noreferrer">GitHub</a>
+        <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_self" rel="noopener noreferrer">Simulador</a>
+        <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_self" rel="noopener noreferrer">Shooter Purge</a>
+        <a href="https://vickman123.github.io/visor-xr/" target="_self" rel="noopener noreferrer">Visor XR</a>
       </div>
     </footer>
 
@@ -364,7 +391,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a id="preview-launch-external" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary">
+        <a id="preview-launch-external" href="#" target="_self" rel="noopener noreferrer" class="btn-primary">
           ABRIR EN PESTAÑA COMPLETA ↗
         </a>
       </div>

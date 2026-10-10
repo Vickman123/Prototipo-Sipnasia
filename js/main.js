@@ -6,6 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initWebXRDetection();
+  initQuestOverlay();
   initSoundControls();
   initModals();
   init3DModeToggle();
@@ -43,6 +44,43 @@ async function initWebXRDetection() {
   } catch (err) {
     console.warn('[SipnasiaXR] Error al checar WebXR:', err);
     if (xrTextEl) xrTextEl.textContent = 'Modo Web 3D Activo';
+  }
+}
+
+/* ----------------------------------------------------
+   1.1 Pantalla Exclusiva de Entrada en VR para Meta Quest
+   ---------------------------------------------------- */
+function initQuestOverlay() {
+  const questOverlay = document.getElementById('quest-vr-overlay');
+  const directVrBtn = document.getElementById('btn-quest-direct-vr');
+  const continueWebBtn = document.getElementById('btn-quest-continue-web');
+
+  // Detectar si el usuario está en Meta Quest Browser o probando con ?quest=1
+  const isQuest = /Quest|OculusBrowser/i.test(navigator.userAgent) || window.location.search.includes('quest=1');
+
+  if (isQuest && questOverlay) {
+    questOverlay.classList.remove('hidden');
+
+    if (directVrBtn) {
+      directVrBtn.addEventListener('click', () => {
+        if (window.xrAudio) window.xrAudio.playWarp();
+        questOverlay.classList.add('hidden');
+        // Lanzar inmediatamente sesión WebXR
+        const officialVrBtn = document.getElementById('official-vr-button');
+        if (officialVrBtn) {
+          officialVrBtn.click();
+        } else {
+          document.getElementById('btn-view-3d')?.click();
+        }
+      });
+    }
+
+    if (continueWebBtn) {
+      continueWebBtn.addEventListener('click', () => {
+        if (window.xrAudio) window.xrAudio.playHover();
+        questOverlay.classList.add('hidden');
+      });
+    }
   }
 }
 

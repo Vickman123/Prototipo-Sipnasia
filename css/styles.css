@@ -1136,3 +1136,151 @@ html, body {
     text-align: center;
   }
 }
+
+/* ==========================================================================
+   Pantalla Exclusiva para Meta Quest Browser
+   ========================================================================== */
+.quest-vr-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background: rgba(2, 8, 18, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.quest-vr-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.quest-vr-card {
+  background: linear-gradient(135deg, rgba(8, 16, 32, 0.96) 0%, rgba(2, 6, 14, 0.98) 100%);
+  border: 2px solid var(--unam-gold);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px var(--unam-gold-glow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quest-vr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--unam-gold-bright);
+  background: rgba(213, 155, 45, 0.15);
+  border: 1px solid var(--unam-gold);
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  margin-bottom: 1.25rem;
+  letter-spacing: 1px;
+}
+
+.quest-emblem {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--unam-navy-light), var(--unam-navy));
+  border: 2px solid var(--unam-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 0 24px var(--unam-gold-glow);
+}
+
+.quest-emblem svg {
+  width: 42px;
+  height: 42px;
+  fill: var(--unam-gold-bright);
+}
+
+.quest-title {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin-bottom: 0.3rem;
+  line-height: 1.2;
+}
+
+.quest-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--cyber-cyan);
+  letter-spacing: 1.5px;
+  margin-bottom: 1.2rem;
+}
+
+.quest-instruction {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 1.8rem;
+  max-width: 440px;
+}
+
+.btn-quest-enter-vr {
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 1.15rem 1.8rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--unam-gold-bright), var(--unam-gold));
+  color: #020712;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 6px 28px var(--unam-gold-glow);
+  transition: var(--transition-smooth);
+  margin-bottom: 1rem;
+}
+
+.btn-quest-enter-vr:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 36px rgba(246, 193, 92, 0.75);
+}
+
+.vr-goggle-icon {
+  font-size: 1.4rem;
+}
+
+.btn-quest-web-fallback {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s ease;
+}
+
+.btn-quest-web-fallback:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
