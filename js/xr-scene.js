@@ -439,8 +439,8 @@ class XRSceneController {
       },
       {
         id: 'proximamente',
-        title: 'PRÓXIMAMENTE // NUEVA EXPERIENCIA',
-        category: 'Laboratorio de Innovación XR',
+        title: 'EN DESARROLLO // TALLER DE XR',
+        category: 'Actividad en Vivo',
         badge: 'EN DESARROLLO',
         url: '#proximamente',
         colorHex: '#10b981',
@@ -1158,22 +1158,23 @@ class XRSceneController {
 
     // Encabezado
     ctx.fillStyle = '#34d399';
-    ctx.font = 'bold 24px Orbitron, sans-serif';
+    ctx.font = 'bold 22px Orbitron, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('🔒 MÓDULO EN DESARROLLO', 320, 60);
+    ctx.fillText('🔒 EN DESARROLLO DURANTE EL TALLER', 320, 58);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 20px -apple-system, sans-serif';
-    ctx.fillText('Laboratorio de Innovación XR PC PUMA UNAM', 320, 115);
+    ctx.fillText('Actividad en Vivo // Taller de Desarrollo XR', 320, 110);
 
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '17px -apple-system, sans-serif';
-    ctx.fillText('Nuevas simulaciones de gemelos digitales y cómputo cuántico', 320, 160);
-    ctx.fillText('próximamente disponibles en WebXR para Meta Quest 3S.', 320, 195);
+    ctx.fillText('En desarrollo durante la actividad del taller de XR.', 320, 158);
+    ctx.fillText('Esta 4ta experiencia se creará e implementará', 320, 192);
+    ctx.fillText('en tiempo real junto con los participantes.', 320, 224);
 
     ctx.fillStyle = '#10b981';
     ctx.font = 'bold 16px monospace';
-    ctx.fillText('ESTADO: INVESTIGACIÓN ACTIVA // FASE 2', 320, 260);
+    ctx.fillText('ESTADO: ACTIVIDAD DEL TALLER EN VIVO', 320, 275);
 
     const texture = new THREE.CanvasTexture(canvas);
     const planeGeo = new THREE.PlaneGeometry(2.4, 1.2);

@@ -225,7 +225,7 @@ function initModals() {
     }
   });
 
-  // Manejo de Interacción para la Tarjeta de Próximamente (Módulo en Desarrollo)
+  // Manejo de Interacción para la Tarjeta de la 4ta Puerta (En Desarrollo Durante el Taller de XR)
   const upcomingCardBtn = document.getElementById('btn-card-upcoming');
   const upcomingInfoBtn = document.getElementById('btn-upcoming-info');
   [upcomingCardBtn, upcomingInfoBtn].forEach(btn => {
@@ -233,9 +233,9 @@ function initModals() {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         if (window.xrAudio) window.xrAudio.playHover();
-        alert('🔒 MÓDULO EN DESARROLLO // FASE EXPERIMENTAL\n\nLaboratorio de Innovación XR PC PUMA UNAM:\nNuevas experiencias espaciales de gemelos digitales y simulaciones cuánticas en desarrollo activo.');
+        alert('🔒 EN DESARROLLO DURANTE LA ACTIVIDAD DEL TALLER DE XR\n\nLaboratorio de Innovación XR PC PUMA UNAM:\nEsta 4ta experiencia se desarrollará en tiempo real durante la actividad del taller de XR.');
         if (window.SipnasiaXR) {
-          window.SipnasiaXR.log('🔒 Módulo en desarrollo: Nuevas experiencias XR próximamente.');
+          window.SipnasiaXR.log('🔒 4ta Puerta: En desarrollo durante la actividad del taller de XR.');
         }
       });
     }
