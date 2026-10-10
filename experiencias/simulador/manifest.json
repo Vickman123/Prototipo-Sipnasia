@@ -1,14 +1,13 @@
 {
-  "name": "PC PUMA - Simulador de Operación",
-  "short_name": "PC PUMA",
-  "description": "Simulador institucional de operación del servicio de préstamo de laptops PC PUMA en Realidad Virtual",
-  "start_url": "./",
+  "name": "SIPNASIA XR // Portal PC PUMA UNAM",
+  "short_name": "Sipnasia XR",
+  "description": "Portal interactivo WebXR para acceder al Simulador de Operador PC PUMA, Shooter Virus Purge y Visor Arquitectónico XR.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "landscape",
-  "background_color": "#002B49",
-  "theme_color": "#002B49",
-  "categories": ["education", "simulation"],
+  "orientation": "any",
+  "background_color": "#00172D",
+  "theme_color": "#00172D",
   "icons": [
     {
       "src": "favicon-32x32.png",
@@ -24,12 +23,6 @@
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "app-icon.png",
-      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"
     }
