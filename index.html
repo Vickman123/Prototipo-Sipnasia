@@ -52,104 +52,98 @@
   <!-- Raíz de la Interfaz 2D -->
   <div id="ui-root">
 
-    <!-- Navegación Superior -->
+    <!-- Navegación Superior Simplificada -->
     <header class="top-nav">
       <div class="brand-wrapper">
         <div class="brand-icon-shield">
-          <!-- Escudo estilizado Puma / UNAM -->
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
           </svg>
         </div>
         <div class="brand-titles">
           <h1>SIPNASIA <span class="gold-text">XR</span></h1>
-          <p>PORTAL WEBXR // ECOSISTEMA DIGITAL PC PUMA UNAM</p>
+          <p>PORTAL PC PUMA // DGTIC UNAM</p>
         </div>
       </div>
 
       <div class="header-actions">
-        <!-- Badge de estado de hardware WebXR -->
+        <!-- Badge de estado WebXR -->
         <div id="xr-status-pill" class="status-badge">
           <div id="xr-status-dot" class="pulse-dot"></div>
           <span id="xr-status-text">Detectando WebXR...</span>
         </div>
 
-        <!-- Botón de Silencio / Audio FX -->
+        <!-- Botón de Audio FX -->
         <button id="btn-sound-toggle" class="btn-header btn-sound-toggle" title="Activar/Desactivar Sonido">
           🔊 <span id="sound-status-text">AUDIO ON</span>
         </button>
 
         <!-- Botón para ver en Modo 3D -->
         <button id="btn-view-3d" class="btn-header" title="Explorar en 3D en pantalla">
-          🌐 VISTA 3D HUB
+          🌐 VISTA 3D
         </button>
       </div>
     </header>
 
-    <!-- Banner Principal Hero -->
+    <!-- Banner Hero Simplificado -->
     <section class="hero-banner">
-      <span class="hero-tag">CONECTIVIDAD MÓVIL // DGTIC UNAM</span>
-      <h2>ECOSISTEMA INMERSIVO PC PUMA</h2>
-      <p>
-        Bienvenido al portal centralizado de experiencias de cómputo inmersivo de PC PUMA. Accede a los módulos de capacitación operativa, defensa de sistemas y visualización arquitectónica 3D espacial con soporte nativo para visores Meta Quest y navegadores web.
-      </p>
-      <div class="hero-cta-group">
-        <button class="btn-primary" onclick="document.getElementById('official-vr-button')?.click() || document.getElementById('btn-view-3d').click()">
-          🥽 ENTRAR A MODO VR / WEBXR
-        </button>
-        <a href="#modulo-dinamica" class="btn-secondary">
-          ⚡ DINÁMICA INTERACTIVA XR
-        </a>
+      <div class="hero-content">
+        <span class="hero-tag">EXPERIENCIAS INMERSIVAS</span>
+        <h2>PORTAL DIGITAL PC PUMA</h2>
+        <p>
+          Acceso rápido y centralizado a simuladores operativos, juegos de ciberseguridad y recorridos espaciales 3D para visores Meta Quest y navegadores web.
+        </p>
+        <div class="hero-cta-group">
+          <button class="btn-primary" onclick="document.getElementById('official-vr-button')?.click() || document.getElementById('btn-view-3d').click()">
+            🥽 ENTRAR A MODO VR / 3D
+          </button>
+          <a href="#modulo-dinamica" class="btn-secondary" id="btn-hero-dynamic">
+            ⚡ DINÁMICA DE TALLER
+          </a>
+        </div>
       </div>
     </section>
 
-    <!-- Sección de Experiencias PC PUMA -->
-    <section>
+    <!-- Sección de Experiencias Simplificada -->
+    <section class="experiences-section">
       <div class="section-header">
-        <div>
-          <h2 class="section-title">EXPERIENCIAS VIRTUALES DESTACADAS</h2>
-          <p class="section-subtitle">// SELECCIONA UNA EXPERIENCIA PARA LANZARLA, PROBARLA O ESCANEAR SU QR</p>
-        </div>
+        <h2 class="section-title">EXPERIENCIAS VIRTUALES</h2>
       </div>
 
       <div class="experiences-grid">
 
         <!-- TARJETA 1: SIMULADOR DE OPERADOR PC PUMA -->
-        <article class="experience-card">
+        <article class="experience-card card-simulador">
           <div class="card-banner">
-            <svg class="card-banner-graphic" viewBox="0 0 400 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="gradSim" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#022b49" stop-opacity="0.9"/>
-                  <stop offset="100%" stop-color="#011424" stop-opacity="0.95"/>
-                </linearGradient>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#gradSim)"/>
-              <circle cx="200" cy="100" r="75" stroke="#00f0ff" stroke-width="2" fill="none" opacity="0.3"/>
-              <circle cx="200" cy="100" r="45" stroke="#d59b2d" stroke-width="3" fill="none" opacity="0.5"/>
-              <path d="M 170 120 L 230 120 L 225 130 L 175 130 Z" fill="#00f0ff" opacity="0.8"/>
-              <rect x="175" y="80" width="50" height="35" rx="3" stroke="#00f0ff" stroke-width="2" fill="#021426"/>
-            </svg>
-            <span class="card-category-badge">CAPACITACIÓN & OPERACIÓN</span>
-            <span class="card-badge-xr">WEBXR / PC</span>
+            <div class="card-icon-glow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <div class="card-badges">
+              <span class="card-category-badge">CAPACITACIÓN</span>
+              <span class="card-badge-xr">WEBXR / PC</span>
+            </div>
           </div>
 
           <div class="card-body">
-            <h3 class="card-title">SIMULADOR DE OPERADOR PC PUMA</h3>
+            <h3 class="card-title">SIMULADOR DE OPERADOR</h3>
             <p class="card-description">
-              Simulador interactivo para el entrenamiento en el proceso de préstamo y recepción de laptops en los módulos PC PUMA. Incluye validación de credenciales, carritos de carga, escaneo NFC y dinámicas de servicio en 3D.
+              Capacitación en préstamo y recepción de laptops, validación de credenciales, carritos de carga y control de inventario.
             </p>
 
             <div class="card-meta-list">
               <span class="meta-pill highlight">Meta Quest 2/3/Pro</span>
-              <span class="meta-pill">Controles WASD + Mouse</span>
-              <span class="meta-pill">Lector NFC Virtual</span>
-              <span class="meta-pill">Gestión de Inventario</span>
+              <span class="meta-pill">PC WASD</span>
+              <span class="meta-pill">Lector NFC</span>
             </div>
 
             <div class="card-actions">
               <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
-                🚀 LANZAR AHORA
+                <span>LANZAR AHORA</span>
+                <span class="launch-arrow">↗</span>
               </a>
               <button class="btn-card-tool btn-preview" data-url="https://vickman123.github.io/Simulador-operador-pcpuma/" data-title="Simulador de Operador PC PUMA" title="Vista Previa Rápida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -170,41 +164,39 @@
         </article>
 
         <!-- TARJETA 2: SHOOTER PC PUMA (VIRUS PURGE) -->
-        <article class="experience-card">
+        <article class="experience-card card-shooter">
           <div class="card-banner">
-            <svg class="card-banner-graphic" viewBox="0 0 400 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="gradShoot" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#2a0820" stop-opacity="0.9"/>
-                  <stop offset="100%" stop-color="#090514" stop-opacity="0.95"/>
-                </linearGradient>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#gradShoot)"/>
-              <polygon points="200,60 235,130 165,130" stroke="#ff007f" stroke-width="2.5" fill="none" opacity="0.8"/>
-              <circle cx="200" cy="105" r="14" fill="#ff007f" opacity="0.6"/>
-              <line x1="200" y1="40" x2="200" y2="150" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="4,4"/>
-              <line x1="150" y1="95" x2="250" y2="95" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="4,4"/>
-            </svg>
-            <span class="card-category-badge">CYBER DEFENSE ARCADE</span>
-            <span class="card-badge-xr">QUEST 6DOF / PC</span>
+            <div class="card-icon-glow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="22" y1="12" x2="18" y2="12"></line>
+                <line x1="6" y1="12" x2="2" y2="12"></line>
+                <line x1="12" y1="6" x2="12" y2="2"></line>
+                <line x1="12" y1="22" x2="12" y2="18"></line>
+              </svg>
+            </div>
+            <div class="card-badges">
+              <span class="card-category-badge">CIBERSEGURIDAD</span>
+              <span class="card-badge-xr">QUEST 6DOF / PC</span>
+            </div>
           </div>
 
           <div class="card-body">
-            <h3 class="card-title">SHOOTER PC PUMA (VIRUS PURGE)</h3>
+            <h3 class="card-title">SHOOTER VIRUS PURGE</h3>
             <p class="card-description">
-              Videojuego arcade FPS de ciberseguridad en WebXR. Neutraliza ciberamenazas, purga troyanos de la memoria de los equipos y defiende la infraestructura frente a oleadas y al temible Ransomware Lockbit.
+              Arcade FPS de ciberdefensa en WebXR. Neutraliza ciberamenazas en memoria, elimina malware y vence al Ransomware Lockbit.
             </p>
 
             <div class="card-meta-list">
-              <span class="meta-pill highlight">Mandos 6DoF Hápticos</span>
-              <span class="meta-pill">Armamento Antivirus</span>
-              <span class="meta-pill">Sistema de Combos</span>
-              <span class="meta-pill">Fases de Boss Fight</span>
+              <span class="meta-pill highlight">Mandos 6DoF</span>
+              <span class="meta-pill">Armas Antivirus</span>
+              <span class="meta-pill">Boss Fight</span>
             </div>
 
             <div class="card-actions">
               <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
-                🚀 LANZAR AHORA
+                <span>LANZAR AHORA</span>
+                <span class="launch-arrow">↗</span>
               </a>
               <button class="btn-card-tool btn-preview" data-url="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" data-title="Shooter PC PUMA (Virus Purge)" title="Vista Previa Rápida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -225,41 +217,37 @@
         </article>
 
         <!-- TARJETA 3: VISOR ARQUITECTÓNICO DE PC PUMA -->
-        <article class="experience-card">
+        <article class="experience-card card-visor">
           <div class="card-banner">
-            <svg class="card-banner-graphic" viewBox="0 0 400 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="gradVisor" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#1e1804" stop-opacity="0.9"/>
-                  <stop offset="100%" stop-color="#0a0802" stop-opacity="0.95"/>
-                </linearGradient>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#gradVisor)"/>
-              <polygon points="200,50 270,90 270,140 200,170 130,140 130,90" stroke="#d59b2d" stroke-width="2" fill="none" opacity="0.7"/>
-              <line x1="200" y1="50" x2="200" y2="170" stroke="#d59b2d" stroke-width="1.5" opacity="0.4"/>
-              <line x1="130" y1="90" x2="200" y2="110" stroke="#d59b2d" stroke-width="1.5" opacity="0.4"/>
-              <line x1="270" y1="90" x2="200" y2="110" stroke="#d59b2d" stroke-width="1.5" opacity="0.4"/>
-            </svg>
-            <span class="card-category-badge">VISUALIZACIÓN ESPACIAL</span>
-            <span class="card-badge-xr">QUEST 3S / WEBXR</span>
+            <div class="card-icon-glow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <div class="card-badges">
+              <span class="card-category-badge">VISUALIZACIÓN 3D</span>
+              <span class="card-badge-xr">QUEST 3S / WEBXR</span>
+            </div>
           </div>
 
           <div class="card-body">
-            <h3 class="card-title">VISOR ARQUITECTÓNICO DE PC PUMA</h3>
+            <h3 class="card-title">VISOR ARQUITECTÓNICO</h3>
             <p class="card-description">
-              Recorrido inmersivo y renderizado espacial 3D arquitectónico para la inspección precisa de espacios, distribución de mobiliario e infraestructura de los centros de préstamo PC PUMA en realidad virtual y mixta.
+              Recorrido espacial 3D inmersivo para la inspección y visualización de módulos e infraestructura de centros PC PUMA.
             </p>
 
             <div class="card-meta-list">
-              <span class="meta-pill highlight">Meta Quest 3/3S Passthrough</span>
-              <span class="meta-pill">Render 3D de Alta Fidelidad</span>
-              <span class="meta-pill">Inspección de Módulos</span>
+              <span class="meta-pill highlight">Quest 3/3S Passthrough</span>
+              <span class="meta-pill">Render 3D HD</span>
               <span class="meta-pill">Medición Espacial</span>
             </div>
 
             <div class="card-actions">
               <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer" class="btn-card-launch">
-                🚀 LANZAR AHORA
+                <span>LANZAR AHORA</span>
+                <span class="launch-arrow">↗</span>
               </a>
               <button class="btn-card-tool btn-preview" data-url="https://vickman123.github.io/visor-xr/" data-title="Visor Arquitectónico de PC PUMA" title="Vista Previa Rápida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -282,68 +270,71 @@
       </div>
     </section>
 
-    <!-- Módulo de Dinámica WebXR (Preparado para dinámicas educativas/formativas) -->
-    <section id="modulo-dinamica" class="xr-dynamic-panel">
-      <div class="panel-header-badge">
-        <span class="pulse-dot"></span>
-        <span>MÓDULO DE DINÁMICA INTERACTIVA WEBXR // API SIPNASIA</span>
+    <!-- Módulo de Dinámica WebXR (Plegable / Simplificado) -->
+    <section id="modulo-dinamica" class="xr-dynamic-panel collapsed">
+      <div class="panel-header-interactive" id="dynamic-panel-header">
+        <div class="panel-header-badge">
+          <span class="pulse-dot"></span>
+          <span>DINÁMICA INTERACTIVA // TALLERES & EVALUACIÓN</span>
+        </div>
+        <button id="btn-toggle-dynamic" class="btn-toggle-dynamic" type="button" aria-expanded="false">
+          <span id="dynamic-toggle-text">ABRIR PANEL</span>
+          <span class="toggle-icon">▾</span>
+        </button>
       </div>
 
-      <div class="xr-dynamic-grid">
-        <div class="dynamic-info">
-          <h3>CALIBRACIÓN Y SINCRONIZACIÓN SINÁPTICA</h3>
-          <p>
-            Entorno preparado para dinámicas grupales, evaluaciones o talleres interactivos en WebXR. Al activar la dinámica, se generarán orbes de energía en el espacio 3D que los participantes pueden sincronizar usando sus controladores de realidad virtual o el cursor.
-          </p>
+      <div class="dynamic-collapsible-wrapper" id="dynamic-collapsible-wrapper">
+        <div class="xr-dynamic-grid">
+          <div class="dynamic-info">
+            <h3>SINCRONIZACIÓN SINÁPTICA</h3>
+            <p>
+              Modo interactivo para dinámicas grupales o talleres. Calibra y sincroniza los orbes de energía en el espacio 3D con mandos de realidad virtual o el cursor.
+            </p>
 
-          <div class="dynamic-stats-row">
-            <div class="stat-item">
-              <div class="stat-label">PUNTUACIÓN</div>
-              <div id="dyn-score" class="stat-value">0</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">NODOS CALIBRADOS</div>
-              <div id="dyn-nodes" class="stat-value">0</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">TIEMPO RESTANTE</div>
-              <div id="dyn-timer" class="stat-value">60s</div>
+            <div class="dynamic-stats-row">
+              <div class="stat-item">
+                <div class="stat-label">PUNTUACIÓN</div>
+                <div id="dyn-score" class="stat-value">0</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">NODOS</div>
+                <div id="dyn-nodes" class="stat-value">0</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">TIEMPO</div>
+                <div id="dyn-timer" class="stat-value">60s</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="dynamic-controls-col">
-          <h4 class="control-title">⚙️ PANEL DE CONTROL DE DINÁMICA</h4>
-          <div class="dynamic-action-btns">
-            <button id="btn-start-dynamic" class="btn-dynamic-trigger">
-              <span>▶ INICIAR DINÁMICA SINÁPTICA</span>
-              <span>[ 3D / VR ]</span>
-            </button>
-            <button id="btn-stop-dynamic" class="btn-dynamic-trigger">
-              <span>⏹ FINALIZAR ACTIVIDAD</span>
-              <span>[ STOP ]</span>
-            </button>
-            <button id="btn-reset-stats" class="btn-dynamic-trigger">
-              <span>🔄 REINICIAR CONTADORES</span>
-              <span>[ RESET ]</span>
-            </button>
-          </div>
+          <div class="dynamic-controls-col">
+            <div class="dynamic-action-btns">
+              <button id="btn-start-dynamic" class="btn-dynamic-trigger">
+                <span>▶ INICIAR DINÁMICA</span>
+                <span>[ 3D / VR ]</span>
+              </button>
+              <div class="dynamic-secondary-btns">
+                <button id="btn-stop-dynamic" class="btn-dynamic-sub">⏹ DETENER</button>
+                <button id="btn-reset-stats" class="btn-dynamic-sub">🔄 REINICIAR</button>
+              </div>
+            </div>
 
-          <!-- Consola en vivo de eventos -->
-          <div id="dynamic-log" class="dynamic-live-log">
-            <div>[SIPNASIA-XR] Sistema listo para la dinámica interactiva.</div>
+            <!-- Consola en vivo de eventos -->
+            <div id="dynamic-log" class="dynamic-live-log">
+              <div>[SIPNASIA-XR] Sistema listo para la dinámica interactiva.</div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Pie de Página -->
+    <!-- Pie de Página Simplificado -->
     <footer class="site-footer">
       <div class="footer-credits">
-        <span>© UNAM - DGTIC // Programa PC PUMA. Plataforma de Experiencias WebXR.</span>
+        <span>© UNAM - DGTIC // Programa PC PUMA. Plataforma WebXR.</span>
       </div>
       <div class="footer-links">
-        <a href="https://github.com/Vickman123/Prototipo-Sipnasia" target="_blank" rel="noopener noreferrer">Repositorio GitHub</a>
+        <a href="https://github.com/Vickman123/Prototipo-Sipnasia" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_blank" rel="noopener noreferrer">Simulador</a>
         <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_blank" rel="noopener noreferrer">Shooter Purge</a>
         <a href="https://vickman123.github.io/visor-xr/" target="_blank" rel="noopener noreferrer">Visor XR</a>
@@ -382,7 +373,7 @@
 
   <!-- Modal de Código QR para Meta Quest -->
   <div id="qr-modal" class="modal-backdrop">
-    <div class="modal-window" style="max-width: 480px;">
+    <div class="modal-window" style="max-width: 460px;">
       <div class="modal-header">
         <div class="modal-title">
           <span>📱</span>
@@ -397,7 +388,7 @@
       </div>
       <div class="modal-body qr-modal-body">
         <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
-          Apunta con la cámara de tu visor Meta Quest, teléfono móvil o tableta para abrir la experiencia directamente:
+          Apunta con la cámara de tu visor Meta Quest o teléfono para abrir la experiencia al instante:
         </p>
         <div class="qr-code-box">
           <img id="qr-code-img" src="" alt="Código QR de Acceso" width="220" height="220" />

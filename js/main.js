@@ -196,19 +196,62 @@ function init3DModeToggle() {
 }
 
 /* ----------------------------------------------------
-   5. Controles de la Dinámica WebXR
+   5. Controles de la Dinámica WebXR y Panel Plegable
    ---------------------------------------------------- */
 function initDynamicUI() {
+  const dynamicPanel = document.getElementById('modulo-dinamica');
+  const toggleDynamicBtn = document.getElementById('btn-toggle-dynamic');
+  const dynamicPanelHeader = document.getElementById('dynamic-panel-header');
+  const dynamicToggleText = document.getElementById('dynamic-toggle-text');
+  const heroDynamicBtn = document.getElementById('btn-hero-dynamic');
+
   const startDynamicBtn = document.getElementById('btn-start-dynamic');
   const stopDynamicBtn = document.getElementById('btn-stop-dynamic');
   const resetStatsBtn = document.getElementById('btn-reset-stats');
+
+  // Función para alternar el panel
+  function toggleDynamicPanel(forceOpen) {
+    if (!dynamicPanel) return;
+    const shouldOpen = forceOpen !== undefined ? forceOpen : dynamicPanel.classList.contains('collapsed');
+    if (shouldOpen) {
+      dynamicPanel.classList.remove('collapsed');
+      if (toggleDynamicBtn) toggleDynamicBtn.setAttribute('aria-expanded', 'true');
+      if (dynamicToggleText) dynamicToggleText.textContent = 'CERRAR PANEL';
+    } else {
+      dynamicPanel.classList.add('collapsed');
+      if (toggleDynamicBtn) toggleDynamicBtn.setAttribute('aria-expanded', 'false');
+      if (dynamicToggleText) dynamicToggleText.textContent = 'ABRIR PANEL';
+    }
+    if (window.xrAudio) window.xrAudio.playHover();
+  }
+
+  if (toggleDynamicBtn) {
+    toggleDynamicBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDynamicPanel();
+    });
+  }
+
+  if (dynamicPanelHeader) {
+    dynamicPanelHeader.addEventListener('click', () => {
+      toggleDynamicPanel();
+    });
+  }
+
+  if (heroDynamicBtn) {
+    heroDynamicBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleDynamicPanel(true);
+      dynamicPanel.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
 
   if (startDynamicBtn) {
     startDynamicBtn.addEventListener('click', () => {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.startDynamic('synapse-sync');
         startDynamicBtn.classList.add('active');
-        startDynamicBtn.textContent = '🔄 DINÁMICA EN CURSO...';
+        startDynamicBtn.innerHTML = '<span>🔄 DINÁMICA EN CURSO...</span>';
       }
     });
   }
@@ -219,7 +262,7 @@ function initDynamicUI() {
         window.SipnasiaXR.stopDynamic();
         if (startDynamicBtn) {
           startDynamicBtn.classList.remove('active');
-          startDynamicBtn.textContent = '▶ INICIAR DINÁMICA SINÁPTICA';
+          startDynamicBtn.innerHTML = '<span>▶ INICIAR DINÁMICA</span><span>[ 3D / VR ]</span>';
         }
       }
     });
@@ -233,6 +276,10 @@ function initDynamicUI() {
         window.SipnasiaXR.state.nodesCleared = 0;
         window.SipnasiaXR.updateStatsUI();
         window.SipnasiaXR.log('Métricas de la dinámica reiniciadas.');
+        if (startDynamicBtn) {
+          startDynamicBtn.classList.remove('active');
+          startDynamicBtn.innerHTML = '<span>▶ INICIAR DINÁMICA</span><span>[ 3D / VR ]</span>';
+        }
       }
     });
   }
@@ -241,7 +288,7 @@ function initDynamicUI() {
   window.addEventListener('sipnasia:dynamicEnd', () => {
     if (startDynamicBtn) {
       startDynamicBtn.classList.remove('active');
-      startDynamicBtn.textContent = '▶ INICIAR DINÁMICA SINÁPTICA';
+      startDynamicBtn.innerHTML = '<span>▶ INICIAR DINÁMICA</span><span>[ 3D / VR ]</span>';
     }
   });
 }
@@ -251,7 +298,7 @@ function initDynamicUI() {
    ---------------------------------------------------- */
 function initHoverEffects() {
   const interactiveElements = document.querySelectorAll(
-    'button, .experience-card, .btn-card-launch, .btn-card-tool, .btn-primary, .btn-secondary'
+    'button, .experience-card, .btn-card-launch, .btn-card-tool, .btn-primary, .btn-secondary, .btn-toggle-dynamic, .btn-dynamic-sub'
   );
 
   interactiveElements.forEach(el => {

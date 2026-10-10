@@ -93,12 +93,17 @@ window.SipnasiaXR.registerDynamic('mi-reto-personalizado', {
 
 ## 🖥️ Prueba Local
 
-Para ejecutarlo localmente y probar funciones WebXR con servidor local HTTPS o localhost:
+Para ejecutarlo localmente y probar funciones WebXR con servidor local optimizado (con CORS, tipos MIME y soporte para visor Meta Quest en red local):
 
 ```bash
-# Con Python 3:
+# Servidor local optimizado para WebXR:
+python3 server.py
+
+# O con servidor básico:
 python3 -m http.server 8080
 
 # Luego abre en tu navegador:
 # http://localhost:8080
+# O desde tu visor Meta Quest en la misma red Wi-Fi:
+# http://<tu-ip-local>:8080
 ```
