@@ -1330,3 +1330,205 @@ html, body {
   text-decoration: underline;
 }
 
+/* ==========================================================================
+   Mini-Hub Modal Inmersivo para Portales (Sin Cambio de Pestaña)
+   ========================================================================== */
+.portal-mini-hub-modal {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10001;
+  background: rgba(2, 8, 18, 0.90);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.portal-mini-hub-modal.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mini-hub-modal-card {
+  background: linear-gradient(135deg, rgba(8, 18, 36, 0.98) 0%, rgba(2, 6, 14, 0.99) 100%);
+  border: 2px solid var(--unam-gold);
+  border-radius: 24px;
+  padding: 2.2rem 2rem;
+  max-width: 580px;
+  width: 100%;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85), 0 0 40px var(--unam-gold-glow);
+  display: flex;
+  flex-direction: column;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #fff;
+}
+
+.mini-hub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--unam-gold-bright);
+  background: rgba(213, 155, 45, 0.15);
+  border: 1px solid var(--unam-gold);
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  margin-bottom: 1.25rem;
+  align-self: flex-start;
+  letter-spacing: 1px;
+}
+
+.mini-hub-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.mini-hub-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(0, 43, 73, 0.8), rgba(0, 243, 255, 0.15));
+  border: 1.5px solid var(--unam-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: 0 0 16px var(--unam-gold-glow);
+  flex-shrink: 0;
+}
+
+.mini-hub-titles h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.mini-hub-titles p {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--cyber-cyan);
+  margin: 0.25rem 0 0;
+  letter-spacing: 1px;
+}
+
+.mini-hub-description {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  margin-bottom: 1.3rem;
+}
+
+.mini-hub-features-section {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.mini-hub-subheading {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--unam-gold-bright);
+  margin: 0 0 0.65rem;
+  letter-spacing: 1px;
+}
+
+.mini-hub-features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mini-hub-feature-pill {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mini-hub-controls-preview {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.6rem;
+}
+
+.control-tag {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+}
+
+.mini-hub-modal-actions {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.btn-mini-hub-primary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.95rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #020712;
+  background: linear-gradient(135deg, var(--unam-gold-bright) 0%, var(--unam-gold) 100%);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--unam-gold-glow);
+  transition: all 0.2s ease;
+}
+
+.btn-mini-hub-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 32px var(--unam-gold-glow);
+  background: linear-gradient(135deg, #ffc750 0%, var(--unam-gold-bright) 100%);
+}
+
+.btn-mini-hub-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-mini-hub-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+

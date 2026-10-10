@@ -1001,32 +1001,105 @@ class XRSceneController {
       // CASO 2: Portales Activos (Simulador, Shooter, Visor)
       if (window.xrAudio) window.xrAudio.playSelect();
       if (window.SipnasiaXR) {
-        window.SipnasiaXR.log(`Accediendo a: ${data.title}...`);
+        window.SipnasiaXR.log(`Abriendo Mini-Hub de: ${data.title}...`);
       }
 
-      // A) EN REALIDAD VIRTUAL (Meta Quest WebXR):
-      // Navegamos en la misma ventana con window.location.href (previo session.end())
-      // para que el visor no saque al usuario a ventanas flotantes desprendidas en el sistema operativo Oculus.
-      if (this.isVR) {
-        const session = this.renderer.xr.getSession();
-        if (session) {
-          session.end().finally(() => {
-            window.location.href = data.url;
-          });
-        } else {
-          window.location.href = data.url;
-        }
-      }
-      // B) EN ESCRITORIO PC (Modo 2D):
-      // Abrimos en nueva pestaña (_blank) para conservar el Hub Sipnasia abierto.
-      else {
-        window.open(data.url, '_blank');
-      }
+      // Abrir Mini-Hub con los menús y capacidades de la experiencia sin cambiar de pestaña
+      this.openPortalMiniHub(data);
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.handleNodeHit(object);
       }
     }
+  }
+
+  /* ----------------------------------------------------
+     Mini-Hub Holográfico de Portales (Sin Cambio de Pestaña)
+     ---------------------------------------------------- */
+  openPortalMiniHub(data) {
+    const modal = document.getElementById('portal-mini-hub-modal');
+    if (!modal) {
+      this.navigateDirectly(data.url);
+      return;
+    }
+
+    const titleEl = document.getElementById('mini-hub-title');
+    const catEl = document.getElementById('mini-hub-category');
+    const descEl = document.getElementById('mini-hub-desc');
+    const iconEl = document.getElementById('mini-hub-icon');
+    const featuresEl = document.getElementById('mini-hub-features');
+    const enterBtn = document.getElementById('btn-mini-hub-enter');
+    const cancelBtn = document.getElementById('btn-mini-hub-cancel');
+
+    if (titleEl) titleEl.textContent = data.title;
+    if (catEl) catEl.textContent = (data.category || 'EXPERIENCIA XR') + ' // MODO INMERSIVO';
+    if (descEl) descEl.textContent = data.desc;
+
+    let icon = '🌐';
+    let features = ['Realidad Virtual 6DoF', 'Audio 3D Espacial', 'Optimizado Meta Quest 3S'];
+
+    if (data.id === 'simulador' || (data.url && data.url.includes('simulador'))) {
+      icon = '💻';
+      features = [
+        '📦 Préstamo y Recepción de Laptops',
+        '💳 Validación Credencial y NFC',
+        '🔋 Carritos de Carga Eléctrica',
+        '📊 Modo Evaluación Oficial'
+      ];
+    } else if (data.id === 'shooter' || (data.url && data.url.includes('shooter'))) {
+      icon = '🛡️';
+      features = [
+        '👾 Oleadas de Malware y Virus',
+        '🔫 3 Armas Antivirus Desbloqueables',
+        '🛒 Cyber Store y Mejoras en VR',
+        '☣️ Batalla Final vs Ransomware'
+      ];
+    } else if (data.id === 'visor' || (data.url && data.url.includes('visor'))) {
+      icon = '🏛️';
+      features = [
+        '🏢 6 Recintos Universitarios UNAM',
+        '📐 Escala 1:1 Inmersiva',
+        '🥽 Passthrough AR para Meta Quest',
+        '🔍 Inspección de Mobiliario Modular'
+      ];
+    }
+
+    if (iconEl) iconEl.textContent = icon;
+    if (featuresEl) {
+      featuresEl.innerHTML = features
+        .map(f => `<span class="mini-hub-feature-pill">${f}</span>`)
+        .join('');
+    }
+
+    if (enterBtn) {
+      enterBtn.onclick = () => {
+        if (window.xrAudio) window.xrAudio.playWarp();
+        modal.classList.add('hidden');
+        this.navigateDirectly(data.url);
+      };
+    }
+
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        if (window.xrAudio) window.xrAudio.playHover();
+        modal.classList.add('hidden');
+      };
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  navigateDirectly(url) {
+    if (this.isVR) {
+      const session = this.renderer.xr.getSession();
+      if (session) {
+        session.end().finally(() => {
+          window.location.href = url;
+        });
+        return;
+      }
+    }
+    window.location.href = url;
   }
 
   /* ----------------------------------------------------

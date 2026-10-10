@@ -7,10 +7,68 @@
     <meta name="theme-color" content="#020617" />
     <link rel="icon" type="image/png" href="./favicon.png" />
     <title>XR Model Viewer — Immersive 3D Visualization</title>
-    <script type="module" crossorigin src="./assets/index-CCcPPYkC.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Dh4mSR0f.css">
+    <link rel="stylesheet" href="../shared-experience-hub.css" />
+    <script type="module" crossorigin src="./assets/index-CphkF4PR.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Cjz8sH5j.css">
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen">
+    <!-- BARRA HUD FLOTANTE MINI-HUB SIPNASIA -->
+    <aside id="sipnasia-mini-hub-bar" class="sipnasia-mini-hub-bar" aria-label="Navegación Mini-Hub Sipnasia">
+      <a href="../../index.html" class="mini-hub-home-link" title="Regresar al Hub Principal Sipnasia">
+        <span class="hub-icon">🏠</span>
+        <span class="hub-title">HUB SIPNASIA</span>
+      </a>
+      <div class="mini-hub-divider"></div>
+      <nav class="mini-hub-nav">
+        <a href="../simulador/" class="mini-hub-chip">
+          <span class="chip-icon">💻</span>
+          <span class="chip-text">Simulador</span>
+        </a>
+        <a href="../shooter/" class="mini-hub-chip">
+          <span class="chip-icon">🛡️</span>
+          <span class="chip-text">Shooter</span>
+        </a>
+        <a href="../visor/" class="mini-hub-chip active">
+          <span class="chip-icon">🏛️</span>
+          <span class="chip-text">Visor XR</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- PANTALLA EXCLUSIVA META QUEST / ENTRADA EN VR DIRECTA -->
+    <div id="quest-vr-overlay" class="quest-vr-overlay hidden">
+      <div class="quest-vr-card">
+        <div class="quest-vr-badge">
+          <span class="pulse-dot"></span>
+          <span>META QUEST DETECTADO // 6DOF LISTO</span>
+        </div>
+        <div class="quest-emblem">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
+          </svg>
+        </div>
+        <h1 class="quest-title">VISOR ARQUITECTÓNICO <span class="gold-accent">XR</span></h1>
+        <p class="quest-subtitle">MODELOS 3D ESPACIALES // UNAM</p>
+        <p class="quest-instruction">
+          Explora campus y recintos universitarios en escala real 1:1 con tus mandos 6DoF y visualización inmersiva.
+        </p>
+        <button id="btn-quest-direct-vr" class="btn-quest-enter-vr" type="button">
+          <span class="vr-goggle-icon">🥽</span>
+          <span>UNIRSE A LA EXPERIENCIA EN VR</span>
+        </button>
+        <div class="quest-nav-row">
+          <button id="btn-quest-continue-web" class="btn-quest-web-fallback" type="button">
+            Explorar catálogo 2D ▾
+          </button>
+          <a href="../../index.html" class="btn-quest-back-hub">
+            🏠 Volver al Hub
+          </a>
+        </div>
+      </div>
+    </div>
+
     <div id="root"></div>
+
+    <script src="../shared-experience-hub.js"></script>
   </body>
 </html>

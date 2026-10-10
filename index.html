@@ -170,9 +170,9 @@
             </div>
 
             <div class="card-actions">
-              <a href="./experiencias/simulador/" target="_blank" rel="noopener noreferrer" class="btn-card-launch" title="Abrir en nueva pestaña">
-                <span>LANZAR AHORA</span>
-                <span class="launch-arrow">↗</span>
+              <a href="./experiencias/simulador/" class="btn-card-launch" title="Entrar a la experiencia directamente">
+                <span>ENTRAR AHORA</span>
+                <span class="launch-arrow">➔</span>
               </a>
               <button class="btn-card-tool btn-preview" data-url="./experiencias/simulador/" data-title="Simulador de Operador PC PUMA" title="Vista Previa Rápida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -223,9 +223,9 @@
             </div>
 
             <div class="card-actions">
-              <a href="./experiencias/shooter/" target="_blank" rel="noopener noreferrer" class="btn-card-launch" title="Abrir en nueva pestaña">
-                <span>LANZAR AHORA</span>
-                <span class="launch-arrow">↗</span>
+              <a href="./experiencias/shooter/" class="btn-card-launch" title="Entrar a la experiencia directamente">
+                <span>ENTRAR AHORA</span>
+                <span class="launch-arrow">➔</span>
               </a>
               <button class="btn-card-tool btn-preview" data-url="./experiencias/shooter/" data-title="Shooter PC PUMA (Virus Purge)" title="Vista Previa Rápida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -274,9 +274,9 @@
             </div>
 
             <div class="card-actions">
-              <a href="./experiencias/visor/" target="_blank" rel="noopener noreferrer" class="btn-card-launch" title="Abrir en nueva pestaña">
-                <span>LANZAR AHORA</span>
-                <span class="launch-arrow">↗</span>
+              <a href="./experiencias/visor/" class="btn-card-launch" title="Entrar a la experiencia directamente">
+                <span>ENTRAR AHORA</span>
+                <span class="launch-arrow">➔</span>
               </a>
               <button class="btn-card-tool btn-preview" data-url="./experiencias/visor/" data-title="Visor Arquitectónico de PC PUMA" title="Vista Previa Rápida">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -468,6 +468,47 @@
         <div id="qr-target-url-text" class="qr-target-url"></div>
         <button id="btn-copy-url" class="btn-secondary" style="width: 100%; justify-content: center;">
           COPIAR ENLACE
+        </button>
+      </div>
+    </div>
+  <!-- Modal Mini-Hub Holográfico de Portales (Para no cambiar de pestaña y preservar inmersión) -->
+  <div id="portal-mini-hub-modal" class="portal-mini-hub-modal hidden" role="dialog" aria-modal="true">
+    <div class="mini-hub-modal-card">
+      <div class="mini-hub-badge">
+        <span class="pulse-dot"></span>
+        <span id="mini-hub-badge-text">PORTAL DE ENLACE // SISTEMA SIPNASIA</span>
+      </div>
+      <div class="mini-hub-header">
+        <div id="mini-hub-icon" class="mini-hub-icon">🌐</div>
+        <div class="mini-hub-titles">
+          <h2 id="mini-hub-title">TÍTULO EXPERIENCIA</h2>
+          <p id="mini-hub-category">CATEGORÍA // MODO OPERATIVO</p>
+        </div>
+      </div>
+      <p id="mini-hub-desc" class="mini-hub-description">
+        Descripción de la experiencia.
+      </p>
+
+      <div class="mini-hub-features-section">
+        <h4 class="mini-hub-subheading">MODOS Y CAPACIDADES DISPONIBLES:</h4>
+        <div id="mini-hub-features" class="mini-hub-features-grid">
+          <!-- chips dinámicos según la experiencia -->
+        </div>
+      </div>
+
+      <div class="mini-hub-controls-preview">
+        <span class="control-tag">🥽 Meta Quest 2/3/3S/Pro</span>
+        <span class="control-tag">🕹️ Mandos 6DoF & Joystick</span>
+        <span class="control-tag">💻 Navegador Web</span>
+      </div>
+
+      <div class="mini-hub-modal-actions">
+        <button id="btn-mini-hub-enter" class="btn-mini-hub-primary" type="button">
+          <span class="btn-icon">🚀</span>
+          <span>ENTRAR DIRECTAMENTE</span>
+        </button>
+        <button id="btn-mini-hub-cancel" class="btn-mini-hub-secondary" type="button">
+          ✕ PERMANECER EN EL HUB
         </button>
       </div>
     </div>
