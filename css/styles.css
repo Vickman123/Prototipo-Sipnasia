@@ -414,16 +414,16 @@ html, body {
 }
 
 .vxr-badge-img {
-  height: 38px;
+  height: 48px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.65)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.5));
+  filter: drop-shadow(0 0 16px rgba(0, 240, 255, 0.75)) drop-shadow(0 0 28px rgba(168, 85, 247, 0.6));
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
 }
 
 .vxr-badge-img:hover {
-  transform: scale(1.08) translateY(-2px);
-  filter: drop-shadow(0 0 22px rgba(0, 240, 255, 0.95)) drop-shadow(0 0 35px rgba(168, 85, 247, 0.7));
+  transform: scale(1.1) translateY(-2px);
+  filter: drop-shadow(0 0 24px rgba(0, 240, 255, 1)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.85));
 }
 
 .drawer-controls-row {
