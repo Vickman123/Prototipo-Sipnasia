@@ -84,6 +84,7 @@ class XRSceneController {
     this.yaw = 0;
     this.pitch = 0;
     this.hoveredPortal = null;
+    this.galleryPanels = [];
   }
 
   async init() {
@@ -145,8 +146,11 @@ class XRSceneController {
     // 9. Red de Partículas Sinápticas Flotantes
     this.setupSynapseNetwork();
 
-    // 10. Las 4 Puertas / Portales de Experiencias (Incluyendo Próximamente)
+    // 10. Las 4 Puertas / Portales de Experiencias (Frente)
     this.setupExperiencePortals();
+
+    // 10.1 Galería del Taller y Festival Synapsia XR (Atrás)
+    this.setupWorkshopGallery();
 
     // 11. Mandos WebXR con Rayos Láser y Retroalimentación Háptica
     this.setupWebXRControllers();
@@ -464,6 +468,305 @@ class XRSceneController {
       this.scene.add(portalGroup);
       this.portals.push(portalGroup);
     });
+  }
+
+  /* ----------------------------------------------------
+     Galería del Taller y Festival Synapsia XR (Zona Trasera Z > 0)
+     ---------------------------------------------------- */
+  setupWorkshopGallery() {
+    const galleryItems = [
+      {
+        id: 'taller-introduccion',
+        title: 'BIENVENIDA & INTRODUCCIÓN XR',
+        subtitle: 'SESIÓN INAUGURAL // AUDITORIO',
+        tag: 'HITO 01 • INMERSIÓN',
+        icon: '🥽',
+        colorHex: '#00f0ff',
+        colorThree: 0x00f0ff,
+        pos: new THREE.Vector3(-5.5, 1.8, 5.2),
+        rotY: Math.PI - 0.38,
+        desc: 'Presentación del Festival Synapsia XR 2026. Los participantes conocieron la arquitectura de WebXR, visores Meta Quest 3S y el ecosistema de experiencias formativas para la UNAM.',
+        attendees: '45+ Alumnos y Académicos UNAM',
+        tech: 'Meta Quest 3S • WebXR • Three.js'
+      },
+      {
+        id: 'taller-desarrollo',
+        title: 'DESARROLLO EN VIVO CON FRAMEWORK VXR',
+        subtitle: 'CREACIÓN DE ENTORNOS 3D 6DOF',
+        tag: 'HITO 02 • CODIFICACIÓN',
+        icon: '⚡',
+        colorHex: '#d59b2d',
+        colorThree: 0xd59b2d,
+        pos: new THREE.Vector3(-1.8, 1.8, 6.2),
+        rotY: Math.PI - 0.12,
+        desc: 'Sesión práctica de código en tiempo real con el Framework VXR de Vickman123. Se construyeron escenarios procedurales, salas XRRoom, mandos hápticos y detección de colisiones.',
+        attendees: 'Desarrolladores & Diseñadores',
+        tech: 'Framework VXR • TypeScript • Shader WebGL'
+      },
+      {
+        id: 'taller-evaluacion',
+        title: 'PRUEBAS DE EXPERIENCIAS & FEEDBACK',
+        subtitle: 'TESTING DIRECTO EN VISORES QUEST',
+        tag: 'HITO 03 • PLAYTESTING',
+        icon: '🎯',
+        colorHex: '#ff007f',
+        colorThree: 0xff007f,
+        pos: new THREE.Vector3(1.8, 1.8, 6.2),
+        rotY: Math.PI + 0.12,
+        desc: 'Playtesting masivo del Simulador de Operador PC PUMA y Shooter Virus Purge. Pruebas de ergonomía, fluidez a 90 FPS y validación pedagógica de los módulos.',
+        attendees: 'Comunidad Universitaria Activa',
+        tech: 'Playtesting 6DoF • Análisis Telemetría'
+      },
+      {
+        id: 'taller-cierre',
+        title: 'PRESENTACIÓN FINAL DE PROYECTOS',
+        subtitle: 'CLAUSURA & COMUNIDAD SYNAPSIA',
+        tag: 'HITO 04 • RESULTADOS',
+        icon: '🏆',
+        colorHex: '#22c55e',
+        colorThree: 0x22c55e,
+        pos: new THREE.Vector3(5.5, 1.8, 5.2),
+        rotY: Math.PI + 0.38,
+        desc: 'Muestra de resultados finales del taller de XR. Integración de la cuarta experiencia interactiva (Aula Zombie) desarrollada en colaboración directa con los participantes.',
+        attendees: 'Equipo Synapsia & Asistentes',
+        tech: 'Despliegue GitHub Pages • WebXR Live'
+      }
+    ];
+
+    galleryItems.forEach(item => {
+      const panelGroup = this.createGalleryMonolith(item);
+      this.scene.add(panelGroup);
+      this.galleryPanels.push(panelGroup);
+    });
+
+    // Rótulo / Letrero Holográfico Superior en la Pared Sur: "MEMORIA DEL TALLER // SYNAPSIA XR 2026"
+    this.createGalleryHeaderBanner();
+  }
+
+  createGalleryHeaderBanner() {
+    const bannerCanvas = document.createElement('canvas');
+    bannerCanvas.width = 1024;
+    bannerCanvas.height = 256;
+    const ctx = bannerCanvas.getContext('2d');
+
+    // Fondo oscuro con degradado y marco tecnológico
+    const grad = ctx.createLinearGradient(0, 0, 1024, 256);
+    grad.addColorStop(0, '#040b17');
+    grad.addColorStop(0.5, '#0a192f');
+    grad.addColorStop(1, '#040b17');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 256);
+
+    ctx.strokeStyle = '#D59B2D';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(10, 10, 1004, 236);
+
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(18, 18, 988, 220);
+
+    ctx.fillStyle = '#00f0ff';
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('// MEMORIA FOTOGRÁFICA & RESULTADOS DEL EVENTO //', 512, 60);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 38px Orbitron, sans-serif';
+    ctx.fillText('GALERÍA DEL TALLER SYNAPSIA XR', 512, 120);
+
+    ctx.fillStyle = '#F6C15C';
+    ctx.font = 'bold 20px Orbitron, sans-serif';
+    ctx.fillText('PC PUMA UNAM • DESARROLLO INMERSIVO Y COLABORATIVO', 512, 168);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '16px -apple-system, sans-serif';
+    ctx.fillText('Haz clic o apunta a cualquier mampara para explorar los hitos vividos', 512, 210);
+
+    const texture = new THREE.CanvasTexture(bannerCanvas);
+    const planeGeo = new THREE.PlaneGeometry(6.5, 1.6);
+    const planeMat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.96,
+      side: THREE.DoubleSide
+    });
+    const bannerMesh = new THREE.Mesh(planeGeo, planeMat);
+    bannerMesh.position.set(0, 3.8, 7.2);
+    bannerMesh.rotation.y = Math.PI;
+    this.scene.add(bannerMesh);
+  }
+
+  createGalleryMonolith(item) {
+    const group = new THREE.Group();
+    group.position.copy(item.pos);
+    group.rotation.y = item.rotY;
+
+    // 1. Bastidor Exterior (Estilo Museo de Arte Digital Scifi)
+    const frameGeo = new THREE.BoxGeometry(1.65, 2.15, 0.08);
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: 0x09121f,
+      roughness: 0.25,
+      metalness: 0.82
+    });
+    const frameBack = new THREE.Mesh(frameGeo, frameMat);
+    group.add(frameBack);
+
+    // Bisel Luminoso
+    const edgesGeo = new THREE.EdgesGeometry(frameGeo);
+    const edgesMat = new THREE.LineBasicMaterial({
+      color: item.colorThree,
+      linewidth: 3
+    });
+    const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
+    group.add(edgesMesh);
+
+    // 2. Pantalla Fotográfica / Infográfica HD
+    const texture = this.createGalleryTexture(item);
+    const planeGeo = new THREE.PlaneGeometry(1.56, 2.06);
+    const planeMat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.98,
+      side: THREE.FrontSide
+    });
+    const screenMesh = new THREE.Mesh(planeGeo, planeMat);
+    screenMesh.position.z = 0.045;
+    group.add(screenMesh);
+
+    // 3. Pedestal Arquitectónico con Luz Base
+    const pedestalGeo = new THREE.BoxGeometry(0.95, 0.35, 0.65);
+    const pedestalMat = new THREE.MeshStandardMaterial({
+      color: 0x0c1626,
+      roughness: 0.35,
+      metalness: 0.75
+    });
+    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
+    pedestal.position.set(0, -1.18, 0);
+    group.add(pedestal);
+
+    const ledStripeGeo = new THREE.BoxGeometry(0.97, 0.03, 0.04);
+    const ledStripeMat = new THREE.MeshBasicMaterial({ color: item.colorThree });
+    const ledStripe = new THREE.Mesh(ledStripeGeo, ledStripeMat);
+    ledStripe.position.set(0, -1.02, 0.33);
+    group.add(ledStripe);
+
+    // 4. Luz de realce suave
+    const spotLight = new THREE.PointLight(item.colorThree, 1.8, 4.5);
+    spotLight.position.set(0, 0.2, 0.8);
+    group.add(spotLight);
+
+    // Guardar referencia interactiva
+    const galleryUserData = {
+      isGallery: true,
+      galleryData: item,
+      parentGroup: group
+    };
+    screenMesh.userData = galleryUserData;
+    frameBack.userData = galleryUserData;
+    pedestal.userData = galleryUserData;
+
+    this.registerInteractable(screenMesh);
+    this.registerInteractable(frameBack);
+    this.registerInteractable(pedestal);
+
+    return group;
+  }
+
+  createGalleryTexture(item) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 720;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo: Gradiente azul marino profundo
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, 720);
+    bgGrad.addColorStop(0, '#0c1a30');
+    bgGrad.addColorStop(0.45, '#071020');
+    bgGrad.addColorStop(1, '#020611');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 512, 720);
+
+    // Marco exterior Oro Puma
+    ctx.strokeStyle = '#D59B2D';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(12, 12, 488, 696);
+
+    // Borde temático interior
+    ctx.strokeStyle = item.colorHex;
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(20, 20, 472, 680);
+
+    // Badge Superior de Hito
+    ctx.font = 'bold 15px monospace';
+    ctx.fillStyle = '#38bdf8';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.tag, 256, 52);
+
+    // Contenedor de Fotografía Holográfica / Marco Gráfico
+    const photoGrad = ctx.createLinearGradient(40, 75, 472, 330);
+    photoGrad.addColorStop(0, '#001a33');
+    photoGrad.addColorStop(1, '#023059');
+    ctx.fillStyle = photoGrad;
+    ctx.fillRect(40, 75, 432, 235);
+
+    ctx.strokeStyle = item.colorHex;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 75, 432, 235);
+
+    // Patrón técnico interior
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.08)';
+    for (let x = 55; x < 460; x += 30) {
+      ctx.fillRect(x, 85, 1, 215);
+    }
+    for (let y = 95; y < 300; y += 30) {
+      ctx.fillRect(45, y, 420, 1);
+    }
+
+    // Gran Ícono Central Ilustrativo
+    ctx.font = '85px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(item.icon, 256, 215);
+
+    // Subtítulo fotográfico dentro del marco
+    ctx.font = 'bold 15px Orbitron, sans-serif';
+    ctx.fillStyle = '#facc15';
+    ctx.fillText(item.subtitle, 256, 280);
+
+    // Título Principal de la Mampara
+    ctx.font = 'bold 22px Orbitron, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    this.wrapText(ctx, item.title, 256, 350, 420, 28);
+
+    // Separador
+    ctx.strokeStyle = 'rgba(213, 155, 45, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(60, 415);
+    ctx.lineTo(452, 415);
+    ctx.stroke();
+
+    // Resumen / Descripción de lo vivido
+    ctx.font = '16px -apple-system, sans-serif';
+    ctx.fillStyle = '#cbd5e1';
+    this.wrapText(ctx, item.desc, 256, 445, 410, 24);
+
+    // Botón de Llamado a la Acción (CTA)
+    ctx.fillStyle = item.colorHex;
+    ctx.fillRect(80, 620, 352, 50);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(80, 620, 352, 50);
+
+    ctx.fillStyle = '#01050e';
+    ctx.font = 'bold 18px Orbitron, sans-serif';
+    ctx.fillText('VER DETALLES // FOTO 🔍', 256, 652);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
+    texture.needsUpdate = true;
+    return texture;
   }
 
   createPortalMonolith(exp) {
@@ -1030,11 +1333,64 @@ class XRSceneController {
 
       // Navegar DIRECTAMENTE a la experiencia sin bloqueos ni ventanas extra
       this.navigateDirectly(data.url);
+    } else if (object.userData.isGallery) {
+      // CASO 3: Mampara de la Galería del Taller
+      if (window.xrAudio) window.xrAudio.playSelect();
+      this.openGalleryModal(object.userData.galleryData);
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.handleNodeHit(object);
       }
     }
+  }
+
+  /* ----------------------------------------------------
+     Modal Detallado de la Galería del Taller
+     ---------------------------------------------------- */
+  openGalleryModal(data) {
+    if (!data) return;
+    const modal = document.getElementById('workshop-gallery-modal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('gallery-modal-title');
+    const phaseEl = document.getElementById('gallery-modal-phase');
+    const descEl = document.getElementById('gallery-modal-desc');
+    const iconEl = document.getElementById('gallery-modal-icon');
+    const attendeesEl = document.getElementById('gallery-modal-attendees');
+    const techEl = document.getElementById('gallery-modal-tech');
+    const closeBtn = document.getElementById('btn-close-gallery-modal');
+
+    if (titleEl) titleEl.textContent = data.title;
+    if (phaseEl) phaseEl.textContent = `${data.tag} // ${data.subtitle}`;
+    if (descEl) descEl.textContent = data.desc;
+    if (iconEl) iconEl.textContent = data.icon;
+    if (attendeesEl) attendeesEl.textContent = data.attendees;
+    if (techEl) techEl.textContent = data.tech;
+
+    // Liberar pointer lock temporalmente para interactuar con el modal
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+
+    modal.classList.remove('hidden');
+
+    const closeModal = () => {
+      if (window.xrAudio) window.xrAudio.playHover();
+      modal.classList.add('hidden');
+      // Re-solicitar pointer lock al cerrar si estamos en modo interactivo
+      if (this.isInteractive3D && !this.isVR) {
+        try {
+          this.renderer.domElement.requestPointerLock();
+        } catch (e) {}
+      }
+    };
+
+    if (closeBtn) {
+      closeBtn.onclick = closeModal;
+    }
+    modal.onclick = (e) => {
+      if (e.target === modal) closeModal();
+    };
   }
 
   /* ----------------------------------------------------
@@ -1274,7 +1630,7 @@ class XRSceneController {
         this.camera.rotation.y = this.yaw;
         this.camera.rotation.x = this.pitch;
 
-        // Comprobar portal bajo la retícula central (0, 0)
+        // Comprobar portal o mampara de galería bajo la retícula central (0, 0)
         this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
         const intersects = this.raycaster.intersectObjects(this.interactables, false);
 
@@ -1289,6 +1645,17 @@ class XRSceneController {
               promptText.textContent = `ENTRAR A ${data.title}`;
             }
           }
+        } else if (intersects.length > 0 && intersects[0].object?.userData?.isGallery) {
+          const galleryObj = intersects[0].object;
+          this.hoveredPortal = galleryObj;
+          if (crosshair) crosshair.classList.add('hovering');
+          if (promptEl) {
+            promptEl.classList.add('visible');
+            if (promptText) {
+              const data = galleryObj.userData.galleryData;
+              promptText.textContent = `VER MEMORIA: ${data.title}`;
+            }
+          }
         } else {
           this.hoveredPortal = null;
           if (crosshair) crosshair.classList.remove('hovering');
@@ -1301,7 +1668,7 @@ class XRSceneController {
 
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.interactables, false);
-        if (intersects.length > 0 && intersects[0].object?.userData?.isPortal) {
+        if (intersects.length > 0 && (intersects[0].object?.userData?.isPortal || intersects[0].object?.userData?.isGallery)) {
           document.body.style.cursor = 'pointer';
         } else {
           document.body.style.cursor = 'default';

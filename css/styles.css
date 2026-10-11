@@ -2140,6 +2140,47 @@ html, body {
   margin-bottom: 1.3rem;
 }
 
+/* Modal Galería del Taller */
+.gallery-modal-card {
+  max-width: 580px;
+  border-color: rgba(0, 240, 255, 0.4);
+}
+
+.gallery-badge {
+  color: #38bdf8;
+  background: rgba(0, 240, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.45);
+}
+
+.gallery-highlights-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: rgba(2, 6, 23, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.gallery-highlight-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.highlight-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.highlight-val {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
 .mini-hub-features-section {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
