@@ -290,17 +290,22 @@ export class ZombieGame {
         this.weapons.reload(performance.now());
         this.updateHUD();
       } else if (e.code === 'Digit1') {
-        this.weapons.switchWeapon('pistol');
+        this.weapons.switchWeapon('bat');
         this.updateHUD();
       } else if (e.code === 'Digit2') {
-        this.weapons.switchWeapon('shotgun');
+        this.weapons.switchWeapon('pistol');
         this.updateHUD();
       } else if (e.code === 'Digit3') {
-        this.weapons.switchWeapon('rifle');
+        this.weapons.switchWeapon('shotgun');
         this.updateHUD();
       } else if (e.code === 'Digit4') {
+        this.weapons.switchWeapon('rifle');
+        this.updateHUD();
+      } else if (e.code === 'Digit5') {
         this.weapons.switchWeapon('plasma');
         this.updateHUD();
+      } else if (e.code === 'KeyV' || e.code === 'KeyF') {
+        this.performQuickMelee();
       } else if (e.code === 'KeyQ') {
         this.weapons.cycleWeapon(-1);
         this.updateHUD();
@@ -425,6 +430,13 @@ export class ZombieGame {
         this.updateHUD();
       });
     }
+
+    const btnMelee = document.getElementById('btn-touch-melee');
+    if (btnMelee) {
+      btnMelee.addEventListener('click', () => {
+        this.performQuickMelee();
+      });
+    }
   }
 
   updateJoystick(dx, dy, stickEl) {
@@ -468,40 +480,112 @@ export class ZombieGame {
       this.camera.getWorldDirection(direction);
     }
 
-    // Efecto visual de retroceso en retícula
+    // Efecto visual de retroceso / golpe en retícula
     const crosshair = document.getElementById('crosshair-container');
     if (crosshair) {
       crosshair.classList.add('kick');
-      setTimeout(() => crosshair.classList.remove('kick'), 70);
+      setTimeout(() => crosshair.classList.remove('kick'), 80);
     }
 
-    // Iluminación dinámica de fogonazo en tiempo real (Raytraced Room Bounce)
-    if (this.muzzleLight) {
-      this.muzzleLight.color.setHex(weapon.colorThree || 0xffaa33);
-      this.muzzleLight.intensity = 5.5;
-      setTimeout(() => {
-        if (this.muzzleLight) this.muzzleLight.intensity = 0;
-      }, 45);
-    }
-
-    // Disparo según arma: Proyectil Plasma o Raycast Perdigones/Balas
-    if (weapon.isProjectile) {
-      this.spawnPlasmaProjectile(origin, direction, weapon);
+    // 1. Manejo de Ataque Cuerpo a Cuerpo (Bate con Clavos)
+    if (weapon.isMelee) {
+      this.performMeleeAttack(origin, direction, weapon);
     } else {
-      const pellets = weapon.pellets || 1;
-      for (let p = 0; p < pellets; p++) {
-        const spreadDir = direction.clone();
-        if (weapon.spread > 0) {
-          spreadDir.x += (Math.random() - 0.5) * weapon.spread;
-          spreadDir.y += (Math.random() - 0.5) * weapon.spread;
-          spreadDir.z += (Math.random() - 0.5) * weapon.spread;
-          spreadDir.normalize();
+      // 2. Manejo de Armas de Fuego
+      // Iluminación dinámica de fogonazo en tiempo real (Raytraced Room Bounce)
+      if (this.muzzleLight) {
+        this.muzzleLight.color.setHex(weapon.colorThree || 0xffaa33);
+        this.muzzleLight.intensity = 5.5;
+        setTimeout(() => {
+          if (this.muzzleLight) this.muzzleLight.intensity = 0;
+        }, 45);
+      }
+
+      // Disparo según arma: Proyectil Plasma o Raycast Perdigones/Balas
+      if (weapon.isProjectile) {
+        this.spawnPlasmaProjectile(origin, direction, weapon);
+      } else {
+        const pellets = weapon.pellets || 1;
+        for (let p = 0; p < pellets; p++) {
+          const spreadDir = direction.clone();
+          if (weapon.spread > 0) {
+            spreadDir.x += (Math.random() - 0.5) * weapon.spread;
+            spreadDir.y += (Math.random() - 0.5) * weapon.spread;
+            spreadDir.z += (Math.random() - 0.5) * weapon.spread;
+            spreadDir.normalize();
+          }
+          this.castBulletRay(origin, spreadDir, weapon);
         }
-        this.castBulletRay(origin, spreadDir, weapon);
       }
     }
 
     this.updateHUD();
+  }
+
+  performMeleeAttack(origin, direction, weapon) {
+    const range = weapon.range || 2.4;
+    let anyHit = false;
+
+    this.zombies.zombies.forEach(z => {
+      if (z.isDying) return;
+      const toZombie = z.mesh.position.clone().sub(this.player.position);
+      toZombie.y = 0;
+      const dist = toZombie.length();
+
+      if (dist <= range) {
+        toZombie.normalize();
+        const dot = direction.dot(toZombie);
+
+        // Si está en el arco frontal del golpe (~70 grados) o muy pegado al jugador
+        if (dot > 0.45 || dist < 1.3) {
+          anyHit = true;
+          // Si apunta ligeramente hacia arriba o zombi es rastrero -> headshot
+          const isHeadshot = this.pitch < -0.12 || (z.limbsState && z.limbsState.isCrawler);
+          const limb = isHeadshot ? 'head' : (Math.random() < 0.5 ? 'leftArm' : 'torso');
+          const hitPoint = z.mesh.position.clone().add(new THREE.Vector3(0, isHeadshot ? 1.55 : 1.1, 0));
+
+          const res = this.zombies.damageZombie(z, weapon.damage, isHeadshot, hitPoint, limb, weapon);
+          this.triggerHitmarker(isHeadshot);
+
+          // Empuje físico por impacto contundente (Knockback)
+          z.mesh.position.addScaledVector(direction, weapon.knockback * 0.4);
+
+          if (this.audio) this.audio.playMeleeHit();
+
+          if (res && res.killed) {
+            this.onZombieKilled(res.score, isHeadshot);
+          }
+        }
+      }
+    });
+
+    if (anyHit) {
+      const crosshair = document.getElementById('crosshair-container');
+      if (crosshair) {
+        crosshair.classList.add('kick');
+        setTimeout(() => crosshair.classList.remove('kick'), 120);
+      }
+    }
+  }
+
+  performQuickMelee() {
+    if (this.player.isDead) return;
+    const now = performance.now();
+    const batWeapon = this.weapons.weapons['bat'];
+    if (!batWeapon) return;
+
+    if (now - this.weapons.lastShotTime < batWeapon.fireRate) return;
+    this.weapons.lastShotTime = now;
+    this.weapons.meleeSwingTime = now;
+    this.weapons.isSwingingMelee = true;
+
+    if (this.audio) this.audio.playMeleeSwing();
+
+    const origin = this.camera.position.clone();
+    const direction = new THREE.Vector3();
+    this.camera.getWorldDirection(direction);
+
+    this.performMeleeAttack(origin, direction, batWeapon);
   }
 
   castBulletRay(origin, direction, weapon) {
@@ -1007,36 +1091,46 @@ export class ZombieGame {
     const reloadBanner = document.getElementById('reload-banner');
     const lowAmmoWarning = document.getElementById('low-ammo-warning');
 
-    if (this.weapons.isReloading) {
+    if (currentW.isMelee) {
       if (ammoMagEl) {
-        ammoMagEl.textContent = '...';
-        ammoMagEl.classList.add('reloading');
-      }
-      if (reloadBanner) reloadBanner.classList.remove('hidden');
-      if (lowAmmoWarning) lowAmmoWarning.classList.add('hidden');
-    } else {
-      if (ammoMagEl) {
-        ammoMagEl.textContent = `${currentW.currentMag}`;
+        ammoMagEl.textContent = '∞';
         ammoMagEl.classList.remove('reloading');
       }
+      if (ammoResEl) ammoResEl.textContent = 'MELEE';
       if (reloadBanner) reloadBanner.classList.add('hidden');
-
-      if (currentW.currentMag === 0) {
-        if (lowAmmoWarning) lowAmmoWarning.classList.remove('hidden');
-      } else {
+      if (lowAmmoWarning) lowAmmoWarning.classList.add('hidden');
+    } else {
+      if (this.weapons.isReloading) {
+        if (ammoMagEl) {
+          ammoMagEl.textContent = '...';
+          ammoMagEl.classList.add('reloading');
+        }
+        if (reloadBanner) reloadBanner.classList.remove('hidden');
         if (lowAmmoWarning) lowAmmoWarning.classList.add('hidden');
+      } else {
+        if (ammoMagEl) {
+          ammoMagEl.textContent = `${currentW.currentMag}`;
+          ammoMagEl.classList.remove('reloading');
+        }
+        if (reloadBanner) reloadBanner.classList.add('hidden');
+
+        if (currentW.currentMag === 0) {
+          if (lowAmmoWarning) lowAmmoWarning.classList.remove('hidden');
+        } else {
+          if (lowAmmoWarning) lowAmmoWarning.classList.add('hidden');
+        }
       }
+
+      if (ammoResEl) ammoResEl.textContent = currentW.reserveAmmo === Infinity ? '∞' : `${currentW.reserveAmmo}`;
     }
 
-    if (ammoResEl) ammoResEl.textContent = currentW.reserveAmmo === Infinity ? '∞' : `${currentW.reserveAmmo}`;
-
-    // Actualizar slots de armas desbloqueadas
-    const wKeys = ['pistol', 'shotgun', 'rifle', 'plasma'];
+    // Actualizar slots de armas desbloqueadas (1-5)
+    const wKeys = ['bat', 'pistol', 'shotgun', 'rifle', 'plasma'];
     wKeys.forEach((key, idx) => {
       const slotEl = document.getElementById(`w-slot-${idx + 1}`);
       if (slotEl) {
         const wCfg = this.weapons.weapons[key];
-        if (wCfg.unlocked) slotEl.classList.remove('locked');
+        if (wCfg && wCfg.unlocked) slotEl.classList.remove('locked');
         else slotEl.classList.add('locked');
 
         if (this.weapons.currentWeaponId === key) slotEl.classList.add('active');

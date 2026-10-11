@@ -201,31 +201,36 @@
             <div id="hud-weapon-name" class="weapon-title">Pistola Táctica 9mm</div>
           </div>
           <div class="ammo-display">
-            <span id="hud-ammo-mag" class="ammo-mag">12</span>
+            <span id="hud-ammo-mag" class="ammo-mag">11</span>
             <span class="ammo-slash">/</span>
-            <span id="hud-ammo-reserve" class="ammo-reserve">∞</span>
+            <span id="hud-ammo-reserve" class="ammo-reserve">42</span>
           </div>
         </div>
 
-        <!-- Selector de Armas 1-4 -->
+        <!-- Selector de Armas 1-5 -->
         <div class="weapon-slots-strip">
-          <div id="w-slot-1" class="weapon-slot active">
+          <div id="w-slot-1" class="weapon-slot">
             <span class="slot-key">[1]</span>
+            <span class="slot-icon">🏏</span>
+            <span class="slot-name">Bate</span>
+          </div>
+          <div id="w-slot-2" class="weapon-slot active">
+            <span class="slot-key">[2]</span>
             <span class="slot-icon">🔫</span>
             <span class="slot-name">9mm</span>
           </div>
-          <div id="w-slot-2" class="weapon-slot locked">
-            <span class="slot-key">[2]</span>
+          <div id="w-slot-3" class="weapon-slot locked">
+            <span class="slot-key">[3]</span>
             <span class="slot-icon">💥</span>
             <span class="slot-name">Escopeta</span>
           </div>
-          <div id="w-slot-3" class="weapon-slot locked">
-            <span class="slot-key">[3]</span>
+          <div id="w-slot-4" class="weapon-slot locked">
+            <span class="slot-key">[4]</span>
             <span class="slot-icon">⚡</span>
             <span class="slot-name">PUMA-AR</span>
           </div>
-          <div id="w-slot-4" class="weapon-slot locked">
-            <span class="slot-key">[4]</span>
+          <div id="w-slot-5" class="weapon-slot locked">
+            <span class="slot-key">[5]</span>
             <span class="slot-icon">🧪</span>
             <span class="slot-name">Plasma</span>
           </div>
@@ -241,9 +246,10 @@
     </div>
     <div id="touch-look-zone" class="touch-look-area"></div>
     <div class="touch-actions-group">
-      <button id="btn-touch-reload" class="btn-touch-circle" type="button">🔄</button>
-      <button id="btn-touch-weapon" class="btn-touch-circle" type="button">🔫</button>
-      <button id="btn-touch-fire" class="btn-touch-circle fire" type="button">🔥</button>
+      <button id="btn-touch-melee" class="btn-touch-circle" type="button" title="Golpe Melee con Bate">🏏</button>
+      <button id="btn-touch-reload" class="btn-touch-circle" type="button" title="Recargar">🔄</button>
+      <button id="btn-touch-weapon" class="btn-touch-circle" type="button" title="Cambiar Arma">🔫</button>
+      <button id="btn-touch-fire" class="btn-touch-circle fire" type="button" title="Disparar">🔥</button>
     </div>
   </div>
 
@@ -269,8 +275,8 @@
         <div class="tutorial-item">
           <div class="tut-icon">🖱️</div>
           <div class="tut-text">
-            <strong>DISPARAR & APUNTAR</strong>
-            <span><strong>Clic Izquierdo</strong> para disparar. ¡Apunta a la cabeza para tiros críticos (x2.5)!</span>
+            <strong>DISPARAR & MELEE</strong>
+            <span><strong>Clic Izquierdo</strong> para disparar | <strong>V o F</strong> para golpe rápido con el Bate. ¡Apunta a la cabeza (x2.5 daño)!</span>
           </div>
         </div>
 
@@ -285,24 +291,24 @@
         <div class="tutorial-item">
           <div class="tut-icon">🔄</div>
           <div class="tut-text">
-            <strong>ARMAS & RECARGA</strong>
-            <span><strong>R</strong> para recargar | <strong>1, 2, 3, 4</strong> o <strong>Rueda</strong> para cambiar de arma.</span>
+            <strong>MUNICIÓN & RECARGA</strong>
+            <span>Inicias con <strong>11 balas</strong> en cargador y <strong>42 en reserva</strong>. Presiona <strong>R</strong> para recargar | <strong>1 al 5</strong> o <strong>Rueda</strong> para armas.</span>
           </div>
         </div>
 
         <div class="tutorial-item highlight">
           <div class="tut-icon">🎁</div>
           <div class="tut-text">
-            <strong>DROPS ENEMIGOS</strong>
-            <span>Los zombis caídos tiran <strong>cajas con armas especiales</strong> (Escopeta, Fusil, Plasma) y <strong>botiquines</strong>. ¡Camina sobre ellas para recogerlas!</span>
+            <strong>DROPS ENEMIGOS & MUNICIÓN</strong>
+            <span>¡Los zombis caídos tiran <strong>cajas de munición (+33 balas)</strong>, <strong>botiquines</strong> y <strong>armas especiales</strong>! ¡Camina sobre ellas para recogerlas!</span>
           </div>
         </div>
 
         <div class="tutorial-item">
           <div class="tut-icon">🧟</div>
           <div class="tut-text">
-            <strong>ZOMBIS ESPECIALES</strong>
-            <span>Cuidado con el <strong>Conserje Titán</strong> (resistente), el <strong>Químico</strong> (escupe ácido) y el <strong>Prefecto</strong> (alarma sonora).</span>
+            <strong>DESMEMBRAMIENTO & ESPECIALES</strong>
+            <span>Dispárales a las piernas para hacerlos <strong>rastreros</strong>. ¡Si pierden ambos brazos te atacarán <strong>saltando a mordidas</strong>!</span>
           </div>
         </div>
       </div>

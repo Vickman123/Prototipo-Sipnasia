@@ -1,12 +1,40 @@
 /**
- * SIPNASIA XR - Sistema de Armas y Drops para Zombie Classroom
- * Incluye modelos procedurales 3D Three.js para FPS y VR,
- * lógica de recarga, retroceso, cadencia y drops flotantes.
+ * SIPNASIA XR - Sistema de Armas, Melee y Drops para Zombie Classroom
+ * Incluye:
+ * - Arma cuerpo a cuerpo (Bate con clavos y alambre de púas)
+ * - Pistola 9mm calibrada (11 en cargador, 42 en reserva inicial)
+ * - Escopeta Recortada, Fusil PUMA-AR y Cañón de Plasma
+ * - Drops dinámicos: Cajas de munición (+33 balas), Botiquines y Armas especiales
+ * - Modelos procedurales 3D Three.js, físicas y animaciones de golpe melee y recarga
  */
 
 import * as THREE from 'three';
 
 export const WEAPON_CONFIGS = {
+  bat: {
+    id: 'bat',
+    name: 'Bate con Clavos "Puma Furioso"',
+    shortName: 'BATE CON CLAVOS',
+    category: 'Cuerpo a Cuerpo',
+    unlocked: true,
+    damage: 85,
+    headshotMult: 2.5,
+    fireRate: 360, // ms entre golpes
+    isAutomatic: false,
+    magSize: Infinity,
+    currentMag: Infinity,
+    reserveAmmo: Infinity,
+    reloadTime: 0,
+    spread: 0,
+    pellets: 1,
+    knockback: 3.5,
+    range: 2.4, // Distancia efectiva del golpe
+    colorHex: '#f59e0b',
+    colorThree: 0xf59e0b,
+    icon: '🏏',
+    isProjectile: false,
+    isMelee: true
+  },
   pistol: {
     id: 'pistol',
     name: 'Pistola Táctica 9mm',
@@ -17,9 +45,9 @@ export const WEAPON_CONFIGS = {
     headshotMult: 2.2,
     fireRate: 220, // ms
     isAutomatic: false,
-    magSize: 12,
-    currentMag: 12,
-    reserveAmmo: Infinity,
+    magSize: 11,
+    currentMag: 11,
+    reserveAmmo: 42,
     reloadTime: 1100, // ms
     spread: 0.012,
     pellets: 1,
@@ -27,7 +55,8 @@ export const WEAPON_CONFIGS = {
     colorHex: '#38bdf8',
     colorThree: 0x38bdf8,
     icon: '🔫',
-    isProjectile: false
+    isProjectile: false,
+    isMelee: false
   },
   shotgun: {
     id: 'shotgun',
@@ -49,7 +78,8 @@ export const WEAPON_CONFIGS = {
     colorHex: '#f97316',
     colorThree: 0xf97316,
     icon: '💥',
-    isProjectile: false
+    isProjectile: false,
+    isMelee: false
   },
   rifle: {
     id: 'rifle',
@@ -71,7 +101,8 @@ export const WEAPON_CONFIGS = {
     colorHex: '#eab308',
     colorThree: 0xeab308,
     icon: '⚡',
-    isProjectile: false
+    isProjectile: false,
+    isMelee: false
   },
   plasma: {
     id: 'plasma',
@@ -95,7 +126,8 @@ export const WEAPON_CONFIGS = {
     colorThree: 0x22c55e,
     icon: '🧪',
     isProjectile: true,
-    projectileSpeed: 26
+    projectileSpeed: 26,
+    isMelee: false
   }
 };
 
@@ -103,11 +135,13 @@ export class WeaponManager {
   constructor(audio) {
     this.audio = audio;
     this.weapons = JSON.parse(JSON.stringify(WEAPON_CONFIGS));
-    this.currentWeaponId = 'pistol';
+    this.currentWeaponId = 'pistol'; // Iniciar con la pistola equipada
     this.lastShotTime = 0;
     this.isReloading = false;
     this.reloadingUntil = 0;
     this.recoilOffset = 0;
+    this.isSwingingMelee = false;
+    this.meleeSwingTime = 0;
     this.weaponGroup = new THREE.Group();
     this.weaponMeshes = {};
     this.muzzleFlashes = {};
@@ -124,6 +158,74 @@ export class WeaponManager {
      CONSTRUCCIÓN 3D DE ARMAS EN PRIMERA PERSONA / VR
      ---------------------------------------------------- */
   init3DWeaponModels() {
+    // 0. BATE DE BÉISBOL CON CLAVOS Y ALAMBRE (MELEE)
+    const batGroup = new THREE.Group();
+
+    // Mango con cinta deportiva negra
+    const handleGeo = new THREE.CylinderGeometry(0.016, 0.018, 0.24, 12);
+    const handleMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
+    const handle = new THREE.Mesh(handleGeo, handleMat);
+    handle.position.set(0, -0.15, 0);
+    batGroup.add(handle);
+
+    // Pomo inferior del bate
+    const pommelGeo = new THREE.CylinderGeometry(0.024, 0.024, 0.025, 12);
+    const pommel = new THREE.Mesh(pommelGeo, handleMat);
+    pommel.position.set(0, -0.27, 0);
+    batGroup.add(pommel);
+
+    // Cuerpo de madera de roble barnizada del bate
+    const barrelGeo = new THREE.CylinderGeometry(0.038, 0.019, 0.54, 16);
+    const batWoodMat = new THREE.MeshStandardMaterial({
+      color: 0xb45309,
+      roughness: 0.45,
+      metalness: 0.08
+    });
+    const batBody = new THREE.Mesh(barrelGeo, batWoodMat);
+    batBody.position.set(0, 0.22, 0);
+    batGroup.add(batBody);
+
+    // Alambre de púas enrollado alrededor de la cabeza del bate
+    const wireMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.85 });
+    for (let c = 0; c < 4; c++) {
+      const coilGeo = new THREE.TorusGeometry(0.041, 0.004, 6, 16);
+      const coil = new THREE.Mesh(coilGeo, wireMat);
+      coil.position.set(0, 0.18 + c * 0.07, 0);
+      coil.rotation.x = Math.PI / 2 + 0.15;
+      batGroup.add(coil);
+    }
+
+    // Clavos sobresalientes
+    const nailMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9, roughness: 0.3 });
+    const nailGeo = new THREE.ConeGeometry(0.007, 0.05, 6);
+    const nailPositions = [
+      [0.036, 0.32, 0, 0, 0, -Math.PI / 2],
+      [-0.036, 0.28, 0, 0, 0, Math.PI / 2],
+      [0, 0.36, 0.036, Math.PI / 2, 0, 0],
+      [0, 0.24, -0.036, -Math.PI / 2, 0, 0],
+      [0.025, 0.42, 0.025, Math.PI / 4, 0, -Math.PI / 4]
+    ];
+    nailPositions.forEach(np => {
+      const nail = new THREE.Mesh(nailGeo, nailMat);
+      nail.position.set(np[0], np[1], np[2]);
+      nail.rotation.set(np[3], np[4], np[5]);
+      batGroup.add(nail);
+    });
+
+    // Mancha de sangre
+    const bloodGeo = new THREE.SphereGeometry(0.042, 8, 8);
+    const bloodMat = new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.2 });
+    const bloodSplat = new THREE.Mesh(bloodGeo, bloodMat);
+    bloodSplat.scale.set(0.9, 1.3, 0.9);
+    bloodSplat.position.set(0, 0.35, 0);
+    batGroup.add(bloodSplat);
+
+    batGroup.position.set(0.24, -0.22, -0.42);
+    batGroup.rotation.set(0.25, 0.2, -0.3);
+    batGroup.visible = false;
+    this.weaponMeshes['bat'] = batGroup;
+    this.weaponGroup.add(batGroup);
+
     // 1. PISTOLA 9mm
     const pistolGroup = new THREE.Group();
     const slideGeo = new THREE.BoxGeometry(0.045, 0.055, 0.22);
@@ -218,20 +320,19 @@ export class WeaponManager {
     const pBodyMat = new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.3, metalness: 0.7 });
     const pBody = new THREE.Mesh(pBodyGeo, pBodyMat);
     pBody.rotation.x = Math.PI / 2;
-    pBody.position.set(0, 0.02, -0.14);
     plasmaGroup.add(pBody);
 
-    // Cilindro de contención tóxica verde brillante
+    // Contenedor de ácido verde brillante
     const vialGeo = new THREE.CylinderGeometry(0.024, 0.024, 0.22, 12);
-    const vialMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, wireframe: true });
+    const vialMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
     const vial = new THREE.Mesh(vialGeo, vialMat);
     vial.rotation.x = Math.PI / 2;
-    vial.position.set(0, 0.07, -0.14);
+    vial.position.set(0, 0.06, -0.02);
     plasmaGroup.add(vial);
 
     const pGrip = new THREE.Mesh(gripGeo, gripMat);
-    pGrip.position.set(0, -0.06, 0.06);
-    pGrip.rotation.x = 0.3;
+    pGrip.position.set(0, -0.07, 0.08);
+    pGrip.rotation.x = 0.35;
     plasmaGroup.add(pGrip);
 
     plasmaGroup.position.set(0.2, -0.18, -0.42);
@@ -239,32 +340,49 @@ export class WeaponManager {
     this.weaponMeshes['plasma'] = plasmaGroup;
     this.weaponGroup.add(plasmaGroup);
 
-    // Destellos de fogonazo (Muzzle flash)
-    Object.keys(this.weaponMeshes).forEach(wKey => {
-      const flashGeo = new THREE.OctahedronGeometry(0.06, 0);
+    // Fogonazos de disparo para cada arma de fuego
+    ['pistol', 'shotgun', 'rifle', 'plasma'].forEach(id => {
+      const flashGeo = new THREE.PlaneGeometry(0.25, 0.25);
       const flashMat = new THREE.MeshBasicMaterial({
-        color: this.weapons[wKey].colorThree,
+        color: this.weapons[id].colorThree,
         transparent: true,
-        opacity: 0
+        opacity: 0,
+        side: THREE.DoubleSide
       });
-      const flash = new THREE.Mesh(flashGeo, flashMat);
-      flash.position.set(0, 0.04, -0.36);
-      this.weaponMeshes[wKey].add(flash);
-      this.muzzleFlashes[wKey] = flash;
+      const flashMesh = new THREE.Mesh(flashGeo, flashMat);
+      flashMesh.position.set(0, 0.04, -0.26);
+      this.weaponMeshes[id].add(flashMesh);
+      this.muzzleFlashes[id] = flashMesh;
     });
   }
 
+  /* ----------------------------------------------------
+     CONTROL DE ARMAS (CAMBIO Y CICLO)
+     ---------------------------------------------------- */
   switchWeapon(weaponId) {
     if (!this.weapons[weaponId] || !this.weapons[weaponId].unlocked) return false;
-    if (this.currentWeaponId === weaponId) return false;
+    if (this.currentWeaponId === weaponId) return true;
+
+    // Ocultar arma actual
+    if (this.weaponMeshes[this.currentWeaponId]) {
+      this.weaponMeshes[this.currentWeaponId].visible = false;
+    }
 
     this.currentWeaponId = weaponId;
     this.isReloading = false;
-    this.reloadingUntil = 0;
+    this.isSwingingMelee = false;
 
-    Object.keys(this.weaponMeshes).forEach(key => {
-      this.weaponMeshes[key].visible = (key === weaponId);
-    });
+    // Mostrar nueva arma
+    if (this.weaponMeshes[weaponId]) {
+      this.weaponMeshes[weaponId].visible = true;
+      if (weaponId === 'bat') {
+        this.weaponMeshes[weaponId].rotation.set(0.25, 0.2, -0.3);
+        this.weaponMeshes[weaponId].position.set(0.24, -0.22, -0.42);
+      } else {
+        this.weaponMeshes[weaponId].rotation.set(0, 0, 0);
+        this.weaponMeshes[weaponId].position.set(0.18, -0.16, -0.38);
+      }
+    }
 
     if (this.audio) this.audio.playWeaponSwitch();
     return true;
@@ -281,6 +399,10 @@ export class WeaponManager {
 
   canShoot(now) {
     const w = this.getCurrentWeapon();
+    if (w.isMelee) {
+      if (now - this.lastShotTime < w.fireRate) return false;
+      return true;
+    }
     if (this.isReloading) return false;
     if (now - this.lastShotTime < w.fireRate) return false;
     if (w.currentMag <= 0) return false;
@@ -289,6 +411,18 @@ export class WeaponManager {
 
   shoot(now) {
     const w = this.getCurrentWeapon();
+
+    // 1. Manejo exclusivo de arma Melee (Bate)
+    if (w.isMelee) {
+      if (now - this.lastShotTime < w.fireRate) return null;
+      this.lastShotTime = now;
+      this.meleeSwingTime = now;
+      this.isSwingingMelee = true;
+      if (this.audio) this.audio.playMeleeSwing();
+      return w;
+    }
+
+    // 2. Manejo de armas de fuego
     if (!this.canShoot(now)) {
       if (w.currentMag <= 0 && !this.isReloading) {
         if (this.audio) this.audio.playDryFire();
@@ -324,6 +458,7 @@ export class WeaponManager {
 
   reload(now) {
     const w = this.getCurrentWeapon();
+    if (w.isMelee) return false; // Melee no se recarga
     if (this.isReloading || w.currentMag >= w.magSize) return false;
     if (w.reserveAmmo !== Infinity && w.reserveAmmo <= 0) {
       if (this.audio) this.audio.playDryFire();
@@ -337,7 +472,25 @@ export class WeaponManager {
   }
 
   update(now, delta) {
-    // Manejo de finalización de recarga
+    // 1. Animación del golpe Melee (Swinging Bat)
+    if (this.isSwingingMelee) {
+      const swingProg = (now - this.meleeSwingTime) / 240;
+      const batMesh = this.weaponMeshes['bat'];
+      if (batMesh && swingProg < 1.0) {
+        batMesh.rotation.x = 0.25 + Math.sin(swingProg * Math.PI) * 1.5;
+        batMesh.rotation.z = -0.3 - Math.sin(swingProg * Math.PI) * 1.3;
+        batMesh.position.x = 0.24 - Math.sin(swingProg * Math.PI) * 0.22;
+        batMesh.position.z = -0.42 - Math.sin(swingProg * Math.PI) * 0.16;
+      } else {
+        this.isSwingingMelee = false;
+        if (batMesh) {
+          batMesh.rotation.set(0.25, 0.2, -0.3);
+          batMesh.position.set(0.24, -0.22, -0.42);
+        }
+      }
+    }
+
+    // 2. Manejo de finalización de recarga para armas de fuego
     if (this.isReloading && now >= this.reloadingUntil) {
       const w = this.getCurrentWeapon();
       const needed = w.magSize - w.currentMag;
@@ -351,15 +504,14 @@ export class WeaponManager {
       this.isReloading = false;
     }
 
-    // Suavizado del retroceso físico en el arma 3D
+    // 3. Suavizado del retroceso físico en armas de fuego
     if (this.recoilOffset > 0) {
       this.recoilOffset -= delta * 0.45;
       if (this.recoilOffset < 0) this.recoilOffset = 0;
     }
     const currentMesh = this.weaponMeshes[this.currentWeaponId];
-    if (currentMesh) {
+    if (currentMesh && this.currentWeaponId !== 'bat') {
       if (this.isReloading) {
-        // Animación táctica de recarga 3D (bajar arma, vibración de cargador y retorno)
         currentMesh.position.z = -0.34;
         currentMesh.position.y = -0.27 + Math.sin(now * 0.015) * 0.025;
         currentMesh.rotation.x = 0.35 + Math.sin(now * 0.018) * 0.05;
@@ -372,7 +524,7 @@ export class WeaponManager {
       }
     }
 
-    // Actualización de drops en el suelo (rotación y flotación)
+    // 4. Actualización de drops en el suelo (rotación y flotación)
     for (let i = this.drops.length - 1; i >= 0; i--) {
       const drop = this.drops[i];
       drop.mesh.rotation.y += delta * 2.0;
@@ -393,23 +545,55 @@ export class WeaponManager {
     let type = forcedType;
     if (!type) {
       const roll = Math.random();
-      if (roll < 0.28) type = 'health';
-      else if (roll < 0.52) type = 'shotgun';
-      else if (roll < 0.78) type = 'rifle';
-      else type = 'plasma';
+      if (roll < 0.35) type = 'ammo';        // 35% Cajas de munición
+      else if (roll < 0.60) type = 'health'; // 25% Botiquines
+      else if (roll < 0.75) type = 'shotgun';// 15% Escopeta
+      else if (roll < 0.90) type = 'rifle';  // 15% Fusil
+      else type = 'plasma';                  // 10% Cañón de Plasma
     }
 
     const dropGroup = new THREE.Group();
     dropGroup.position.copy(position);
     dropGroup.position.y = 0.4;
 
-    let color = 0x22c55e;
+    let color = 0xfacc15;
     let label = 'DROP';
 
-    if (type === 'health') {
+    if (type === 'ammo') {
+      color = 0xfacc15; // Dorado munición
+      label = 'MUNICIÓN (+33 BALAS)';
+
+      // Caja metálica militar verde olivo
+      const crateGeo = new THREE.BoxGeometry(0.38, 0.24, 0.26);
+      const crateMat = new THREE.MeshStandardMaterial({
+        color: 0x14532d,
+        emissive: 0x15803d,
+        emissiveIntensity: 0.25,
+        roughness: 0.4
+      });
+      const crate = new THREE.Mesh(crateGeo, crateMat);
+      dropGroup.add(crate);
+
+      // Tapa superior metálica dorada
+      const lidGeo = new THREE.BoxGeometry(0.40, 0.06, 0.28);
+      const lidMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.8, roughness: 0.25 });
+      const lid = new THREE.Mesh(lidGeo, lidMat);
+      lid.position.y = 0.13;
+      dropGroup.add(lid);
+
+      // Iconos de proyectiles 3D dorados
+      const bulletGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.12, 8);
+      const bulletMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.9, roughness: 0.2 });
+      const b1 = new THREE.Mesh(bulletGeo, bulletMat);
+      b1.position.set(-0.06, 0.22, 0);
+      const b2 = new THREE.Mesh(bulletGeo, bulletMat);
+      b2.position.set(0.06, 0.22, 0);
+      dropGroup.add(b1, b2);
+
+    } else if (type === 'health') {
       color = 0xef4444;
       label = 'BOTIQUÍN (+50 HP)';
-      // Caja médica con cruz
+
       const boxGeo = new THREE.BoxGeometry(0.35, 0.25, 0.35);
       const boxMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
       const box = new THREE.Mesh(boxGeo, boxMat);
@@ -421,12 +605,12 @@ export class WeaponManager {
       const cross2 = new THREE.Mesh(crossGeo, crossMat);
       cross2.rotation.y = Math.PI / 2;
       dropGroup.add(cross1, cross2);
+
     } else {
       const cfg = this.weapons[type];
       color = cfg.colorThree;
       label = `${cfg.shortName} (+MUNICIÓN)`;
 
-      // Caja de munición militar holográfica
       const crateGeo = new THREE.BoxGeometry(0.42, 0.28, 0.32);
       const crateMat = new THREE.MeshStandardMaterial({
         color: 0x1e293b,
@@ -437,7 +621,6 @@ export class WeaponManager {
       const crate = new THREE.Mesh(crateGeo, crateMat);
       dropGroup.add(crate);
 
-      // Marco brillante
       const wire = new THREE.LineSegments(
         new THREE.EdgesGeometry(crateGeo),
         new THREE.LineBasicMaterial({ color: color })
@@ -450,7 +633,7 @@ export class WeaponManager {
     const beamMat = new THREE.MeshBasicMaterial({
       color: color,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.5,
       side: THREE.DoubleSide
     });
     const beam = new THREE.Mesh(beamGeo, beamMat);
@@ -458,7 +641,7 @@ export class WeaponManager {
     dropGroup.add(beam);
 
     // Luz de punto brillante
-    const pointLight = new THREE.PointLight(color, 2.0, 4.5);
+    const pointLight = new THREE.PointLight(color, 2.2, 4.5);
     pointLight.position.y = 0.5;
     dropGroup.add(pointLight);
 
@@ -478,6 +661,17 @@ export class WeaponManager {
   }
 
   collectDrop(drop, playerStats) {
+    if (drop.type === 'ammo') {
+      // Recarga de munición en reserva
+      this.weapons['pistol'].reserveAmmo += 33;
+      if (this.weapons['shotgun'].unlocked) this.weapons['shotgun'].reserveAmmo += 8;
+      if (this.weapons['rifle'].unlocked) this.weapons['rifle'].reserveAmmo += 30;
+      if (this.weapons['plasma'].unlocked) this.weapons['plasma'].reserveAmmo += 3;
+
+      if (this.audio) this.audio.playAmmoPickup();
+      return { type: 'ammo', message: '¡MUNICIÓN RECOGIDA! +33 BALAS' };
+    }
+
     if (drop.type === 'health') {
       playerStats.health = Math.min(100, playerStats.health + 50);
       if (this.audio) this.audio.playPickup();
@@ -499,10 +693,11 @@ export class WeaponManager {
       return {
         type: drop.type,
         message: wasUnlocked
-          ? `¡MUNICIÓN EXTRA! +${extraAmmo} para ${w.shortName}`
-          : `¡NUEVA ARMA DESBLOQUEADA! ${w.name}`
+          ? `¡MUNICIÓN RECOGIDA! +${extraAmmo} para ${w.name}`
+          : `¡NUEVA ARMA! ${w.name.toUpperCase()} DESBLOQUEADA`
       };
     }
+
     return null;
   }
 }

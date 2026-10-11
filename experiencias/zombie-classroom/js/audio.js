@@ -246,6 +246,92 @@ export class ZombieAudioEngine {
     this.playMechanicalClick(0.05, 1100);
   }
 
+  playMeleeSwing() {
+    this.ensureContext();
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    // Sonido silbante de golpe rápido con aire
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(450, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.16);
+    gain.gain.setValueAtTime(0.5, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.16);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.17);
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.createNoiseBuffer(0.18);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(650, t);
+    filter.frequency.exponentialRampToValueAtTime(220, t + 0.16);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.65, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.16);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.sfxGain);
+    noise.start(t);
+  }
+
+  playMeleeHit() {
+    this.ensureContext();
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    // Impacto contundente de madera/clavos contra cuerpo
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(260, t);
+    osc.frequency.exponentialRampToValueAtTime(45, t + 0.18);
+    gain.gain.setValueAtTime(0.9, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.19);
+
+    // Crujido de impacto
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.createNoiseBuffer(0.14);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1200, t);
+    const nGain = this.ctx.createGain();
+    nGain.gain.setValueAtTime(0.7, t);
+    nGain.gain.exponentialRampToValueAtTime(0.01, t + 0.14);
+    noise.connect(filter);
+    filter.connect(nGain);
+    nGain.connect(this.sfxGain);
+    noise.start(t);
+  }
+
+  playAmmoPickup() {
+    this.ensureContext();
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    // Tintineo metálico de munición recogida
+    for (let i = 0; i < 3; i++) {
+      const dt = i * 0.06;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200 + i * 400, t + dt);
+      gain.gain.setValueAtTime(0.35, t + dt);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.08);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(t + dt);
+      osc.stop(t + dt + 0.09);
+    }
+  }
+
   /* ----------------------------------------------------
      IMPACTOS Y DAÑO
      ---------------------------------------------------- */
