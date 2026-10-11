@@ -36,6 +36,10 @@
   <!-- Hoja de Estilos -->
   <link rel="stylesheet" href="css/styles.css" />
 
+  <!-- GSAP y Plugins para Animaciones Fluidas y Scroll -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+
   <!-- Import Map para Three.js y Framework VXR -->
   <script type="importmap">
     {
@@ -95,26 +99,50 @@
   <!-- Raíz de la Interfaz 2D -->
   <div id="ui-root">
 
-    <!-- Navegación Superior Simplificada -->
-    <header class="top-nav">
-      <div class="brand-wrapper">
-        <div class="brand-icon-shield">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 2.18l6 2.25v4.66c0 4.14-2.73 8.04-6 9.11-3.27-1.07-6-4.97-6-9.11V6.43l6-2.25zm0 3.32a3.5 3.5 0 0 0-3.5 3.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3.5-3.5z"/>
+    <!-- Navegación Superior Estilo Festival Synapsia XR -->
+    <header class="synapsia-header" id="main-header">
+      <div class="synapsia-brand">
+        <div class="synapsia-logo-symbol">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" fill="#00f3ff"/>
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="6" y2="12"/>
+            <line x1="18" y1="12" x2="22" y2="12"/>
+            <circle cx="12" cy="3" r="1.5" fill="#facc15"/>
+            <circle cx="12" cy="21" r="1.5" fill="#22c55e"/>
+            <circle cx="3" cy="12" r="1.5" fill="#ef4444"/>
+            <circle cx="21" cy="12" r="1.5" fill="#ec4899"/>
           </svg>
         </div>
-        <div class="brand-titles">
-          <h1>SIPNASIA <span class="gold-text">XR</span></h1>
-          <p>PORTAL PC PUMA // DGTIC UNAM</p>
+        <div class="synapsia-brand-text">
+          <div class="synapsia-wordmark">
+            <span>S</span>
+            <span class="has-dot dot-yellow">Y</span>
+            <span>N</span>
+            <span class="has-dot dot-red">A</span>
+            <span>P</span>
+            <span>S</span>
+            <span class="has-dot dot-green">I</span>
+            <span>A</span>
+            <span class="gradient-xr">XR</span>
+          </div>
+          <span class="synapsia-brand-sub">PORTAL PC PUMA // DGTIC UNAM</span>
         </div>
       </div>
 
-      <div class="header-actions">
+      <div class="synapsia-header-nav">
         <!-- Badge de estado WebXR -->
         <div id="xr-status-pill" class="status-badge">
           <div id="xr-status-dot" class="pulse-dot"></div>
           <span id="xr-status-text">Detectando WebXR...</span>
         </div>
+
+        <!-- Botón Acceso Experiencias -->
+        <button id="btn-nav-experiences" class="btn-nav-pill" type="button" title="Ir a catálogo de experiencias">
+          <span class="pill-glyph">⬡</span>
+          <span>Experiencias</span>
+        </button>
 
         <!-- Botón de Audio FX -->
         <button id="btn-sound-toggle" class="btn-header btn-sound-toggle" title="Activar/Desactivar Sonido">
@@ -122,33 +150,104 @@
         </button>
 
         <!-- Botón para ver en Modo 3D -->
-        <button id="btn-view-3d" class="btn-header" title="Explorar en 3D en pantalla">
-          🌐 VISTA 3D
+        <button id="btn-view-3d" class="btn-header" title="Explorar Hub 3D en pantalla">
+          🌐 3D HUB
+        </button>
+
+        <!-- Botón Menú Hamburguesa -->
+        <button id="btn-hamburger-menu" class="btn-hamburger" type="button" aria-label="Abrir Menú de Navegación">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </header>
 
-    <!-- Banner Hero Simplificado -->
-    <section class="hero-banner">
-      <div class="hero-content">
-        <span class="hero-tag">EXPERIENCIAS INMERSIVAS</span>
-        <h2>PORTAL DIGITAL PC PUMA</h2>
-        <p>
-          Acceso rápido y centralizado a simuladores operativos, juegos de ciberseguridad y recorridos espaciales 3D para visores Meta Quest y navegadores web.
-        </p>
-        <div class="hero-cta-group">
-          <button class="btn-primary" onclick="document.getElementById('official-vr-button')?.click() || document.getElementById('btn-view-3d').click()">
-            🥽 ENTRAR A MODO VR / 3D
-          </button>
-          <a href="#modulo-dinamica" class="btn-secondary" id="btn-hero-dynamic">
-            ⚡ DINÁMICA DE TALLER
+    <!-- Hero Viewport Festival Synapsia XR 2026 -->
+    <section class="synapsia-hero-viewport" id="hero-viewport">
+      <div class="hero-ambient-glow"></div>
+
+      <div class="hero-stage-content">
+        <!-- Fondo Visual Central con Esfera Sináptica y Nodos Flotantes -->
+        <div class="hero-visual-backdrop" id="hero-backdrop">
+          <img src="assets/hero-synapsia.png" alt="Festival Synapsia XR" class="hero-center-graphic" />
+          <div class="floating-node node-1"></div>
+          <div class="floating-node node-2"></div>
+          <div class="floating-node node-3"></div>
+          <div class="floating-node node-4"></div>
+          <div class="floating-node node-5"></div>
+          <div class="floating-node node-6"></div>
+        </div>
+
+        <!-- Tipografía e Información Central del Festival -->
+        <div class="hero-info-overlay">
+          <div class="hero-label-festival">FESTIVAL SYNAPSIA XR</div>
+          <h1 class="hero-title-main">
+            SYNAPSIA <span class="gradient-xr">XR</span>
+          </h1>
+          <div class="hero-subtitle-puma">
+            <span class="bracket">[</span> PC PUMA | PROGRAMA DE CONECTIVIDAD MÓVIL <span class="bracket">]</span>
+          </div>
+          <div class="hero-metadata-disciplines">
+            <span>CIENCIAS</span>
+            <span class="bullet">•</span>
+            <span>HUMANIDADES</span>
+            <span class="bullet">•</span>
+            <span>ARTES</span>
+          </div>
+          <div class="hero-year-badge">
+            <span>2</span><span>0</span><span>2</span><span>6</span>
+          </div>
+
+          <!-- Botón de Entrada Principal (Glowing Pill + Reflejo de piso) -->
+          <div class="hero-cta-container">
+            <button id="btn-hero-cta" class="hero-cta-pill" type="button">
+              <span id="cta-icon" class="cta-arrow">➔</span>
+              <span id="cta-button-text" class="cta-label">ACCEDER AL PORTAL</span>
+              <span id="cta-button-sub" class="cta-sublabel">// PC PUMA XR</span>
+            </button>
+            <div class="hero-cta-reflection" aria-hidden="true"></div>
+          </div>
+
+          <!-- Indicador de Scroll con Mouse Animado -->
+          <div class="hero-scroll-cue" id="hero-scroll-cue" title="Desplazar a Experiencias">
+            <div class="scroll-mouse-body">
+              <div class="scroll-mouse-wheel"></div>
+            </div>
+            <span class="scroll-chevron">v</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra Inferior del Hero con VXR Framework y Créditos -->
+      <div class="hero-bottom-bar">
+        <div class="hero-bottom-left">
+          <span class="gold-accent-line"></span>
+          <span class="hero-copy-text">© UNAM // PC PUMA // SYNAPSIA XR 2026</span>
+        </div>
+        <div class="hero-bottom-center">
+          <a href="https://vickman123.github.io/Framework-XVR/" target="_self" rel="noopener noreferrer" class="vxr-link-badge" title="Explorar Framework VXR Oficial">
+            <span class="vxr-badge-dot"></span>
+            <span>POWERED BY <strong class="vxr-text-highlight">VXR FRAMEWORK</strong></span>
+            <span class="vxr-badge-arrow">↗</span>
           </a>
+        </div>
+        <div class="hero-bottom-right">
+          <div class="hero-category-pills">
+            <span class="bottom-tag">#VR</span>
+            <span class="bottom-tag">#WebXR</span>
+            <span class="bottom-tag">#UNAM</span>
+            <span class="bottom-tag">#6DOF</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Sección de Experiencias Simplificada -->
-    <section class="experiences-section">
+    <!-- Contenedor Principal de Contenido del Hub -->
+    <main class="content-wrapper" id="hub-content">
+
+      <!-- Sección de Experiencias -->
+      <section class="experiences-section" id="experiencias-section">
       <div class="section-header">
         <h2 class="section-title">EXPERIENCIAS VIRTUALES</h2>
       </div>
@@ -311,7 +410,7 @@
         </article>
 
         <!-- TARJETA 4: AULA ZOMBIE // SUPERVIVENCIA ESCOLAR -->
-        <article class="experience-card card-proximamente card-zombie">
+        <article class="experience-card card-zombie">
           <div class="card-banner">
             <div class="card-icon-glow">
               <span style="font-size: 26px; line-height: 1;">🧟</span>
@@ -418,20 +517,85 @@
       </div>
     </section>
 
-    <!-- Pie de Página Simplificado -->
+    </main>
+
+    <!-- Pie de Página Institucional y Enlace VXR Framework -->
     <footer class="site-footer">
       <div class="footer-credits">
         <span>© UNAM - DGTIC // Programa PC PUMA. Plataforma WebXR.</span>
       </div>
       <div class="footer-links">
+        <a href="https://vickman123.github.io/Framework-XVR/" target="_self" rel="noopener noreferrer" class="vxr-link-badge-footer">
+          <span class="vxr-badge-dot"></span>
+          <span>POWERED BY <strong>VXR FRAMEWORK</strong> ↗</span>
+        </a>
         <a href="https://github.com/Vickman123/Prototipo-Sipnasia" target="_self" rel="noopener noreferrer">GitHub</a>
         <a href="https://vickman123.github.io/Simulador-operador-pcpuma/" target="_self" rel="noopener noreferrer">Simulador</a>
         <a href="https://vickman123.github.io/FPS-WEBXR-VIRUS-PURGE/" target="_self" rel="noopener noreferrer">Shooter Purge</a>
         <a href="https://vickman123.github.io/visor-xr/" target="_self" rel="noopener noreferrer">Visor XR</a>
+        <a href="./experiencias/zombie-classroom/" target="_self" rel="noopener noreferrer">Aula Zombie</a>
       </div>
     </footer>
 
   </div>
+
+  <!-- Menú Lateral Desplegable (Side Drawer) Estilo Festival Synapsia XR -->
+  <aside id="side-drawer-menu" class="side-drawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-brand">
+          <span class="drawer-logo-icon">💠</span>
+          <span class="drawer-title">SYNAPSIA <strong class="gradient-xr">XR</strong></span>
+        </div>
+        <button id="btn-close-drawer" class="btn-close-drawer" aria-label="Cerrar Menú">✕</button>
+      </div>
+
+      <div class="drawer-body">
+        <nav class="drawer-nav">
+          <a href="#experiencias-section" class="drawer-item" id="drawer-link-experiences">
+            <span class="drawer-item-icon">⬡</span>
+            <span class="drawer-item-label">Experiencias Virtuales Hub</span>
+          </a>
+          <a href="./experiencias/simulador/" class="drawer-item">
+            <span class="drawer-item-icon">💻</span>
+            <span class="drawer-item-label">Simulador de Operador PC PUMA</span>
+          </a>
+          <a href="./experiencias/shooter/" class="drawer-item">
+            <span class="drawer-item-icon">🎯</span>
+            <span class="drawer-item-label">Shooter Virus Purge (Cyber-FPS)</span>
+          </a>
+          <a href="./experiencias/visor/" class="drawer-item">
+            <span class="drawer-item-icon">🏛️</span>
+            <span class="drawer-item-label">Visor Arquitectónico XR (3D & 6DoF)</span>
+          </a>
+          <a href="./experiencias/zombie-classroom/" class="drawer-item">
+            <span class="drawer-item-icon">🧟</span>
+            <span class="drawer-item-label">Aula Zombie: Supervivencia Escolar</span>
+          </a>
+          <a href="#modulo-dinamica" class="drawer-item" id="drawer-link-dynamic">
+            <span class="drawer-item-icon">⚡</span>
+            <span class="drawer-item-label">Dinámica Sináptica Interactiva</span>
+          </a>
+          <a href="https://vickman123.github.io/Framework-XVR/" target="_self" rel="noopener noreferrer" class="drawer-item drawer-item-highlight">
+            <span class="drawer-item-icon">🚀</span>
+            <span class="drawer-item-label">Framework VXR WebXR Docs ↗</span>
+          </a>
+        </nav>
+
+        <div class="drawer-logos-section">
+          <p class="drawer-logos-title">PROGRAMA INSTITUCIONAL UNAM</p>
+          <div class="drawer-logos-row">
+            <img src="assets/logos-synapsia-sheet.png" alt="Logos Institucionales UNAM PC PUMA Synapsia" class="drawer-logos-img" />
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <span>FESTIVAL SYNAPSIA XR 2026 // DGTIC UNAM</span>
+      </div>
+    </div>
+  </aside>
 
   <!-- Modal de Vista Previa (Iframe) -->
   <div id="preview-modal" class="modal-backdrop">
@@ -489,6 +653,8 @@
         </button>
       </div>
     </div>
+  </div>
+
   <!-- Modal Mini-Hub Holográfico de Portales (Para no cambiar de pestaña y preservar inmersión) -->
   <div id="portal-mini-hub-modal" class="portal-mini-hub-modal hidden" role="dialog" aria-modal="true">
     <div class="mini-hub-modal-card">

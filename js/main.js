@@ -7,6 +7,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   initWebXRDetection();
   initQuestOverlay();
+  initGsapHeroAnimations();
+  initHeroInteractions();
+  initSideDrawer();
   initSoundControls();
   initModals();
   init3DModeToggle();
@@ -81,6 +84,285 @@ function initQuestOverlay() {
         questOverlay.classList.add('hidden');
       });
     }
+  }
+}
+
+/* ----------------------------------------------------
+   1.2 Animaciones de GSAP para Hero y Nodos de Fondo
+   ---------------------------------------------------- */
+function initGsapHeroAnimations() {
+  if (typeof gsap === 'undefined') {
+    console.warn('[SipnasiaXR] GSAP no disponible, usando animación estática.');
+    return;
+  }
+
+  // Registrar ScrollToPlugin si está disponible
+  if (typeof ScrollToPlugin !== 'undefined') {
+    gsap.registerPlugin(ScrollToPlugin);
+  }
+
+  // Línea de tiempo de entrada con GSAP
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  tl.from('#main-header', {
+    y: -40,
+    opacity: 0,
+    duration: 1.0,
+    delay: 0.2
+  })
+  .from('.hero-label-festival', {
+    opacity: 0,
+    y: 20,
+    duration: 0.8
+  }, '-=0.6')
+  .from('.hero-title-main', {
+    opacity: 0,
+    scale: 0.9,
+    filter: 'blur(10px)',
+    duration: 1.2,
+    ease: 'power2.out'
+  }, '-=0.5')
+  .from('.hero-subtitle-puma', {
+    opacity: 0,
+    y: 15,
+    duration: 0.8
+  }, '-=0.8')
+  .from('.hero-metadata-disciplines span', {
+    opacity: 0,
+    y: 10,
+    stagger: 0.1,
+    duration: 0.6
+  }, '-=0.6')
+  .from('.hero-year-badge', {
+    opacity: 0,
+    scale: 0.8,
+    duration: 0.8
+  }, '-=0.5')
+  .from('.hero-visual-backdrop', {
+    opacity: 0,
+    scale: 0.85,
+    duration: 1.4,
+    ease: 'power2.out'
+  }, '-=1.2')
+  .from('.hero-cta-container', {
+    opacity: 0,
+    y: 30,
+    scale: 0.95,
+    duration: 1.0,
+    ease: 'back.out(1.4)'
+  }, '-=0.6')
+  .from('.hero-scroll-cue', {
+    opacity: 0,
+    y: -15,
+    duration: 0.8
+  }, '-=0.4')
+  .from('.hero-bottom-bar', {
+    opacity: 0,
+    y: 25,
+    duration: 0.8
+  }, '-=0.6');
+
+  // Animación infinita suave para los nodos flotantes de fondo
+  document.querySelectorAll('.floating-node').forEach((node, idx) => {
+    const randomDuration = 3.5 + (idx % 4) * 0.8;
+    const randomY = -20 - (idx % 3) * 10;
+    const randomX = (idx % 2 === 0 ? 15 : -15);
+
+    gsap.to(node, {
+      y: `+=${randomY}`,
+      x: `+=${randomX}`,
+      rotation: 180,
+      duration: randomDuration,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: idx * 0.35
+    });
+  });
+
+  // Parallax suave interactivo con el cursor del ratón
+  const heroViewport = document.getElementById('hero-viewport');
+  const backdrop = document.getElementById('hero-backdrop');
+  const overlay = document.querySelector('.hero-info-overlay');
+
+  if (heroViewport && backdrop && overlay) {
+    heroViewport.addEventListener('mousemove', (e) => {
+      const rect = heroViewport.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
+      gsap.to(backdrop, {
+        x: x * 18,
+        y: y * 12,
+        rotationY: x * 6,
+        rotationX: -y * 6,
+        duration: 1.2,
+        ease: 'power2.out',
+        transformPerspective: 900
+      });
+
+      gsap.to(overlay, {
+        x: x * 6,
+        y: y * 4,
+        duration: 1.2,
+        ease: 'power2.out'
+      });
+    });
+
+    heroViewport.addEventListener('mouseleave', () => {
+      gsap.to(backdrop, {
+        x: 0,
+        y: 0,
+        rotationY: 0,
+        rotationX: 0,
+        duration: 1.5,
+        ease: 'power2.out'
+      });
+      gsap.to(overlay, {
+        x: 0,
+        y: 0,
+        duration: 1.5,
+        ease: 'power2.out'
+      });
+    });
+  }
+}
+
+/* ----------------------------------------------------
+   1.3 Interacciones del Hero, Botón CTA y Meta Quest
+   ---------------------------------------------------- */
+function initHeroInteractions() {
+  const ctaBtn = document.getElementById('btn-hero-cta');
+  const ctaIcon = document.getElementById('cta-icon');
+  const ctaText = document.getElementById('cta-button-text');
+  const ctaSub = document.getElementById('cta-button-sub');
+  const navExperiencesBtn = document.getElementById('btn-nav-experiences');
+  const scrollCue = document.getElementById('hero-scroll-cue');
+
+  // Detección de Meta Quest
+  const isQuest = /Quest|OculusBrowser/i.test(navigator.userAgent) || window.location.search.includes('quest=1');
+
+  if (isQuest && ctaBtn) {
+    ctaBtn.classList.add('quest-mode');
+    if (ctaIcon) ctaIcon.textContent = '🥽';
+    if (ctaText) ctaText.textContent = 'ENTRAR EN VR (META QUEST)';
+    if (ctaSub) ctaSub.textContent = '// PORTAL HUB // 6DOF';
+  }
+
+  // Función de scroll suave a experiencias
+  const scrollToExperiences = (e) => {
+    if (e) e.preventDefault();
+    if (window.xrAudio) window.xrAudio.playSelect();
+
+    const target = document.getElementById('experiencias-section');
+    if (!target) return;
+
+    if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
+      gsap.to(window, {
+        duration: 1.2,
+        scrollTo: { y: target, offsetY: 40 },
+        ease: 'power3.inOut'
+      });
+    } else {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Manejador del botón CTA
+  if (ctaBtn) {
+    ctaBtn.addEventListener('click', (e) => {
+      if (isQuest) {
+        if (window.xrAudio) window.xrAudio.playWarp();
+        // En Quest, lanzar WebXR directamente
+        const officialVrBtn = document.getElementById('official-vr-button');
+        if (officialVrBtn) {
+          officialVrBtn.click();
+        } else {
+          const view3dBtn = document.getElementById('btn-view-3d');
+          if (view3dBtn) view3dBtn.click();
+          else scrollToExperiences(e);
+        }
+      } else {
+        // En desktop/móvil, llevar al Hub de experiencias
+        scrollToExperiences(e);
+      }
+    });
+  }
+
+  if (navExperiencesBtn) {
+    navExperiencesBtn.addEventListener('click', scrollToExperiences);
+  }
+
+  if (scrollCue) {
+    scrollCue.addEventListener('click', scrollToExperiences);
+  }
+}
+
+/* ----------------------------------------------------
+   1.4 Menú Lateral Desplegable (Side Drawer)
+   ---------------------------------------------------- */
+function initSideDrawer() {
+  const drawer = document.getElementById('side-drawer-menu');
+  const openBtn = document.getElementById('btn-hamburger-menu');
+  const closeBtn = document.getElementById('btn-close-drawer');
+  const backdrop = document.getElementById('drawer-backdrop');
+  const expLink = document.getElementById('drawer-link-experiences');
+  const dynLink = document.getElementById('drawer-link-dynamic');
+
+  if (!drawer) return;
+
+  const openDrawer = () => {
+    drawer.classList.add('active');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (window.xrAudio) window.xrAudio.playHover();
+  };
+
+  const closeDrawer = () => {
+    drawer.classList.remove('active');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (window.xrAudio) window.xrAudio.playHover();
+  };
+
+  if (openBtn) openBtn.addEventListener('click', openDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && drawer.classList.contains('active')) {
+      closeDrawer();
+    }
+  });
+
+  if (expLink) {
+    expLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeDrawer();
+      setTimeout(() => {
+        const target = document.getElementById('experiencias-section');
+        if (target) {
+          if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
+            gsap.to(window, { duration: 1.0, scrollTo: { y: target, offsetY: 40 }, ease: 'power3.inOut' });
+          } else {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 300);
+    });
+  }
+
+  if (dynLink) {
+    dynLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeDrawer();
+      setTimeout(() => {
+        const dynBtn = document.getElementById('btn-hero-dynamic') || document.getElementById('btn-toggle-dynamic');
+        if (dynBtn) dynBtn.click();
+        const target = document.getElementById('modulo-dinamica');
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    });
   }
 }
 
