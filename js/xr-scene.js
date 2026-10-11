@@ -92,40 +92,45 @@ class XRSceneController {
     this.galleryCurrentIndex = 0;
     this.galleryAutoTimer = null;
     this.galleryLoadedImages = {};
+    this.galleryInsideOpened = false;
+
+    // Foto de Portada para el Gran Tablero 3D Principal
+    this.galleryCoverPhoto = {
+      id: 'portada-oficial',
+      imageSrc: 'assets/galeria/portada.png',
+      colorHex: '#d59b2d',
+      colorThree: 0xd59b2d,
+      icon: '🏛️'
+    };
+
+    // Fotos Reales del Taller (Se muestran al abrir el visor de la galería y en el carrusel una vez activado)
     this.galleryPhotos = [
       {
-        id: 'foto-1',
-        imageSrc: 'assets/hero_title_synapsia_xr.png',
+        id: 'taller-01',
+        imageSrc: 'assets/galeria/taller_01.jpg',
         colorHex: '#00f0ff',
         colorThree: 0x00f0ff,
-        icon: '📸'
-      },
-      {
-        id: 'foto-2',
-        imageSrc: 'assets/hero-synapsia.png',
-        colorHex: '#d59b2d',
-        colorThree: 0xd59b2d,
-        icon: '📷'
-      },
-      {
-        id: 'foto-3',
-        imageSrc: 'assets/logos-synapsia-sheet.png',
-        colorHex: '#ff007f',
-        colorThree: 0xff007f,
-        icon: '🖼️'
-      },
-      {
-        id: 'foto-4',
-        imageSrc: 'assets/logo_synapsia_brand.png',
-        colorHex: '#22c55e',
-        colorThree: 0x22c55e,
         icon: '🥽'
       },
       {
-        id: 'foto-5',
-        imageSrc: 'assets/powered_by_vxr_badge.png',
-        colorHex: '#a855f7',
-        colorThree: 0xa855f7,
+        id: 'taller-02',
+        imageSrc: 'assets/galeria/taller_02.jpg',
+        colorHex: '#d59b2d',
+        colorThree: 0xd59b2d,
+        icon: '💻'
+      },
+      {
+        id: 'taller-03',
+        imageSrc: 'assets/galeria/taller_03.jpg',
+        colorHex: '#ff007f',
+        colorThree: 0xff007f,
+        icon: '🎯'
+      },
+      {
+        id: 'taller-04',
+        imageSrc: 'assets/galeria/taller_04.jpg',
+        colorHex: '#22c55e',
+        colorThree: 0x22c55e,
         icon: '✨'
       }
     ];
@@ -658,13 +663,18 @@ class XRSceneController {
   startCarouselAutoCycle() {
     if (this.galleryAutoTimer) clearInterval(this.galleryAutoTimer);
     this.galleryAutoTimer = setInterval(() => {
-      // Rotar al siguiente slide automáticamente
-      this.cycleGalleryPhoto(1, false);
+      // Rotar al siguiente slide automáticamente sólo si ya fue abierta la galería
+      if (this.galleryInsideOpened) {
+        this.cycleGalleryPhoto(1, false);
+      }
     }, 7000);
   }
 
   cycleGalleryPhoto(direction = 1, userTriggered = true) {
     if (!this.galleryPhotos || this.galleryPhotos.length === 0) return;
+
+    // Al interactuar con el carrusel, activar el modo de visualización de fotos
+    this.galleryInsideOpened = true;
 
     this.galleryCurrentIndex = (this.galleryCurrentIndex + direction + this.galleryPhotos.length) % this.galleryPhotos.length;
     this.updatePanoramicCarouselTexture();
@@ -704,7 +714,8 @@ class XRSceneController {
 
   drawPanoramicCarouselCanvas() {
     const ctx = this.galleryCtx;
-    const current = this.galleryPhotos[this.galleryCurrentIndex] || this.galleryPhotos[0];
+    const isCover = !this.galleryInsideOpened;
+    const current = isCover ? this.galleryCoverPhoto : (this.galleryPhotos[this.galleryCurrentIndex] || this.galleryPhotos[0]);
     const total = this.galleryPhotos.length;
 
     // 1. Fondo estilizado Azul Noche Tecnológico (1536 x 576)
@@ -725,16 +736,20 @@ class XRSceneController {
     ctx.lineWidth = 2;
     ctx.strokeRect(20, 20, 1496, 536);
 
-    // 2. ENCABEZADO SUPERIOR LIMPIO Y ÚNICO PARA TODAS LAS FOTOS
+    // 2. ENCABEZADO SUPERIOR
     ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('// GALERÍA DE FOTOS DEL TALLER // FESTIVAL SYNAPSIA XR', 48, 56);
+    ctx.fillText('// GALERÍA DE FOTOS // FESTIVAL SYNAPSIA XR 2026', 48, 56);
 
     ctx.textAlign = 'right';
     ctx.fillStyle = '#facc15';
     ctx.font = 'bold 22px monospace';
-    ctx.fillText(`FOTO ${this.galleryCurrentIndex + 1} DE ${total}`, 1488, 56);
+    if (isCover) {
+      ctx.fillText('PORTADA OFICIAL • CLIC PARA ABRIR', 1488, 56);
+    } else {
+      ctx.fillText(`FOTO ${this.galleryCurrentIndex + 1} DE ${total}`, 1488, 56);
+    }
 
     // Línea separadora superior sutil
     ctx.strokeStyle = 'rgba(213, 155, 45, 0.35)';
@@ -744,7 +759,7 @@ class XRSceneController {
     ctx.lineTo(1488, 72);
     ctx.stroke();
 
-    // 3. ÁREA CENTRAL DE FOTO / VISUAL PRINCIPAL (1440 x 420)
+    // 3. ÁREA CENTRAL DE FOTO (1440 x 415)
     const photoBoxX = 48;
     const photoBoxY = 86;
     const photoBoxW = 1440;
@@ -757,7 +772,7 @@ class XRSceneController {
     ctx.fillStyle = photoGrad;
     ctx.fillRect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
 
-    // Si la imagen está precargada, dibujarla ocupando limpiamente el recuadro (manteniendo aspect ratio)
+    // Precarga y renderizado de la imagen
     let img = this.galleryLoadedImages[current.imageSrc];
     if (!img) {
       img = new Image();
@@ -770,31 +785,28 @@ class XRSceneController {
     }
 
     if (img && img.complete && img.naturalWidth > 0) {
-      // Dibujar imagen centrada con aspect-ratio contenido (contain / fit)
       const imgAspect = img.naturalWidth / img.naturalHeight;
       const boxAspect = photoBoxW / photoBoxH;
       let drawW, drawH, drawX, drawY;
 
       if (imgAspect > boxAspect) {
-        drawW = photoBoxW - 40;
+        drawW = photoBoxW - 20;
         drawH = drawW / imgAspect;
-        drawX = photoBoxX + 20;
+        drawX = photoBoxX + 10;
         drawY = photoBoxY + (photoBoxH - drawH) / 2;
       } else {
-        drawH = photoBoxH - 30;
+        drawH = photoBoxH - 20;
         drawW = drawH * imgAspect;
         drawX = photoBoxX + (photoBoxW - drawW) / 2;
-        drawY = photoBoxY + 15;
+        drawY = photoBoxY + 10;
       }
 
       ctx.save();
-      // Leve brillo / filtro
       ctx.shadowColor = current.colorHex || '#00f0ff';
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 18;
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
       ctx.restore();
     } else {
-      // Fallback mientras carga la imagen: Gran Emblema Fotográfico
       ctx.font = '140px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(current.icon || '📸', photoBoxX + photoBoxW / 2, photoBoxY + 240);
@@ -805,54 +817,73 @@ class XRSceneController {
     ctx.lineWidth = 3;
     ctx.strokeRect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
 
-    // 4. FLECHAS DIRECTAS VISIBLES EN LOS EXTREMOS DEL PANEL
-    // Flecha izquierda [ ◀ ANTERIOR ]
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
-    ctx.fillRect(photoBoxX + 16, photoBoxY + 155, 84, 105);
-    ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(photoBoxX + 16, photoBoxY + 155, 84, 105);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 46px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('◀', photoBoxX + 58, photoBoxY + 225);
+    if (isCover) {
+      // 4. MODO PORTADA: Botón e invitación clara a abrir
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.fillRect(530, 435, 476, 52);
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(530, 435, 476, 52);
 
-    // Flecha derecha [ SIGUIENTE ▶ ]
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
-    ctx.fillRect(photoBoxX + photoBoxW - 100, photoBoxY + 155, 84, 105);
-    ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(photoBoxX + photoBoxW - 100, photoBoxY + 155, 84, 105);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 46px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('▶', photoBoxX + photoBoxW - 58, photoBoxY + 225);
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 20px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🔍 HAZ CLIC AQUÍ PARA ABRIR LA GALERÍA', 768, 468);
 
-    // 5. BARRA INFERIOR SIMPLE DE CONTROLES E INDICADORES (DOTS)
-    const dotSpacing = 36;
-    const dotsStartX = (1536 - (total - 1) * dotSpacing) / 2;
-    for (let i = 0; i < total; i++) {
-      const dotX = dotsStartX + i * dotSpacing;
-      const isCur = (i === this.galleryCurrentIndex);
-      ctx.beginPath();
-      ctx.arc(dotX, 532, isCur ? 10 : 6, 0, Math.PI * 2);
-      ctx.fillStyle = isCur ? '#00f0ff' : 'rgba(255, 255, 255, 0.3)';
-      ctx.fill();
-      if (isCur) {
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+      // Barra inferior en portada
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = 'bold 16px monospace';
+      ctx.fillText('MEMORIAS FOTOGRÁFICAS DEL TALLER // APUNTA Y HAZ CLIC PARA ENTRAR', 768, 536);
+    } else {
+      // 4. MODO VISUALIZADOR ACTIVO: FLECHAS Y DOTS
+      // Flecha izquierda [ ◀ ANTERIOR ]
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+      ctx.fillRect(photoBoxX + 16, photoBoxY + 155, 84, 105);
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(photoBoxX + 16, photoBoxY + 155, 84, 105);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 46px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('◀', photoBoxX + 58, photoBoxY + 225);
+
+      // Flecha derecha [ SIGUIENTE ▶ ]
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+      ctx.fillRect(photoBoxX + photoBoxW - 100, photoBoxY + 155, 84, 105);
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(photoBoxX + photoBoxW - 100, photoBoxY + 155, 84, 105);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 46px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('▶', photoBoxX + photoBoxW - 58, photoBoxY + 225);
+
+      // Indicadores de puntos (dots)
+      const dotSpacing = 36;
+      const dotsStartX = (1536 - (total - 1) * dotSpacing) / 2;
+      for (let i = 0; i < total; i++) {
+        const dotX = dotsStartX + i * dotSpacing;
+        const isCur = (i === this.galleryCurrentIndex);
+        ctx.beginPath();
+        ctx.arc(dotX, 532, isCur ? 10 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = isCur ? '#00f0ff' : 'rgba(255, 255, 255, 0.3)';
+        ctx.fill();
+        if (isCur) {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
       }
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.font = 'bold 16px monospace';
+      ctx.fillText('◄ BOTÓN [ ◀ ] ANTERIOR', 52, 536);
+
+      ctx.textAlign = 'right';
+      ctx.fillText('SIGUIENTE [ ▶ ] ►', 1484, 536);
     }
-
-    // Indicación de clic directa
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('◄ BOTÓN [ ◀ ] ANTERIOR', 52, 536);
-
-    ctx.textAlign = 'right';
-    ctx.fillText('SIGUIENTE [ ▶ ] ►', 1484, 536);
   }
 
   createPortalMonolith(exp) {
@@ -1478,6 +1509,11 @@ class XRSceneController {
       document.exitPointerLock();
     }
 
+    // Activar modo de fotos dentro del carrusel y actualizar cartel 3D
+    this.galleryInsideOpened = true;
+    this.updatePanoramicCarouselTexture();
+    this.startCarouselAutoCycle();
+
     this.updateGalleryModalContent();
     modal.classList.remove('hidden');
 
@@ -1861,7 +1897,7 @@ class XRSceneController {
               } else if (action === 'next' || (galleryObj === this.galleryMesh && this.lastGalleryHitU > 0.72)) {
                 promptText.textContent = 'SIGUIENTE FOTO ▶';
               } else {
-                promptText.textContent = 'VER FOTO EN PANTALLA COMPLETA 🔍';
+                promptText.textContent = (!this.galleryInsideOpened) ? 'ABRIR GALERÍA DE FOTOS 🔍' : 'VER FOTO EN PANTALLA COMPLETA 🔍';
               }
             }
           }
