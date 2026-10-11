@@ -5,6 +5,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  initMobileOrientationCheck();
   initWebXRDetection();
   initQuestOverlay();
   initGsapHeroAnimations();
@@ -16,6 +17,59 @@ document.addEventListener('DOMContentLoaded', () => {
   initDynamicUI();
   initHoverEffects();
 });
+
+/* ----------------------------------------------------
+   0. Detección y Bloqueo de Orientación para Móviles
+   (Exige orientación Horizontal / Landscape en teléfonos)
+   ---------------------------------------------------- */
+function initMobileOrientationCheck() {
+  const rotateOverlay = document.getElementById('mobile-rotate-overlay');
+  if (!rotateOverlay) return;
+
+  function isMobile() {
+    const ua = navigator.userAgent || '';
+    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    return mobileRegex.test(ua) || (isTouch && window.innerWidth <= 1024 && window.innerHeight <= 1024);
+  }
+
+  function isPortrait() {
+    if (window.screen && window.screen.orientation && window.screen.orientation.type) {
+      return window.screen.orientation.type.startsWith('portrait');
+    }
+    return window.innerHeight > window.innerWidth;
+  }
+
+  function updateOrientationState() {
+    // Si es un visor Meta Quest en modo VR o standalone, no exigir rotación
+    const isQuest = /Quest|OculusBrowser/i.test(navigator.userAgent);
+    if (isQuest) {
+      rotateOverlay.classList.add('hidden');
+      return;
+    }
+
+    if (isMobile() && isPortrait()) {
+      rotateOverlay.classList.remove('hidden');
+      document.body.classList.add('mobile-portrait-locked');
+    } else {
+      rotateOverlay.classList.add('hidden');
+      document.body.classList.remove('mobile-portrait-locked');
+    }
+  }
+
+  // Comprobar al iniciar
+  updateOrientationState();
+
+  // Escuchar cambios de tamaño y rotación de pantalla
+  window.addEventListener('resize', updateOrientationState);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(updateOrientationState, 150);
+  });
+  if (window.screen && window.screen.orientation) {
+    window.screen.orientation.addEventListener('change', updateOrientationState);
+  }
+}
+
 
 /* ----------------------------------------------------
    1. Detección de Dispositivo y Compatibilidad WebXR

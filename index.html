@@ -81,6 +81,45 @@
     </div>
   </div>
 
+  <!-- Overlay de Rotación de Pantalla a Horizontal para Teléfonos Móviles -->
+  <div id="mobile-rotate-overlay" class="mobile-rotate-overlay hidden">
+    <div class="mobile-rotate-card">
+      <div class="phone-rotate-animation">
+        <div class="phone-icon-body">
+          <div class="phone-notch"></div>
+          <div class="phone-screen-inner"></div>
+        </div>
+        <div class="phone-rotate-arrow">↻</div>
+      </div>
+      <h2 class="rotate-title">GIRA TU TELÉFONO</h2>
+      <p class="rotate-subtitle">MODO HORIZONTAL REQUERIDO // SYNAPSIA XR</p>
+      <p class="rotate-desc">
+        Para disfrutar la experiencia inmersiva del Hub 3D, por favor coloca tu dispositivo en posición horizontal.
+      </p>
+    </div>
+  </div>
+
+  <!-- Controles Táctiles Divididos para Móviles en el Hub 3D -->
+  <div id="mobile-touch-controls" class="mobile-touch-controls">
+    <!-- Mitad Izquierda: Cámara Primera Persona (Touch Look) + Tocar para Interactuar -->
+    <div id="touch-zone-look" class="touch-zone touch-zone-left">
+      <div class="touch-zone-hint">
+        <span>👁️ DESLIZA: MIRAR</span>
+        <span>• TOCA: INTERACTUAR</span>
+      </div>
+    </div>
+
+    <!-- Mitad Derecha: Desplazamiento en el Hub (Joystick Virtual / Touch Move) -->
+    <div id="touch-zone-move" class="touch-zone touch-zone-right">
+      <div class="touch-zone-hint">
+        <span>🕹️ DESLIZA: CAMINAR</span>
+      </div>
+      <div id="touch-joystick-base" class="touch-joystick-base">
+        <div id="touch-joystick-knob" class="touch-joystick-knob"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Contenedor 3D WebXR (Three.js Canvas) -->
   <div id="webxr-canvas-container"></div>
 

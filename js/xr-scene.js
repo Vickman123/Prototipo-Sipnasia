@@ -85,6 +85,23 @@ class XRSceneController {
     this.pitch = 0;
     this.hoveredPortal = null;
 
+    // Controles Táctiles para Móviles (Mitad Izquierda: Mirar/Tocar | Mitad Derecha: Desplazarse)
+    this.isTouchDevice = false;
+    this.mobileMoveVector = { x: 0, y: 0 };
+    this.touchLookActive = false;
+    this.touchLookId = null;
+    this.touchLookStartX = 0;
+    this.touchLookStartY = 0;
+    this.touchLookLastX = 0;
+    this.touchLookLastY = 0;
+    this.touchLookStartTime = 0;
+    this.touchLookHasMoved = false;
+
+    this.touchMoveActive = false;
+    this.touchMoveId = null;
+    this.touchMoveOriginX = 0;
+    this.touchMoveOriginY = 0;
+
     // Gran Pantalla Panorámica Rectangular con Carrusel del Taller
     this.galleryPanelGroup = null;
     this.galleryMesh = null;
@@ -226,6 +243,10 @@ class XRSceneController {
     // 13. Eventos de Ratón, Redimensión y Teclado WASD
     this.setupEventListeners();
     this.setupKeyboardControls();
+
+    // 13.1 Controles Táctiles Divididos para Dispositivos Móviles
+    this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    this.setupMobileTouchControls();
 
     // 14. Bucle de Animación Continuo
     this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
@@ -1412,18 +1433,28 @@ class XRSceneController {
   handleDesktopLocomotion(delta) {
     if (this.isVR || !this.isInteractive3D) return;
 
-    if (this.keys.forward || this.keys.backward || this.keys.left || this.keys.right) {
+    const hasKeyboard = (this.keys.forward || this.keys.backward || this.keys.left || this.keys.right);
+    const hasMobile = (Math.abs(this.mobileMoveVector.x) > 0.04 || Math.abs(this.mobileMoveVector.y) > 0.04);
+
+    if (hasKeyboard || hasMobile) {
       // Dirección frontal proyectada en el plano XZ a partir de la rotación yaw del jugador
       this.forwardVec.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw)).normalize();
       this.rightVec.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw)).normalize();
 
       this.moveVec.set(0, 0, 0);
-      if (this.keys.forward) this.moveVec.add(this.forwardVec);
-      if (this.keys.backward) this.moveVec.sub(this.forwardVec);
-      if (this.keys.right) this.moveVec.add(this.rightVec);
-      if (this.keys.left) this.moveVec.sub(this.rightVec);
 
-      this.moveVec.normalize();
+      if (hasKeyboard) {
+        if (this.keys.forward) this.moveVec.add(this.forwardVec);
+        if (this.keys.backward) this.moveVec.sub(this.forwardVec);
+        if (this.keys.right) this.moveVec.add(this.rightVec);
+        if (this.keys.left) this.moveVec.sub(this.rightVec);
+        this.moveVec.normalize();
+      } else if (hasMobile) {
+        // Desplazamiento analógico suave con joystick táctil (Mitad Derecha)
+        this.moveVec.addScaledVector(this.forwardVec, this.mobileMoveVector.y);
+        this.moveVec.addScaledVector(this.rightVec, this.mobileMoveVector.x);
+      }
+
       const speed = 4.2;
       this.dolly.position.addScaledVector(this.moveVec, speed * delta);
 
@@ -1472,6 +1503,7 @@ class XRSceneController {
       document.getElementById('ui-root')?.classList.add('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.add('visible');
       document.getElementById('quest-vr-overlay')?.classList.add('hidden');
+      document.getElementById('mobile-touch-controls')?.classList.remove('active');
 
       // Optimización para Meta Quest 3S: Foveated Rendering al 100%
       if (this.renderer.xr.setFoveation) {
@@ -2185,56 +2217,7 @@ class XRSceneController {
         this.camera.rotation.x = this.pitch;
 
         // Comprobar portal o mampara de galería bajo la retícula central (0, 0)
-        this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
-        const intersects = this.raycaster.intersectObjects(this.interactables, false);
-
-        if (intersects.length > 0 && intersects[0].object?.userData?.isPortal) {
-          const portalObj = intersects[0].object;
-          this.hoveredPortal = portalObj;
-          if (crosshair) crosshair.classList.add('hovering');
-          if (promptEl) {
-            promptEl.classList.add('visible');
-            if (promptText) {
-              const data = portalObj.userData.portalData;
-              promptText.textContent = `ENTRAR A ${data.title}`;
-            }
-          }
-        } else if (intersects.length > 0 && intersects[0].object?.userData?.isGallery) {
-          const galleryObj = intersects[0].object;
-          this.hoveredPortal = galleryObj;
-          if (intersects[0].uv) {
-            this.lastGalleryHitU = intersects[0].uv.x;
-          }
-          if (crosshair) crosshair.classList.add('hovering');
-          if (promptEl) {
-            promptEl.classList.add('visible');
-            if (promptText) {
-              const action = galleryObj.userData.action;
-              if (action === 'prev' || (galleryObj === this.galleryMesh && this.lastGalleryHitU < 0.28)) {
-                promptText.textContent = '◀ FOTO ANTERIOR';
-              } else if (action === 'next' || (galleryObj === this.galleryMesh && this.lastGalleryHitU > 0.72)) {
-                promptText.textContent = 'SIGUIENTE FOTO ▶';
-              } else {
-                promptText.textContent = (!this.galleryInsideOpened) ? 'ABRIR GALERÍA DE FOTOS 🔍' : 'VER FOTO EN PANTALLA COMPLETA 🔍';
-              }
-            }
-          }
-        } else if (intersects.length > 0 && intersects[0].object?.userData?.isPresentation) {
-          const presObj = intersects[0].object;
-          this.hoveredPortal = presObj;
-          if (crosshair) crosshair.classList.add('hovering');
-          if (promptEl) {
-            promptEl.classList.add('visible');
-            if (promptText) {
-              promptText.textContent = 'ABRIR DIAPOSITIVAS DEL TALLER 📑';
-            }
-          }
-        } else {
-          this.hoveredPortal = null;
-          this.lastGalleryHitU = undefined;
-          if (crosshair) crosshair.classList.remove('hovering');
-          if (promptEl) promptEl.classList.remove('visible');
-        }
+        this.updateCrosshairHover();
       } else {
         // Si aún no está bloqueado, actualizar coordenadas de cursor para raycasting visual
         this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -2259,14 +2242,16 @@ class XRSceneController {
       if (!this.isInteractive3D || this.isVR) return;
 
       if (!this.isPointerLocked) {
-        // Al dar clic en pantalla, fijar el cursor en primera persona de inmediato
-        try {
-          const promise = canvas.requestPointerLock();
-          if (promise && typeof promise.catch === 'function') {
-            promise.catch(() => {});
+        // Al dar clic en pantalla, fijar el cursor en primera persona de inmediato (en PC)
+        if (!this.isTouchDevice) {
+          try {
+            const promise = canvas.requestPointerLock();
+            if (promise && typeof promise.catch === 'function') {
+              promise.catch(() => {});
+            }
+          } catch (err) {
+            console.warn('[SipnasiaXR] Pointer lock error:', err);
           }
-        } catch (err) {
-          console.warn('[SipnasiaXR] Pointer lock error:', err);
         }
       } else {
         // En modo fijado, disparar raycast al centro
@@ -2282,11 +2267,270 @@ class XRSceneController {
     });
   }
 
+  /* ----------------------------------------------------
+     Actualizar Detección de Retícula (Hover Crosshair & Prompt)
+     ---------------------------------------------------- */
+  updateCrosshairHover() {
+    const crosshair = document.getElementById('hub-crosshair');
+    const promptEl = document.getElementById('hub-portal-prompt');
+    const promptText = document.getElementById('portal-prompt-text');
+
+    this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.interactables, false);
+
+    if (intersects.length > 0 && intersects[0].object?.userData?.isPortal) {
+      const portalObj = intersects[0].object;
+      this.hoveredPortal = portalObj;
+      if (crosshair) crosshair.classList.add('hovering');
+      if (promptEl) {
+        promptEl.classList.add('visible');
+        if (promptText) {
+          const data = portalObj.userData.portalData;
+          promptText.textContent = this.isTouchDevice ? `TOCA PARA ENTRAR // ${data.title}` : `ENTRAR A ${data.title}`;
+        }
+      }
+    } else if (intersects.length > 0 && intersects[0].object?.userData?.isGallery) {
+      const galleryObj = intersects[0].object;
+      this.hoveredPortal = galleryObj;
+      if (intersects[0].uv) {
+        this.lastGalleryHitU = intersects[0].uv.x;
+      }
+      if (crosshair) crosshair.classList.add('hovering');
+      if (promptEl) {
+        promptEl.classList.add('visible');
+        if (promptText) {
+          const action = galleryObj.userData.action;
+          if (action === 'prev' || (galleryObj === this.galleryMesh && this.lastGalleryHitU < 0.28)) {
+            promptText.textContent = '◀ FOTO ANTERIOR';
+          } else if (action === 'next' || (galleryObj === this.galleryMesh && this.lastGalleryHitU > 0.72)) {
+            promptText.textContent = 'SIGUIENTE FOTO ▶';
+          } else {
+            promptText.textContent = (!this.galleryInsideOpened) ? 'TOCA: ABRIR GALERÍA 🔍' : 'TOCA: PANTALLA COMPLETA 🔍';
+          }
+        }
+      }
+    } else if (intersects.length > 0 && intersects[0].object?.userData?.isPresentation) {
+      const presObj = intersects[0].object;
+      this.hoveredPortal = presObj;
+      if (crosshair) crosshair.classList.add('hovering');
+      if (promptEl) {
+        promptEl.classList.add('visible');
+        if (promptText) {
+          promptText.textContent = 'TOCA: ABRIR DIAPOSITIVAS 📑';
+        }
+      }
+    } else {
+      this.hoveredPortal = null;
+      this.lastGalleryHitU = undefined;
+      if (crosshair) crosshair.classList.remove('hovering');
+      if (promptEl) promptEl.classList.remove('visible');
+    }
+  }
+
+  /* ----------------------------------------------------
+     Controles Táctiles para Móviles (Pantalla Dividida)
+     Mitad Izquierda: Mirar y Tocar // Mitad Derecha: Desplazarse
+     ---------------------------------------------------- */
+  setupMobileTouchControls() {
+    const mobileControls = document.getElementById('mobile-touch-controls');
+    const lookZone = document.getElementById('touch-zone-look');
+    const moveZone = document.getElementById('touch-zone-move');
+    const joystickBase = document.getElementById('touch-joystick-base');
+    const joystickKnob = document.getElementById('touch-joystick-knob');
+
+    if (!lookZone || !moveZone) return;
+
+    // --- MITAD IZQUIERDA: CÁMARA PRIMERA PERSONA & TOCAR PARA INTERACTUAR ---
+    lookZone.addEventListener('touchstart', (e) => {
+      if (!this.isInteractive3D || this.isVR) return;
+      e.preventDefault();
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (this.touchLookId === null) {
+          this.touchLookId = touch.identifier;
+          this.touchLookActive = true;
+          this.touchLookStartX = touch.clientX;
+          this.touchLookStartY = touch.clientY;
+          this.touchLookLastX = touch.clientX;
+          this.touchLookLastY = touch.clientY;
+          this.touchLookStartTime = performance.now();
+          this.touchLookHasMoved = false;
+          break;
+        }
+      }
+    }, { passive: false });
+
+    lookZone.addEventListener('touchmove', (e) => {
+      if (!this.touchLookActive || !this.isInteractive3D || this.isVR) return;
+      e.preventDefault();
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === this.touchLookId) {
+          const deltaX = touch.clientX - this.touchLookLastX;
+          const deltaY = touch.clientY - this.touchLookLastY;
+
+          if (Math.hypot(touch.clientX - this.touchLookStartX, touch.clientY - this.touchLookStartY) > 8) {
+            this.touchLookHasMoved = true;
+          }
+
+          const sensitivity = 0.0042;
+          this.yaw -= deltaX * sensitivity;
+          this.pitch -= deltaY * sensitivity;
+          this.pitch = Math.max(-Math.PI / 2.15, Math.min(Math.PI / 2.15, this.pitch));
+
+          this.camera.rotation.order = 'YXZ';
+          this.camera.rotation.y = this.yaw;
+          this.camera.rotation.x = this.pitch;
+
+          this.touchLookLastX = touch.clientX;
+          this.touchLookLastY = touch.clientY;
+
+          this.updateCrosshairHover();
+          break;
+        }
+      }
+    }, { passive: false });
+
+    const handleLookEnd = (e) => {
+      if (!this.touchLookActive) return;
+      e.preventDefault();
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === this.touchLookId) {
+          const duration = performance.now() - this.touchLookStartTime;
+          // Si el toque fue breve y con mínimo movimiento, cuenta como TAP para interactuar
+          if (!this.touchLookHasMoved && duration < 380) {
+            this.handleMobileTap(touch.clientX, touch.clientY);
+          }
+          this.touchLookActive = false;
+          this.touchLookId = null;
+          break;
+        }
+      }
+    };
+
+    lookZone.addEventListener('touchend', handleLookEnd, { passive: false });
+    lookZone.addEventListener('touchcancel', handleLookEnd, { passive: false });
+
+    // --- MITAD DERECHA: DESPLAZAMIENTO EN EL HUB (JOYSTICK VIRTUAL) ---
+    moveZone.addEventListener('touchstart', (e) => {
+      if (!this.isInteractive3D || this.isVR) return;
+      e.preventDefault();
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (this.touchMoveId === null) {
+          this.touchMoveId = touch.identifier;
+          this.touchMoveActive = true;
+          this.touchMoveOriginX = touch.clientX;
+          this.touchMoveOriginY = touch.clientY;
+
+          const rect = moveZone.getBoundingClientRect();
+          const localX = touch.clientX - rect.left;
+          const localY = touch.clientY - rect.top;
+
+          if (joystickBase) {
+            joystickBase.style.left = `${localX}px`;
+            joystickBase.style.top = `${localY}px`;
+            joystickBase.classList.add('visible');
+          }
+          if (joystickKnob) {
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+          }
+
+          this.mobileMoveVector.x = 0;
+          this.mobileMoveVector.y = 0;
+          break;
+        }
+      }
+    }, { passive: false });
+
+    moveZone.addEventListener('touchmove', (e) => {
+      if (!this.touchMoveActive || !this.isInteractive3D || this.isVR) return;
+      e.preventDefault();
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === this.touchMoveId) {
+          const dx = touch.clientX - this.touchMoveOriginX;
+          const dy = touch.clientY - this.touchMoveOriginY;
+          const maxRadius = 46;
+          const dist = Math.hypot(dx, dy);
+          const angle = Math.atan2(dy, dx);
+          const clampedDist = Math.min(dist, maxRadius);
+
+          const knobX = Math.cos(angle) * clampedDist;
+          const knobY = Math.sin(angle) * clampedDist;
+
+          if (joystickKnob) {
+            joystickKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+          }
+
+          // Vector analógico normalizado (-1 a +1)
+          this.mobileMoveVector.x = knobX / maxRadius;      // Strafe (izq / der)
+          this.mobileMoveVector.y = -(knobY / maxRadius);    // Caminar (adelante / atrás)
+          break;
+        }
+      }
+    }, { passive: false });
+
+    const handleMoveEnd = (e) => {
+      if (!this.touchMoveActive) return;
+      e.preventDefault();
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === this.touchMoveId) {
+          this.touchMoveActive = false;
+          this.touchMoveId = null;
+          this.mobileMoveVector.x = 0;
+          this.mobileMoveVector.y = 0;
+
+          if (joystickKnob) {
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+          }
+          if (joystickBase) {
+            joystickBase.classList.remove('visible');
+          }
+          break;
+        }
+      }
+    };
+
+    moveZone.addEventListener('touchend', handleMoveEnd, { passive: false });
+    moveZone.addEventListener('touchcancel', handleMoveEnd, { passive: false });
+  }
+
+  handleMobileTap(clientX, clientY) {
+    // 1. Raycast hacia el centro de la pantalla (retícula)
+    this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
+    let intersects = this.raycaster.intersectObjects(this.interactables, false);
+
+    // 2. Si no hubo impacto en el centro, probar las coordenadas del tap
+    if (intersects.length === 0 && clientX !== undefined && clientY !== undefined) {
+      const tapX = (clientX / window.innerWidth) * 2 - 1;
+      const tapY = -(clientY / window.innerHeight) * 2 + 1;
+      this.raycaster.setFromCamera({ x: tapX, y: tapY }, this.camera);
+      intersects = this.raycaster.intersectObjects(this.interactables, false);
+    }
+
+    if (intersects.length > 0) {
+      if (intersects[0].uv) {
+        this.lastGalleryHitU = intersects[0].uv.x;
+      }
+      this.handleObjectClick(intersects[0].object);
+    }
+  }
+
   toggleInteractive3D(enable) {
     this.isInteractive3D = enable;
     const canvas = this.renderer.domElement;
     const crosshair = document.getElementById('hub-crosshair');
     const promptEl = document.getElementById('hub-portal-prompt');
+    const mobileControls = document.getElementById('mobile-touch-controls');
 
     if (enable) {
       this.container.classList.add('interactive-mode');
@@ -2300,15 +2544,25 @@ class XRSceneController {
       this.yaw = 0;
       this.pitch = 0;
 
-      // Solicitar fijación de cámara automática al entrar
-      setTimeout(() => {
-        try {
-          const promise = canvas.requestPointerLock();
-          if (promise && typeof promise.catch === 'function') {
-            promise.catch(() => {});
-          }
-        } catch (e) {}
-      }, 100);
+      // Si es dispositivo táctil o móvil, activar controles divididos en pantalla
+      if (this.isTouchDevice && mobileControls) {
+        mobileControls.classList.add('active');
+        if (crosshair) crosshair.classList.add('visible');
+        const hudInfo = document.getElementById('hud-controls-text');
+        if (hudInfo) {
+          hudInfo.textContent = '📱 CONTROLES MÓVILES // IZQUIERDA: MIRAR Y TOCAR | DERECHA: CAMINAR';
+        }
+      } else {
+        // Solicitar fijación de cámara automática al entrar en PC
+        setTimeout(() => {
+          try {
+            const promise = canvas.requestPointerLock();
+            if (promise && typeof promise.catch === 'function') {
+              promise.catch(() => {});
+            }
+          } catch (e) {}
+        }, 100);
+      }
     } else {
       if (document.pointerLockElement) {
         document.exitPointerLock();
@@ -2319,6 +2573,9 @@ class XRSceneController {
       document.getElementById('xr-scene-hud')?.classList.remove('visible');
       if (crosshair) crosshair.classList.remove('visible');
       if (promptEl) promptEl.classList.remove('visible');
+      if (mobileControls) mobileControls.classList.remove('active');
+      this.mobileMoveVector.x = 0;
+      this.mobileMoveVector.y = 0;
       document.body.style.cursor = 'default';
     }
   }
