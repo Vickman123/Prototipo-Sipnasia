@@ -99,63 +99,37 @@
   <!-- Raíz de la Interfaz 2D -->
   <div id="ui-root">
 
-    <!-- Navegación Superior Estilo Festival Synapsia XR -->
-    <header class="synapsia-header" id="main-header">
-      <div class="synapsia-brand">
-        <div class="synapsia-brand-row">
-          <img src="assets/synapsia_app_icon.png" alt="Synapsia XR" class="synapsia-brand-icon-img" />
-          <div class="synapsia-brand-text">
-            <div class="synapsia-wordmark">
-              <span>S</span>
-              <span class="has-dot dot-yellow">Y</span>
-              <span>N</span>
-              <span class="has-dot dot-red">A</span>
-              <span>P</span>
-              <span>S</span>
-              <span class="has-dot dot-green">I</span>
-              <span>A</span>
-              <span class="gradient-xr">XR</span>
-            </div>
-            <span class="synapsia-brand-sub">PC PUMA | PROGRAMA DE CONECTIVIDAD MÓVIL</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="synapsia-header-nav">
-        <!-- Badge de estado WebXR -->
-        <div id="xr-status-pill" class="status-badge">
-          <div id="xr-status-dot" class="pulse-dot"></div>
-          <span id="xr-status-text">Detectando WebXR...</span>
-        </div>
-
-        <!-- Botón Acceso Experiencias -->
-        <button id="btn-nav-experiences" class="btn-nav-pill" type="button" title="Ir a catálogo de experiencias">
-          <span class="pill-glyph">⬡</span>
-          <span>Experiencias</span>
-        </button>
-
-        <!-- Botón de Audio FX -->
-        <button id="btn-sound-toggle" class="btn-header btn-sound-toggle" title="Activar/Desactivar Sonido">
-          🔊 <span id="sound-status-text">AUDIO ON</span>
-        </button>
-
-        <!-- Botón para ver en Modo 3D -->
-        <button id="btn-view-3d" class="btn-header" title="Explorar Hub 3D en pantalla">
-          🌐 3D HUB
-        </button>
-
-        <!-- Botón Menú Hamburguesa -->
-        <button id="btn-hamburger-menu" class="btn-hamburger" type="button" aria-label="Abrir Menú de Navegación">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-    </header>
-
     <!-- Hero Viewport Festival Synapsia XR 2026 -->
     <section class="synapsia-hero-viewport" id="hero-viewport">
       <div class="hero-ambient-glow"></div>
+
+      <!-- Navegación Superior Integrada en el Hero -->
+      <header class="synapsia-header" id="main-header">
+        <a href="#" class="synapsia-brand" aria-label="Synapsia XR Inicio">
+          <img src="assets/logo_synapsia_navbar.png" alt="SYNAPSIA XR - PC PUMA" class="navbar-synapsia-logo" />
+        </a>
+
+        <div class="synapsia-header-nav">
+          <!-- Botón Acceso Experiencias -->
+          <button id="btn-nav-experiences" class="btn-nav-pill" type="button" title="Ir a catálogo de experiencias">
+            <span class="pill-glyph">⬡</span>
+            <span>Experiencias</span>
+          </button>
+
+          <!-- Botón Menú Hamburguesa -->
+          <button id="btn-hamburger-menu" class="btn-hamburger" type="button" aria-label="Abrir Menú de Navegación">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Badge de estado WebXR (Invisibilizado de navbar) -->
+      <div id="xr-status-pill" class="status-badge" style="display: none;">
+        <div id="xr-status-dot" class="pulse-dot"></div>
+        <span id="xr-status-text">WebXR Listo</span>
+      </div>
 
       <div class="hero-stage-content">
         <!-- Nodos Flotantes GSAP en el Fondo -->
@@ -543,6 +517,15 @@
       </div>
 
       <div class="drawer-body">
+        <div class="drawer-controls-row">
+          <button id="btn-sound-toggle" class="btn-drawer-ctrl" title="Activar/Desactivar Sonido">
+            🔊 <span id="sound-status-text">AUDIO ON</span>
+          </button>
+          <button id="btn-view-3d" class="btn-drawer-ctrl" title="Explorar Hub 3D">
+            🌐 MODO 3D HUB
+          </button>
+        </div>
+
         <nav class="drawer-nav">
           <a href="#experiencias-section" class="drawer-item" id="drawer-link-experiences">
             <span class="drawer-item-icon">⬡</span>
