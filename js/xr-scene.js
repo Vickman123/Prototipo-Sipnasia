@@ -1232,13 +1232,35 @@ class XRSceneController {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
+    let pointerDownPos = { x: 0, y: 0 };
+    window.addEventListener('pointerdown', (e) => {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+    });
+
     window.addEventListener('pointermove', (e) => {
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      if (this.isInteractive3D && !this.isVR) {
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.interactables, false);
+        if (intersects.length > 0 && intersects[0].object?.userData?.isPortal) {
+          document.body.style.cursor = 'pointer';
+        } else {
+          document.body.style.cursor = 'default';
+        }
+      }
     });
 
-    window.addEventListener('click', () => {
+    window.addEventListener('pointerup', (e) => {
       if (!this.isInteractive3D || this.isVR) return;
+
+      // Ignorar si el usuario estaba arrastrando la cámara (movimiento mayor a 6px)
+      const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+      if (dist > 6) return;
+
+      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
       this.raycaster.setFromCamera(this.mouse, this.camera);
       const intersects = this.raycaster.intersectObjects(this.interactables, false);
@@ -1260,6 +1282,7 @@ class XRSceneController {
       this.container.classList.remove('interactive-mode');
       document.getElementById('ui-root')?.classList.remove('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.remove('visible');
+      document.body.style.cursor = 'default';
     }
   }
 

@@ -145,11 +145,6 @@ function initGsapHeroAnimations() {
     duration: 1.0,
     ease: 'back.out(1.4)'
   }, '-=0.6')
-  .from('.hero-scroll-cue', {
-    opacity: 0,
-    y: -15,
-    duration: 0.8
-  }, '-=0.4')
   .from('.hero-bottom-bar', {
     opacity: 0,
     y: 25,
@@ -243,52 +238,27 @@ function initHeroInteractions() {
     if (ctaSub) ctaSub.textContent = '// PORTAL HUB // 6DOF';
   }
 
-  // Función de scroll suave a experiencias
-  const scrollToExperiences = (e) => {
-    if (e) e.preventDefault();
-    if (window.xrAudio) window.xrAudio.playSelect();
-
-    const target = document.getElementById('experiencias-section');
-    if (!target) return;
-
-    if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
-      gsap.to(window, {
-        duration: 1.2,
-        scrollTo: { y: target, offsetY: 40 },
-        ease: 'power3.inOut'
-      });
-    } else {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  // Manejador del botón CTA
+  // Manejador del botón CTA: Activa el Hub 3D XR en PC o WebXR en Meta Quest
   if (ctaBtn) {
     ctaBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.xrAudio) window.xrAudio.playWarp();
+
       if (isQuest) {
-        if (window.xrAudio) window.xrAudio.playWarp();
-        // En Quest, lanzar WebXR directamente
+        // En Quest, lanzar WebXR inmersivo
         const officialVrBtn = document.getElementById('official-vr-button');
         if (officialVrBtn) {
           officialVrBtn.click();
-        } else {
-          const view3dBtn = document.getElementById('btn-view-3d');
-          if (view3dBtn) view3dBtn.click();
-          else scrollToExperiences(e);
+        } else if (window.XRSceneManager) {
+          window.XRSceneManager.toggleInteractive3D(true);
         }
       } else {
-        // En desktop/móvil, llevar al Hub de experiencias
-        scrollToExperiences(e);
+        // En PC / Desktop / Móvil: Activar Hub 3D interactivo
+        if (window.XRSceneManager) {
+          window.XRSceneManager.toggleInteractive3D(true);
+        }
       }
     });
-  }
-
-  if (navExperiencesBtn) {
-    navExperiencesBtn.addEventListener('click', scrollToExperiences);
-  }
-
-  if (scrollCue) {
-    scrollCue.addEventListener('click', scrollToExperiences);
   }
 }
 
