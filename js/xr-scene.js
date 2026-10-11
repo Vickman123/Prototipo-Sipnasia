@@ -78,6 +78,12 @@ class XRSceneController {
     // Cartel Holográfico en VR para "Próximamente"
     this.upcomingHoloPanel = null;
     this.upcomingPanelTimer = null;
+
+    // Control de Primera Persona en PC (FPS Look & Pointer Lock)
+    this.isPointerLocked = false;
+    this.yaw = 0;
+    this.pitch = 0;
+    this.hoveredPortal = null;
   }
 
   async init() {
@@ -117,7 +123,7 @@ class XRSceneController {
     this.renderer.toneMappingExposure = 1.25;
     this.container.appendChild(this.renderer.domElement);
 
-    // 5. Controles de Escritorio (Orbit) para Modo 2D/PC
+    // 5. Controles de Escritorio: Cámara en Primera Persona (FPS) con fallback Orbit
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
@@ -125,6 +131,7 @@ class XRSceneController {
     this.controls.maxPolarAngle = Math.PI / 2 + 0.02;
     this.controls.minDistance = 1;
     this.controls.maxDistance = 16;
+    this.controls.enabled = false; // Desactivado para dar prioridad a la cámara de primera persona fija y fluida
 
     // 6. Construcción del Laboratorio Futurista con XRRoom de Framework VXR
     this.setupFuturisticLab();
@@ -873,7 +880,7 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Locomoción con Teclado WASD para Modo 3D en PC
+     Locomoción con Teclado WASD para Modo 3D en PC (FPS)
      ---------------------------------------------------- */
   setupKeyboardControls() {
     window.addEventListener('keydown', (e) => {
@@ -897,10 +904,9 @@ class XRSceneController {
     if (this.isVR || !this.isInteractive3D) return;
 
     if (this.keys.forward || this.keys.backward || this.keys.left || this.keys.right) {
-      this.camera.getWorldDirection(this.forwardVec);
-      this.forwardVec.y = 0;
-      this.forwardVec.normalize();
-      this.rightVec.crossVectors(this.forwardVec, this.camera.up).normalize();
+      // Dirección frontal proyectada en el plano XZ a partir de la rotación yaw del jugador
+      this.forwardVec.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw)).normalize();
+      this.rightVec.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw)).normalize();
 
       this.moveVec.set(0, 0, 0);
       if (this.keys.forward) this.moveVec.add(this.forwardVec);
@@ -909,9 +915,8 @@ class XRSceneController {
       if (this.keys.left) this.moveVec.sub(this.rightVec);
 
       this.moveVec.normalize();
-      const speed = 3.6;
+      const speed = 4.2;
       this.dolly.position.addScaledVector(this.moveVec, speed * delta);
-      this.controls.target.addScaledVector(this.moveVec, speed * delta);
 
       this.constrainPlayerToRoom();
     }
@@ -1232,16 +1237,68 @@ class XRSceneController {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    let pointerDownPos = { x: 0, y: 0 };
-    window.addEventListener('pointerdown', (e) => {
-      pointerDownPos = { x: e.clientX, y: e.clientY };
+    const canvas = this.renderer.domElement;
+    const crosshair = document.getElementById('hub-crosshair');
+    const promptEl = document.getElementById('hub-portal-prompt');
+    const promptText = document.getElementById('portal-prompt-text');
+
+    // 1. Detección de Bloqueo de Puntero (Pointer Lock) para Modo FPS
+    document.addEventListener('pointerlockchange', () => {
+      this.isPointerLocked = (document.pointerLockElement === canvas);
+      if (crosshair) crosshair.classList.toggle('visible', this.isPointerLocked && this.isInteractive3D);
+      const hudInfo = document.getElementById('hud-controls-text');
+      if (hudInfo) {
+        if (this.isPointerLocked) {
+          hudInfo.textContent = 'MODO PRIMERA PERSONA FIJADO // [WASD]: CAMINAR | [RATÓN]: MIRAR | [CLIC]: ENTRAR A PORTAL | [ESC]: LIBERAR';
+        } else {
+          hudInfo.textContent = 'MODO PRIMERA PERSONA // HAZ CLIC EN LA PANTALLA PARA FIJAR LA CÁMARA | [WASD]: CAMINAR';
+        }
+      }
+      if (!this.isPointerLocked && promptEl) {
+        promptEl.classList.remove('visible');
+      }
     });
 
-    window.addEventListener('pointermove', (e) => {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    // 2. Movimiento de Ratón (Rotación de Cabeza en Primera Persona)
+    window.addEventListener('mousemove', (e) => {
+      if (!this.isInteractive3D || this.isVR) return;
 
-      if (this.isInteractive3D && !this.isVR) {
+      if (this.isPointerLocked) {
+        // Modo FPS fijado: Sensibilidad óptima idéntica a juegos WebXR
+        const sensitivity = 0.0022;
+        this.yaw -= e.movementX * sensitivity;
+        this.pitch -= e.movementY * sensitivity;
+        this.pitch = Math.max(-Math.PI / 2.15, Math.min(Math.PI / 2.15, this.pitch));
+
+        this.camera.rotation.order = 'YXZ';
+        this.camera.rotation.y = this.yaw;
+        this.camera.rotation.x = this.pitch;
+
+        // Comprobar portal bajo la retícula central (0, 0)
+        this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.interactables, false);
+
+        if (intersects.length > 0 && intersects[0].object?.userData?.isPortal) {
+          const portalObj = intersects[0].object;
+          this.hoveredPortal = portalObj;
+          if (crosshair) crosshair.classList.add('hovering');
+          if (promptEl) {
+            promptEl.classList.add('visible');
+            if (promptText) {
+              const data = portalObj.userData.portalData;
+              promptText.textContent = `ENTRAR A ${data.title}`;
+            }
+          }
+        } else {
+          this.hoveredPortal = null;
+          if (crosshair) crosshair.classList.remove('hovering');
+          if (promptEl) promptEl.classList.remove('visible');
+        }
+      } else {
+        // Si aún no está bloqueado, actualizar coordenadas de cursor para raycasting visual
+        this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.interactables, false);
         if (intersects.length > 0 && intersects[0].object?.userData?.isPortal) {
@@ -1252,36 +1309,68 @@ class XRSceneController {
       }
     });
 
-    window.addEventListener('pointerup', (e) => {
+    // 3. Clic para Fijar la Cámara y/o Entrar a los Portales
+    canvas.addEventListener('click', (e) => {
       if (!this.isInteractive3D || this.isVR) return;
 
-      // Ignorar si el usuario estaba arrastrando la cámara (movimiento mayor a 6px)
-      const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
-      if (dist > 6) return;
-
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersects = this.raycaster.intersectObjects(this.interactables, false);
-
-      if (intersects.length > 0) {
-        this.handleObjectClick(intersects[0].object);
+      if (!this.isPointerLocked) {
+        // Al dar clic en pantalla, fijar el cursor en primera persona de inmediato
+        try {
+          const promise = canvas.requestPointerLock();
+          if (promise && typeof promise.catch === 'function') {
+            promise.catch(() => {});
+          }
+        } catch (err) {
+          console.warn('[SipnasiaXR] Pointer lock error:', err);
+        }
+      } else {
+        // En modo fijado, disparar raycast al centro
+        this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.interactables, false);
+        if (intersects.length > 0) {
+          this.handleObjectClick(intersects[0].object);
+        }
       }
     });
   }
 
   toggleInteractive3D(enable) {
     this.isInteractive3D = enable;
+    const canvas = this.renderer.domElement;
+    const crosshair = document.getElementById('hub-crosshair');
+    const promptEl = document.getElementById('hub-portal-prompt');
+
     if (enable) {
       this.container.classList.add('interactive-mode');
       document.getElementById('ui-root')?.classList.add('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.add('visible');
-      this.controls.enabled = true;
+
+      // Colocar al jugador a nivel de ojos humanos en el Hub
+      this.camera.position.set(0, 1.6, 0);
+      this.camera.rotation.order = 'YXZ';
+      this.camera.rotation.set(0, 0, 0);
+      this.yaw = 0;
+      this.pitch = 0;
+
+      // Solicitar fijación de cámara automática al entrar
+      setTimeout(() => {
+        try {
+          const promise = canvas.requestPointerLock();
+          if (promise && typeof promise.catch === 'function') {
+            promise.catch(() => {});
+          }
+        } catch (e) {}
+      }, 100);
     } else {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+      this.isPointerLocked = false;
       this.container.classList.remove('interactive-mode');
       document.getElementById('ui-root')?.classList.remove('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.remove('visible');
+      if (crosshair) crosshair.classList.remove('visible');
+      if (promptEl) promptEl.classList.remove('visible');
       document.body.style.cursor = 'default';
     }
   }
@@ -1306,7 +1395,6 @@ class XRSceneController {
       this.handleXRLocomotion(delta);
     } else if (this.isInteractive3D) {
       this.handleDesktopLocomotion(delta);
-      if (this.controls) this.controls.update();
     }
 
     // 2. Animación de Monolitos Flotantes

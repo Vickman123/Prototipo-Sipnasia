@@ -1576,6 +1576,113 @@ html, body {
   transform: scale(1.04);
 }
 
+/* Retícula Central de Primera Persona (Crosshair) */
+.hub-crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+  opacity: 0.8;
+}
+
+.hub-crosshair.visible {
+  display: flex;
+}
+
+.hub-crosshair::before,
+.hub-crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(0, 240, 255, 0.75);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.9);
+}
+
+.hub-crosshair::before {
+  width: 14px;
+  height: 2px;
+}
+
+.hub-crosshair::after {
+  width: 2px;
+  height: 14px;
+}
+
+.crosshair-dot {
+  width: 4px;
+  height: 4px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #00f0ff;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.hub-crosshair.hovering {
+  transform: translate(-50%, -50%) scale(1.35);
+  opacity: 1;
+}
+
+.hub-crosshair.hovering::before,
+.hub-crosshair.hovering::after {
+  background: #facc15;
+  box-shadow: 0 0 12px #facc15;
+}
+
+.hub-crosshair.hovering .crosshair-dot {
+  background: #facc15;
+  transform: scale(1.5);
+  box-shadow: 0 0 10px #facc15;
+}
+
+/* Indicador Interactivo Flotante al apuntar a un Portal */
+.hub-portal-prompt {
+  position: fixed;
+  top: calc(50% + 36px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: none;
+  pointer-events: none;
+  align-items: center;
+  gap: 8px;
+  background: rgba(2, 10, 24, 0.9);
+  border: 1px solid rgba(250, 204, 21, 0.7);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(250, 204, 21, 0.4);
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #ffffff;
+  animation: promptFadeIn 0.2s ease-out;
+}
+
+.hub-portal-prompt.visible {
+  display: flex;
+}
+
+.portal-prompt-key {
+  color: #facc15;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.portal-prompt-text {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+@keyframes promptFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 /* Modales (Vista Previa & QR Code) */
 .modal-backdrop {
   position: fixed;

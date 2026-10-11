@@ -91,9 +91,20 @@
   <div id="xr-scene-hud">
     <div class="hud-pill-info">
       <span class="pulse-dot"></span>
-      <span>MODO HUB 3D // [WASD]: CAMINAR | [MOUSE]: MIRAR | [CLICK EN PORTAL]: ENTRAR</span>
+      <span id="hud-controls-text">MODO PRIMERA PERSONA // [WASD]: CAMINAR | [RATÓN]: MIRAR | [CLIC]: FIJAR CÁMARA | [ESC]: LIBERAR</span>
     </div>
     <button id="btn-exit-3d" class="btn-exit-3d">✕ VOLVER AL PORTAL</button>
+  </div>
+
+  <!-- Retícula Central (Crosshair) estilo First-Person Shooter / VXR -->
+  <div id="hub-crosshair" class="hub-crosshair">
+    <div class="crosshair-dot"></div>
+  </div>
+
+  <!-- Indicador Interactivo Flotante al apuntar a un Portal -->
+  <div id="hub-portal-prompt" class="hub-portal-prompt">
+    <span class="portal-prompt-key">[ CLIC ]</span>
+    <span id="portal-prompt-text" class="portal-prompt-text">ENTRAR AL PORTAL</span>
   </div>
 
   <!-- Raíz de la Interfaz 2D -->
