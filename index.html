@@ -102,32 +102,22 @@
     <!-- Navegación Superior Estilo Festival Synapsia XR -->
     <header class="synapsia-header" id="main-header">
       <div class="synapsia-brand">
-        <div class="synapsia-logo-symbol">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3" fill="#00f3ff"/>
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <line x1="12" y1="18" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="6" y2="12"/>
-            <line x1="18" y1="12" x2="22" y2="12"/>
-            <circle cx="12" cy="3" r="1.5" fill="#facc15"/>
-            <circle cx="12" cy="21" r="1.5" fill="#22c55e"/>
-            <circle cx="3" cy="12" r="1.5" fill="#ef4444"/>
-            <circle cx="21" cy="12" r="1.5" fill="#ec4899"/>
-          </svg>
-        </div>
-        <div class="synapsia-brand-text">
-          <div class="synapsia-wordmark">
-            <span>S</span>
-            <span class="has-dot dot-yellow">Y</span>
-            <span>N</span>
-            <span class="has-dot dot-red">A</span>
-            <span>P</span>
-            <span>S</span>
-            <span class="has-dot dot-green">I</span>
-            <span>A</span>
-            <span class="gradient-xr">XR</span>
+        <div class="synapsia-brand-row">
+          <img src="assets/synapsia_app_icon.png" alt="Synapsia XR" class="synapsia-brand-icon-img" />
+          <div class="synapsia-brand-text">
+            <div class="synapsia-wordmark">
+              <span>S</span>
+              <span class="has-dot dot-yellow">Y</span>
+              <span>N</span>
+              <span class="has-dot dot-red">A</span>
+              <span>P</span>
+              <span>S</span>
+              <span class="has-dot dot-green">I</span>
+              <span>A</span>
+              <span class="gradient-xr">XR</span>
+            </div>
+            <span class="synapsia-brand-sub">PC PUMA | PROGRAMA DE CONECTIVIDAD MÓVIL</span>
           </div>
-          <span class="synapsia-brand-sub">PORTAL PC PUMA // DGTIC UNAM</span>
         </div>
       </div>
 
@@ -168,23 +158,22 @@
       <div class="hero-ambient-glow"></div>
 
       <div class="hero-stage-content">
-        <!-- Fondo Visual Central con Esfera Sináptica y Nodos Flotantes -->
+        <!-- Nodos Flotantes GSAP en el Fondo -->
         <div class="hero-visual-backdrop" id="hero-backdrop">
-          <img src="assets/hero-synapsia.png" alt="Festival Synapsia XR" class="hero-center-graphic" />
-          <div class="floating-node node-1"></div>
-          <div class="floating-node node-2"></div>
-          <div class="floating-node node-3"></div>
-          <div class="floating-node node-4"></div>
-          <div class="floating-node node-5"></div>
-          <div class="floating-node node-6"></div>
+          <div class="floating-node node-1 node-cyan" style="top: 25%; left: 18%;"></div>
+          <div class="floating-node node-2 node-blue" style="top: 20%; right: 22%;"></div>
+          <div class="floating-node node-3 node-magenta" style="bottom: 30%; left: 14%;"></div>
+          <div class="floating-node node-4 node-yellow" style="bottom: 28%; right: 16%;"></div>
+          <div class="floating-node node-5 node-cyan" style="top: 45%; right: 12%;"></div>
+          <div class="floating-node node-6 node-magenta" style="top: 40%; left: 12%;"></div>
         </div>
 
         <!-- Tipografía e Información Central del Festival -->
         <div class="hero-info-overlay">
           <div class="hero-label-festival">FESTIVAL SYNAPSIA XR</div>
-          <h1 class="hero-title-main">
-            SYNAPSIA <span class="gradient-xr">XR</span>
-          </h1>
+          <div class="hero-brand-logo-wrap">
+            <img src="assets/hero_title_synapsia_xr.png" alt="SYNAPSIA XR" class="hero-title-logo-img" />
+          </div>
           <div class="hero-subtitle-puma">
             <span class="bracket">[</span> PC PUMA | PROGRAMA DE CONECTIVIDAD MÓVIL <span class="bracket">]</span>
           </div>
@@ -200,13 +189,17 @@
           </div>
 
           <!-- Botón de Entrada Principal (Glowing Pill + Reflejo de piso) -->
-          <div class="hero-cta-container">
+          <div class="hero-cta-wrapper">
             <button id="btn-hero-cta" class="hero-cta-pill" type="button">
-              <span id="cta-icon" class="cta-arrow">➔</span>
-              <span id="cta-button-text" class="cta-label">ACCEDER AL PORTAL</span>
-              <span id="cta-button-sub" class="cta-sublabel">// PC PUMA XR</span>
+              <div class="cta-arrow-circle">
+                <span id="cta-icon">➔</span>
+              </div>
+              <div class="cta-text-group">
+                <span id="cta-button-text" class="cta-main-title">ACCEDER AL PORTAL</span>
+                <span id="cta-button-sub" class="cta-sub-title">// PC PUMA XR</span>
+              </div>
             </button>
-            <div class="hero-cta-reflection" aria-hidden="true"></div>
+            <div class="cta-floor-reflection" aria-hidden="true"></div>
           </div>
 
           <!-- Indicador de Scroll con Mouse Animado -->
@@ -221,19 +214,17 @@
 
       <!-- Barra Inferior del Hero con VXR Framework y Créditos -->
       <div class="hero-bottom-bar">
-        <div class="hero-bottom-left">
+        <div class="hbar-left">
           <span class="gold-accent-line"></span>
           <span class="hero-copy-text">© UNAM // PC PUMA // SYNAPSIA XR 2026</span>
         </div>
-        <div class="hero-bottom-center">
+        <div class="hbar-center">
           <a href="https://vickman123.github.io/Framework-XVR/" target="_self" rel="noopener noreferrer" class="vxr-link-badge" title="Explorar Framework VXR Oficial">
-            <span class="vxr-badge-dot"></span>
-            <span>POWERED BY <strong class="vxr-text-highlight">VXR FRAMEWORK</strong></span>
-            <span class="vxr-badge-arrow">↗</span>
+            <img src="assets/powered_by_vxr_badge.png" alt="Powered by VXR Framework" class="vxr-badge-img" />
           </a>
         </div>
-        <div class="hero-bottom-right">
-          <div class="hero-category-pills">
+        <div class="hbar-right">
+          <div class="hbar-categories">
             <span class="bottom-tag">#VR</span>
             <span class="bottom-tag">#WebXR</span>
             <span class="bottom-tag">#UNAM</span>
@@ -522,7 +513,7 @@
     <!-- Pie de Página Institucional y Enlace VXR Framework -->
     <footer class="site-footer">
       <div class="footer-credits">
-        <span>© UNAM - DGTIC // Programa PC PUMA. Plataforma WebXR.</span>
+        <span>© UNAM // Programa PC PUMA. Plataforma WebXR.</span>
       </div>
       <div class="footer-links">
         <a href="https://vickman123.github.io/Framework-XVR/" target="_self" rel="noopener noreferrer" class="vxr-link-badge-footer">
@@ -592,7 +583,7 @@
       </div>
 
       <div class="drawer-footer">
-        <span>FESTIVAL SYNAPSIA XR 2026 // DGTIC UNAM</span>
+        <span>FESTIVAL SYNAPSIA XR 2026 // PC PUMA UNAM</span>
       </div>
     </div>
   </aside>

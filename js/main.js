@@ -115,10 +115,10 @@ function initGsapHeroAnimations() {
     y: 20,
     duration: 0.8
   }, '-=0.6')
-  .from('.hero-title-main', {
+  .from('.hero-brand-logo-wrap', {
     opacity: 0,
-    scale: 0.9,
-    filter: 'blur(10px)',
+    scale: 0.88,
+    filter: 'blur(8px)',
     duration: 1.2,
     ease: 'power2.out'
   }, '-=0.5')
@@ -138,13 +138,7 @@ function initGsapHeroAnimations() {
     scale: 0.8,
     duration: 0.8
   }, '-=0.5')
-  .from('.hero-visual-backdrop', {
-    opacity: 0,
-    scale: 0.85,
-    duration: 1.4,
-    ease: 'power2.out'
-  }, '-=1.2')
-  .from('.hero-cta-container', {
+  .from('.hero-cta-wrapper', {
     opacity: 0,
     y: 30,
     scale: 0.95,

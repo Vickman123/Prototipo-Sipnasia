@@ -946,13 +946,15 @@ class XRSceneController {
     btn.style.borderRadius = '30px';
     btn.style.boxShadow = '0 0 20px rgba(213, 155, 45, 0.5)';
     btn.style.cursor = 'pointer';
-    btn.style.letterSpacing = '1.5px';
+    btn.style.display = 'none';
+    btn.style.visibility = 'hidden';
 
     document.body.appendChild(btn);
 
     // Eventos de sesión WebXR
     this.renderer.xr.addEventListener('sessionstart', () => {
       this.isVR = true;
+      this.container.classList.add('interactive-mode');
       document.getElementById('ui-root')?.classList.add('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.add('visible');
       document.getElementById('quest-vr-overlay')?.classList.add('hidden');
@@ -973,6 +975,7 @@ class XRSceneController {
 
     this.renderer.xr.addEventListener('sessionend', () => {
       this.isVR = false;
+      this.container.classList.remove('interactive-mode');
       document.getElementById('ui-root')?.classList.remove('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.remove('visible');
 

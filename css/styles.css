@@ -63,16 +63,28 @@ html, body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
-  opacity: 0.85;
-  transition: opacity 0.4s ease;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
 #webxr-canvas-container.interactive-mode {
   pointer-events: auto;
-  z-index: 10;
+  z-index: 50;
   opacity: 1;
+  visibility: visible;
+}
+
+/* Ocultar botón oficial VRButton inyectado por Three.js para no tapar el portal */
+#official-vr-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  left: -9999px !important;
 }
 
 /* Rejilla cibernética de fondo */
@@ -128,7 +140,8 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: #000208;
+  background: #000208 url('../assets/hero-synapsia.png') no-repeat center center;
+  background-size: cover;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -359,21 +372,54 @@ html, body {
 
 .hero-visual-backdrop {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 920px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.9;
 }
 
-.hero-visual-backdrop img {
+.hero-brand-logo-wrap {
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.25rem 0 0.85rem;
+}
+
+.hero-title-logo-img {
+  max-width: 660px;
+  width: 88vw;
   height: auto;
+  display: block;
+  filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.45)) drop-shadow(0 0 45px rgba(168, 85, 247, 0.35));
+}
+
+.synapsia-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.synapsia-brand-icon-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
   object-fit: contain;
-  filter: drop-shadow(0 0 45px rgba(0, 240, 255, 0.3)) drop-shadow(0 0 65px rgba(236, 72, 153, 0.25));
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+}
+
+.vxr-badge-img {
+  height: 24px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.45));
+  transition: transform 0.2s ease;
+}
+
+.vxr-badge-img:hover {
+  transform: scale(1.05);
 }
 
 /* Floating GSAP nodes */
