@@ -386,36 +386,52 @@
     </div>
   </div>
 
-  <!-- Modal Galería del Taller y Festival Synapsia XR -->
+  <!-- Modal Galería del Taller y Festival Synapsia XR (Con Carrusel de Fotos) -->
   <div id="workshop-gallery-modal" class="portal-mini-hub-modal hidden" role="dialog" aria-modal="true">
     <div class="mini-hub-modal-card gallery-modal-card">
       <div class="mini-hub-badge gallery-badge">
         <span class="pulse-dot"></span>
-        <span>MEMORIA DEL TALLER // SYNAPSIA XR 2026</span>
+        <span id="gallery-modal-phase">MEMORIA DEL TALLER // SYNAPSIA XR 2026</span>
       </div>
-      <div class="mini-hub-header">
+
+      <!-- Visor de Foto del Carrusel -->
+      <div class="gallery-photo-viewport">
+        <div id="gallery-photo-canvas-wrap" class="gallery-photo-canvas-wrap">
+          <!-- Canvas dinámico o imagen del carrusel -->
+          <canvas id="gallery-modal-canvas" width="600" height="340" class="gallery-modal-canvas"></canvas>
+        </div>
+        <button id="btn-gallery-prev" class="gallery-nav-btn prev" type="button" aria-label="Foto Anterior">‹</button>
+        <button id="btn-gallery-next" class="gallery-nav-btn next" type="button" aria-label="Siguiente Foto">›</button>
+        <div id="gallery-counter-badge" class="gallery-counter-badge">1 / 5</div>
+      </div>
+
+      <div class="mini-hub-header" style="margin-top: 1rem;">
         <div id="gallery-modal-icon" class="mini-hub-icon">📸</div>
         <div class="mini-hub-titles">
           <h2 id="gallery-modal-title">MEMORIA DEL TALLER</h2>
-          <p id="gallery-modal-phase">FESTIVAL SYNAPSIA XR // PC PUMA UNAM</p>
+          <p id="gallery-modal-caption">FESTIVAL SYNAPSIA XR // PC PUMA UNAM</p>
         </div>
       </div>
+
       <p id="gallery-modal-desc" class="mini-hub-description">
         Registro fotográfico e hitos del taller de realidad extendida.
       </p>
 
+      <!-- Indicadores de puntos (Dots) del Carrusel -->
+      <div id="gallery-dots-row" class="gallery-dots-row"></div>
+
       <div class="gallery-highlights-box">
         <div class="gallery-highlight-item">
-          <span class="highlight-label">PARTICIPANTES:</span>
+          <span class="highlight-label">HITO / FASE:</span>
+          <span id="gallery-modal-tag" class="highlight-val">Taller Presencial</span>
+        </div>
+        <div class="gallery-highlight-item">
+          <span class="highlight-label">ASISTENTES:</span>
           <span id="gallery-modal-attendees" class="highlight-val">Comunidad Universitaria</span>
         </div>
         <div class="gallery-highlight-item">
           <span class="highlight-label">TECNOLOGÍAS:</span>
           <span id="gallery-modal-tech" class="highlight-val">Three.js • WebXR • VXR • Quest 3S</span>
-        </div>
-        <div class="gallery-highlight-item">
-          <span class="highlight-label">ENFOQUE:</span>
-          <span class="highlight-val">Educación e Innovación Inmersiva</span>
         </div>
       </div>
 

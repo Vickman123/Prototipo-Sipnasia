@@ -84,7 +84,85 @@ class XRSceneController {
     this.yaw = 0;
     this.pitch = 0;
     this.hoveredPortal = null;
-    this.galleryPanels = [];
+
+    // Gran Pantalla Panorámica Rectangular con Carrusel del Taller
+    this.galleryPanelGroup = null;
+    this.galleryMesh = null;
+    this.galleryTexture = null;
+    this.galleryCurrentIndex = 0;
+    this.galleryAutoTimer = null;
+    this.galleryPhotos = [
+      {
+        id: 'inauguracion',
+        title: 'SESIÓN INAUGURAL // FESTIVAL SYNAPSIA XR',
+        phase: 'HITO 01 • INMERSIÓN',
+        icon: '🥽',
+        colorHex: '#00f0ff',
+        colorThree: 0x00f0ff,
+        caption: 'AUDITORIO PRINCIPAL UNAM // PC PUMA',
+        desc: 'Bienvenida institucional y presentación oficial del Festival Synapsia XR 2026. Alumnos y profesores exploraron las posibilidades pedagógicas y la arquitectura de la Realidad Virtual y WebXR con visores Meta Quest 3S.',
+        tag: 'Sesión Presencial',
+        attendees: '45+ Universitarios',
+        tech: 'Meta Quest 3S • WebXR 6DoF • Three.js',
+        imageSrc: 'assets/hero_title_synapsia_xr.png'
+      },
+      {
+        id: 'taller-vxr',
+        title: 'DESARROLLO EN VIVO CON FRAMEWORK VXR',
+        phase: 'HITO 02 • CODIFICACIÓN',
+        icon: '⚡',
+        colorHex: '#d59b2d',
+        colorThree: 0xd59b2d,
+        caption: 'MÓDULO PRÁCTICO // SALAS XRROOM & FÍSICAS',
+        desc: 'Sesión de programación en vivo utilizando el Framework VXR de Vickman123. Se modelaron laboratorios procedurales, mandos hápticos, iluminación en tiempo real y detección precisa de colisiones espaciales.',
+        tag: 'Laboratorio de Código',
+        attendees: 'Desarrolladores & Diseñadores',
+        tech: 'Framework VXR • TypeScript • Procedural Mesh',
+        imageSrc: 'assets/powered_by_vxr_badge.png'
+      },
+      {
+        id: 'playtesting',
+        title: 'PLAYTESTING DE EXPERIENCIAS EDUCATIVAS',
+        phase: 'HITO 03 • EVALUACIÓN',
+        icon: '🎯',
+        colorHex: '#ff007f',
+        colorThree: 0xff007f,
+        caption: 'TESTING DIRECTO EN VISORES QUEST 3S',
+        desc: 'Pruebas masivas con los estudiantes del Simulador de Operador PC PUMA y Shooter Virus Purge. Recopilación de telemetría de rendimiento a 90 FPS estables y validación de la curva de aprendizaje.',
+        tag: 'Pruebas de Usuario',
+        attendees: 'Comunidad Universitaria',
+        tech: '90 FPS Optimizado • Audio Espacial 3D',
+        imageSrc: 'assets/logo_synapsia_brand.png'
+      },
+      {
+        id: 'innovacion',
+        title: 'CREACIÓN COLABORATIVA // AULA ZOMBIE',
+        phase: 'HITO 04 • CO-CREACIÓN',
+        icon: '🧟',
+        colorHex: '#22c55e',
+        colorThree: 0x22c55e,
+        caption: 'CO-DISEÑO EN TIEMPO REAL',
+        desc: 'Desarrollo en vivo de la cuarta experiencia interactiva durante la dinámica del taller: un entorno escolar 3D con armas personalizadas y mecánicas de supervivencia adaptadas con ideas de los participantes.',
+        tag: 'Co-Creación en Vivo',
+        attendees: 'Estudiantes & Mentores',
+        tech: 'IA Zombie • Drops Interactivos • WebGL',
+        imageSrc: 'assets/hero-synapsia.png'
+      },
+      {
+        id: 'clausura',
+        title: 'ENTREGA DE PROYECTOS & CLAUSURA',
+        phase: 'HITO 05 • COMUNIDAD',
+        icon: '🏆',
+        colorHex: '#a855f7',
+        colorThree: 0xa855f7,
+        caption: 'MEMORIA & FUTURO // SYNAPSIA XR',
+        desc: 'Exposición de resultados finales, reconocimiento a los participantes y despliegue del portal público en GitHub Pages para acceso libre desde cualquier navegador o visor VR.',
+        tag: 'Clausura del Taller',
+        attendees: 'Comunidad Synapsia UNAM',
+        tech: 'Despliegue Abierto • Ecosistema UNAM',
+        imageSrc: 'assets/logos-synapsia-sheet.png'
+      }
+    ];
   }
 
   async init() {
@@ -471,302 +549,304 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Galería del Taller y Festival Synapsia XR (Zona Trasera Z > 0)
+     Gran Panel Rectangular Panorámico con Carrusel del Taller (Zona Trasera Z = 6.2)
      ---------------------------------------------------- */
   setupWorkshopGallery() {
-    const galleryItems = [
-      {
-        id: 'taller-introduccion',
-        title: 'BIENVENIDA & INTRODUCCIÓN XR',
-        subtitle: 'SESIÓN INAUGURAL // AUDITORIO',
-        tag: 'HITO 01 • INMERSIÓN',
-        icon: '🥽',
-        colorHex: '#00f0ff',
-        colorThree: 0x00f0ff,
-        pos: new THREE.Vector3(-5.5, 1.8, 5.2),
-        rotY: Math.PI - 0.38,
-        desc: 'Presentación del Festival Synapsia XR 2026. Los participantes conocieron la arquitectura de WebXR, visores Meta Quest 3S y el ecosistema de experiencias formativas para la UNAM.',
-        attendees: '45+ Alumnos y Académicos UNAM',
-        tech: 'Meta Quest 3S • WebXR • Three.js'
-      },
-      {
-        id: 'taller-desarrollo',
-        title: 'DESARROLLO EN VIVO CON FRAMEWORK VXR',
-        subtitle: 'CREACIÓN DE ENTORNOS 3D 6DOF',
-        tag: 'HITO 02 • CODIFICACIÓN',
-        icon: '⚡',
-        colorHex: '#d59b2d',
-        colorThree: 0xd59b2d,
-        pos: new THREE.Vector3(-1.8, 1.8, 6.2),
-        rotY: Math.PI - 0.12,
-        desc: 'Sesión práctica de código en tiempo real con el Framework VXR de Vickman123. Se construyeron escenarios procedurales, salas XRRoom, mandos hápticos y detección de colisiones.',
-        attendees: 'Desarrolladores & Diseñadores',
-        tech: 'Framework VXR • TypeScript • Shader WebGL'
-      },
-      {
-        id: 'taller-evaluacion',
-        title: 'PRUEBAS DE EXPERIENCIAS & FEEDBACK',
-        subtitle: 'TESTING DIRECTO EN VISORES QUEST',
-        tag: 'HITO 03 • PLAYTESTING',
-        icon: '🎯',
-        colorHex: '#ff007f',
-        colorThree: 0xff007f,
-        pos: new THREE.Vector3(1.8, 1.8, 6.2),
-        rotY: Math.PI + 0.12,
-        desc: 'Playtesting masivo del Simulador de Operador PC PUMA y Shooter Virus Purge. Pruebas de ergonomía, fluidez a 90 FPS y validación pedagógica de los módulos.',
-        attendees: 'Comunidad Universitaria Activa',
-        tech: 'Playtesting 6DoF • Análisis Telemetría'
-      },
-      {
-        id: 'taller-cierre',
-        title: 'PRESENTACIÓN FINAL DE PROYECTOS',
-        subtitle: 'CLAUSURA & COMUNIDAD SYNAPSIA',
-        tag: 'HITO 04 • RESULTADOS',
-        icon: '🏆',
-        colorHex: '#22c55e',
-        colorThree: 0x22c55e,
-        pos: new THREE.Vector3(5.5, 1.8, 5.2),
-        rotY: Math.PI + 0.38,
-        desc: 'Muestra de resultados finales del taller de XR. Integración de la cuarta experiencia interactiva (Aula Zombie) desarrollada en colaboración directa con los participantes.',
-        attendees: 'Equipo Synapsia & Asistentes',
-        tech: 'Despliegue GitHub Pages • WebXR Live'
-      }
-    ];
-
-    galleryItems.forEach(item => {
-      const panelGroup = this.createGalleryMonolith(item);
-      this.scene.add(panelGroup);
-      this.galleryPanels.push(panelGroup);
-    });
-
-    // Rótulo / Letrero Holográfico Superior en la Pared Sur: "MEMORIA DEL TALLER // SYNAPSIA XR 2026"
-    this.createGalleryHeaderBanner();
-  }
-
-  createGalleryHeaderBanner() {
-    const bannerCanvas = document.createElement('canvas');
-    bannerCanvas.width = 1024;
-    bannerCanvas.height = 256;
-    const ctx = bannerCanvas.getContext('2d');
-
-    // Fondo oscuro con degradado y marco tecnológico
-    const grad = ctx.createLinearGradient(0, 0, 1024, 256);
-    grad.addColorStop(0, '#040b17');
-    grad.addColorStop(0.5, '#0a192f');
-    grad.addColorStop(1, '#040b17');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1024, 256);
-
-    ctx.strokeStyle = '#D59B2D';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(10, 10, 1004, 236);
-
-    ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(18, 18, 988, 220);
-
-    ctx.fillStyle = '#00f0ff';
-    ctx.font = 'bold 22px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('// MEMORIA FOTOGRÁFICA & RESULTADOS DEL EVENTO //', 512, 60);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 38px Orbitron, sans-serif';
-    ctx.fillText('GALERÍA DEL TALLER SYNAPSIA XR', 512, 120);
-
-    ctx.fillStyle = '#F6C15C';
-    ctx.font = 'bold 20px Orbitron, sans-serif';
-    ctx.fillText('PC PUMA UNAM • DESARROLLO INMERSIVO Y COLABORATIVO', 512, 168);
-
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '16px -apple-system, sans-serif';
-    ctx.fillText('Haz clic o apunta a cualquier mampara para explorar los hitos vividos', 512, 210);
-
-    const texture = new THREE.CanvasTexture(bannerCanvas);
-    const planeGeo = new THREE.PlaneGeometry(6.5, 1.6);
-    const planeMat = new THREE.MeshBasicMaterial({
-      map: texture,
-      transparent: true,
-      opacity: 0.96,
-      side: THREE.DoubleSide
-    });
-    const bannerMesh = new THREE.Mesh(planeGeo, planeMat);
-    bannerMesh.position.set(0, 3.8, 7.2);
-    bannerMesh.rotation.y = Math.PI;
-    this.scene.add(bannerMesh);
-  }
-
-  createGalleryMonolith(item) {
     const group = new THREE.Group();
-    group.position.copy(item.pos);
-    group.rotation.y = item.rotY;
+    // Posicionada en la zona posterior opuesta a los portales (Z = 6.0), orientada hacia el jugador (rotY = Math.PI)
+    group.position.set(0, 2.1, 6.0);
+    group.rotation.y = Math.PI;
 
-    // 1. Bastidor Exterior (Estilo Museo de Arte Digital Scifi)
-    const frameGeo = new THREE.BoxGeometry(1.65, 2.15, 0.08);
+    // 1. Bastidor Arquitectónico Rectangular Largo Panorámico (Ancho: 8.4m, Alto: 3.2m, Prof: 0.12m)
+    const frameGeo = new THREE.BoxGeometry(8.4, 3.2, 0.12);
     const frameMat = new THREE.MeshStandardMaterial({
-      color: 0x09121f,
-      roughness: 0.25,
-      metalness: 0.82
+      color: 0x08111d,
+      roughness: 0.28,
+      metalness: 0.85
     });
-    const frameBack = new THREE.Mesh(frameGeo, frameMat);
-    group.add(frameBack);
+    const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+    group.add(frameMesh);
 
-    // Bisel Luminoso
-    const edgesGeo = new THREE.EdgesGeometry(frameGeo);
-    const edgesMat = new THREE.LineBasicMaterial({
-      color: item.colorThree,
+    // Bisel Luminoso Exterior Dorado
+    const frameEdges = new THREE.EdgesGeometry(frameGeo);
+    const frameLineMat = new THREE.LineBasicMaterial({
+      color: 0xd59b2d,
       linewidth: 3
     });
-    const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
-    group.add(edgesMesh);
+    const frameLine = new THREE.LineSegments(frameEdges, frameLineMat);
+    group.add(frameLine);
 
-    // 2. Pantalla Fotográfica / Infográfica HD
-    const texture = this.createGalleryTexture(item);
-    const planeGeo = new THREE.PlaneGeometry(1.56, 2.06);
-    const planeMat = new THREE.MeshBasicMaterial({
+    // 2. Pantalla Central Panorámica de Alta Definición (16:9 Cinema)
+    const screenGeo = new THREE.PlaneGeometry(8.15, 2.95);
+    const texture = this.createPanoramicCarouselTexture();
+    this.galleryTexture = texture;
+
+    const screenMat = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
       opacity: 0.98,
       side: THREE.FrontSide
     });
-    const screenMesh = new THREE.Mesh(planeGeo, planeMat);
-    screenMesh.position.z = 0.045;
+    const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    screenMesh.position.z = 0.065;
     group.add(screenMesh);
+    this.galleryMesh = screenMesh;
 
-    // 3. Pedestal Arquitectónico con Luz Base
-    const pedestalGeo = new THREE.BoxGeometry(0.95, 0.35, 0.65);
-    const pedestalMat = new THREE.MeshStandardMaterial({
+    // 3. Pedestal Arquitectónico Largo en el Suelo
+    const baseGeo = new THREE.BoxGeometry(8.5, 0.28, 0.8);
+    const baseMat = new THREE.MeshStandardMaterial({
       color: 0x0c1626,
       roughness: 0.35,
       metalness: 0.75
     });
-    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
-    pedestal.position.set(0, -1.18, 0);
-    group.add(pedestal);
+    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+    baseMesh.position.set(0, -1.65, 0.1);
+    group.add(baseMesh);
 
-    const ledStripeGeo = new THREE.BoxGeometry(0.97, 0.03, 0.04);
-    const ledStripeMat = new THREE.MeshBasicMaterial({ color: item.colorThree });
-    const ledStripe = new THREE.Mesh(ledStripeGeo, ledStripeMat);
-    ledStripe.position.set(0, -1.02, 0.33);
-    group.add(ledStripe);
+    // Tira Neón Cian en la Base
+    const neonStripeGeo = new THREE.BoxGeometry(8.52, 0.04, 0.05);
+    const neonStripeMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+    const neonStripe = new THREE.Mesh(neonStripeGeo, neonStripeMat);
+    neonStripe.position.set(0, -1.52, 0.52);
+    group.add(neonStripe);
 
-    // 4. Luz de realce suave
-    const spotLight = new THREE.PointLight(item.colorThree, 1.8, 4.5);
-    spotLight.position.set(0, 0.2, 0.8);
-    group.add(spotLight);
+    // 4. Luces de Acento Cenitales sobre el Panel Panorámico
+    const spotLight1 = new THREE.PointLight(0x00f0ff, 2.0, 8);
+    spotLight1.position.set(-2.8, 1.2, 1.2);
+    group.add(spotLight1);
 
-    // Guardar referencia interactiva
-    const galleryUserData = {
+    const spotLight2 = new THREE.PointLight(0xd59b2d, 2.0, 8);
+    spotLight2.position.set(2.8, 1.2, 1.2);
+    group.add(spotLight2);
+
+    // 5. Botones Interactivos Holográficos 3D para Navegar el Carrusel [ ◀ ANTERIOR ] y [ SIGUIENTE ▶ ]
+    const btnGeo = new THREE.BoxGeometry(0.85, 0.32, 0.08);
+
+    // Botón Izquierdo (Anterior)
+    const prevBtnMat = new THREE.MeshStandardMaterial({
+      color: 0x031830,
+      emissive: 0x00f0ff,
+      emissiveIntensity: 0.45,
+      roughness: 0.2
+    });
+    const prevBtn = new THREE.Mesh(btnGeo, prevBtnMat);
+    prevBtn.position.set(-3.4, -1.25, 0.14);
+    group.add(prevBtn);
+
+    // Botón Derecho (Siguiente)
+    const nextBtnMat = new THREE.MeshStandardMaterial({
+      color: 0x031830,
+      emissive: 0x00f0ff,
+      emissiveIntensity: 0.45,
+      roughness: 0.2
+    });
+    const nextBtn = new THREE.Mesh(btnGeo, nextBtnMat);
+    nextBtn.position.set(3.4, -1.25, 0.14);
+    group.add(nextBtn);
+
+    // Botón Central (Abrir Visor / Detalle)
+    const viewBtnGeo = new THREE.BoxGeometry(1.4, 0.32, 0.08);
+    const viewBtnMat = new THREE.MeshStandardMaterial({
+      color: 0x1f1602,
+      emissive: 0xd59b2d,
+      emissiveIntensity: 0.6,
+      roughness: 0.2
+    });
+    const viewBtn = new THREE.Mesh(viewBtnGeo, viewBtnMat);
+    viewBtn.position.set(0, -1.25, 0.14);
+    group.add(viewBtn);
+
+    // Metadata interactiva para Raycaster de WebXR y Retícula FPS
+    const screenUserData = {
       isGallery: true,
-      galleryData: item,
+      action: 'view',
       parentGroup: group
     };
-    screenMesh.userData = galleryUserData;
-    frameBack.userData = galleryUserData;
-    pedestal.userData = galleryUserData;
+    screenMesh.userData = screenUserData;
+    viewBtn.userData = screenUserData;
+
+    prevBtn.userData = {
+      isGallery: true,
+      action: 'prev',
+      parentGroup: group
+    };
+
+    nextBtn.userData = {
+      isGallery: true,
+      action: 'next',
+      parentGroup: group
+    };
 
     this.registerInteractable(screenMesh);
-    this.registerInteractable(frameBack);
-    this.registerInteractable(pedestal);
+    this.registerInteractable(viewBtn);
+    this.registerInteractable(prevBtn);
+    this.registerInteractable(nextBtn);
 
-    return group;
+    this.scene.add(group);
+    this.galleryPanelGroup = group;
+
+    // Transición automática suave del carrusel cada 7 segundos si nadie está interactuando
+    this.startCarouselAutoCycle();
   }
 
-  createGalleryTexture(item) {
+  startCarouselAutoCycle() {
+    if (this.galleryAutoTimer) clearInterval(this.galleryAutoTimer);
+    this.galleryAutoTimer = setInterval(() => {
+      // Rotar al siguiente slide automáticamente
+      this.cycleGalleryPhoto(1, false);
+    }, 7000);
+  }
+
+  cycleGalleryPhoto(direction = 1, userTriggered = true) {
+    if (!this.galleryPhotos || this.galleryPhotos.length === 0) return;
+
+    this.galleryCurrentIndex = (this.galleryCurrentIndex + direction + this.galleryPhotos.length) % this.galleryPhotos.length;
+    this.updatePanoramicCarouselTexture();
+
+    // Actualizar modal si está abierto actualmente
+    this.updateGalleryModalContent();
+
+    if (userTriggered && window.xrAudio) {
+      window.xrAudio.playHover();
+      // Reiniciar temporizador automático para dar tiempo al usuario
+      this.startCarouselAutoCycle();
+    }
+  }
+
+  createPanoramicCarouselTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 720;
-    const ctx = canvas.getContext('2d');
-
-    // Fondo: Gradiente azul marino profundo
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, 720);
-    bgGrad.addColorStop(0, '#0c1a30');
-    bgGrad.addColorStop(0.45, '#071020');
-    bgGrad.addColorStop(1, '#020611');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 512, 720);
-
-    // Marco exterior Oro Puma
-    ctx.strokeStyle = '#D59B2D';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(12, 12, 488, 696);
-
-    // Borde temático interior
-    ctx.strokeStyle = item.colorHex;
-    ctx.lineWidth = 2.5;
-    ctx.strokeRect(20, 20, 472, 680);
-
-    // Badge Superior de Hito
-    ctx.font = 'bold 15px monospace';
-    ctx.fillStyle = '#38bdf8';
-    ctx.textAlign = 'center';
-    ctx.fillText(item.tag, 256, 52);
-
-    // Contenedor de Fotografía Holográfica / Marco Gráfico
-    const photoGrad = ctx.createLinearGradient(40, 75, 472, 330);
-    photoGrad.addColorStop(0, '#001a33');
-    photoGrad.addColorStop(1, '#023059');
-    ctx.fillStyle = photoGrad;
-    ctx.fillRect(40, 75, 432, 235);
-
-    ctx.strokeStyle = item.colorHex;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(40, 75, 432, 235);
-
-    // Patrón técnico interior
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.08)';
-    for (let x = 55; x < 460; x += 30) {
-      ctx.fillRect(x, 85, 1, 215);
-    }
-    for (let y = 95; y < 300; y += 30) {
-      ctx.fillRect(45, y, 420, 1);
-    }
-
-    // Gran Ícono Central Ilustrativo
-    ctx.font = '85px sans-serif';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(item.icon, 256, 215);
-
-    // Subtítulo fotográfico dentro del marco
-    ctx.font = 'bold 15px Orbitron, sans-serif';
-    ctx.fillStyle = '#facc15';
-    ctx.fillText(item.subtitle, 256, 280);
-
-    // Título Principal de la Mampara
-    ctx.font = 'bold 22px Orbitron, sans-serif';
-    ctx.fillStyle = '#ffffff';
-    this.wrapText(ctx, item.title, 256, 350, 420, 28);
-
-    // Separador
-    ctx.strokeStyle = 'rgba(213, 155, 45, 0.5)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(60, 415);
-    ctx.lineTo(452, 415);
-    ctx.stroke();
-
-    // Resumen / Descripción de lo vivido
-    ctx.font = '16px -apple-system, sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    this.wrapText(ctx, item.desc, 256, 445, 410, 24);
-
-    // Botón de Llamado a la Acción (CTA)
-    ctx.fillStyle = item.colorHex;
-    ctx.fillRect(80, 620, 352, 50);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(80, 620, 352, 50);
-
-    ctx.fillStyle = '#01050e';
-    ctx.font = 'bold 18px Orbitron, sans-serif';
-    ctx.fillText('VER DETALLES // FOTO 🔍', 256, 652);
+    canvas.width = 1536;
+    canvas.height = 576;
+    this.galleryCanvas = canvas;
+    this.galleryCtx = canvas.getContext('2d');
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = false;
+
+    this.drawPanoramicCarouselCanvas();
     texture.needsUpdate = true;
     return texture;
+  }
+
+  updatePanoramicCarouselTexture() {
+    if (!this.galleryCanvas || !this.galleryCtx || !this.galleryTexture) return;
+    this.drawPanoramicCarouselCanvas();
+    this.galleryTexture.needsUpdate = true;
+  }
+
+  drawPanoramicCarouselCanvas() {
+    const ctx = this.galleryCtx;
+    const current = this.galleryPhotos[this.galleryCurrentIndex] || this.galleryPhotos[0];
+    const total = this.galleryPhotos.length;
+
+    // Fondo: Gradiente Azul Noche Futurista con Acabado Brillante
+    const bgGrad = ctx.createLinearGradient(0, 0, 1536, 576);
+    bgGrad.addColorStop(0, '#040b17');
+    bgGrad.addColorStop(0.5, '#0a192e');
+    bgGrad.addColorStop(1, '#030814');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1536, 576);
+
+    // Marco exterior Oro Puma
+    ctx.strokeStyle = '#D59B2D';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(16, 16, 1504, 544);
+
+    // Borde interior de acento temático
+    ctx.strokeStyle = current.colorHex;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(26, 26, 1484, 524);
+
+    // ENCABEZADO SUPERIOR
+    ctx.fillStyle = '#00f0ff';
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('// MEMORIA FOTOGRÁFICA DEL TALLER // FESTIVAL SYNAPSIA XR 2026', 50, 68);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(`FOTO ${this.galleryCurrentIndex + 1} DE ${total} • [CARRUSEL ACTIVO]`, 1486, 68);
+
+    // Línea divisoria superior
+    ctx.strokeStyle = 'rgba(213, 155, 45, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(50, 85);
+    ctx.lineTo(1486, 85);
+    ctx.stroke();
+
+    // SECCIÓN IZQUIERDA: Visor / Marco Fotográfico Cinematográfico (Ancho: 720px, Alto: 410px)
+    const photoGrad = ctx.createLinearGradient(50, 110, 780, 520);
+    photoGrad.addColorStop(0, '#001a33');
+    photoGrad.addColorStop(1, '#022d54');
+    ctx.fillStyle = photoGrad;
+    ctx.fillRect(50, 110, 720, 375);
+
+    ctx.strokeStyle = current.colorHex;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(50, 110, 720, 375);
+
+    // Rejilla de fondo en visor fotográfico
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.08)';
+    for (let x = 70; x < 760; x += 40) {
+      ctx.fillRect(x, 120, 1, 355);
+    }
+    for (let y = 130; y < 480; y += 40) {
+      ctx.fillRect(60, y, 700, 1);
+    }
+
+    // Gran Emblema / Fotografía Central
+    ctx.font = '120px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(current.icon, 410, 310);
+
+    // Banner inferior en la foto
+    ctx.fillStyle = 'rgba(1, 8, 18, 0.85)';
+    ctx.fillRect(52, 435, 716, 48);
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 18px Orbitron, sans-serif';
+    ctx.fillText(current.caption, 410, 466);
+
+    // SECCIÓN DERECHA: Datos del Hito, Resumen e Indicadores
+    ctx.textAlign = 'left';
+
+    // Badge de Fase
+    ctx.fillStyle = current.colorHex;
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText(`[ ${current.phase} ]`, 810, 142);
+
+    // Título Principal del Hito
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Orbitron, sans-serif';
+    this.wrapText(ctx, current.title, 810, 195, 680, 44);
+
+    // Línea separadora derecha
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(810, 290);
+    ctx.lineTo(1470, 290);
+    ctx.stroke();
+
+    // Descripción del hito
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '22px -apple-system, sans-serif';
+    this.wrapText(ctx, current.desc, 810, 335, 660, 32);
+
+    // Barra de navegación inferior en el canvas (Indicador de botones 3D)
+    ctx.fillStyle = '#01152a';
+    ctx.fillRect(810, 440, 660, 46);
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(810, 440, 660, 46);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('◄ APUNTA A LOS BOTONES INFERIORES [◀] Y [▶] PARA CAMBIAR DE FOTO ►', 1140, 470);
   }
 
   createPortalMonolith(exp) {
@@ -1334,9 +1414,16 @@ class XRSceneController {
       // Navegar DIRECTAMENTE a la experiencia sin bloqueos ni ventanas extra
       this.navigateDirectly(data.url);
     } else if (object.userData.isGallery) {
-      // CASO 3: Mampara de la Galería del Taller
-      if (window.xrAudio) window.xrAudio.playSelect();
-      this.openGalleryModal(object.userData.galleryData);
+      const action = object.userData.action || 'view';
+      if (action === 'prev') {
+        this.cycleGalleryPhoto(-1, true);
+      } else if (action === 'next') {
+        this.cycleGalleryPhoto(1, true);
+      } else {
+        // 'view': abrir modal detallado del carrusel
+        if (window.xrAudio) window.xrAudio.playSelect();
+        this.openGalleryModal();
+      }
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.handleNodeHit(object);
@@ -1345,39 +1432,42 @@ class XRSceneController {
   }
 
   /* ----------------------------------------------------
-     Modal Detallado de la Galería del Taller
+     Modal Detallado de la Galería del Taller con Carrusel
      ---------------------------------------------------- */
-  openGalleryModal(data) {
-    if (!data) return;
+  openGalleryModal() {
     const modal = document.getElementById('workshop-gallery-modal');
     if (!modal) return;
 
-    const titleEl = document.getElementById('gallery-modal-title');
-    const phaseEl = document.getElementById('gallery-modal-phase');
-    const descEl = document.getElementById('gallery-modal-desc');
-    const iconEl = document.getElementById('gallery-modal-icon');
-    const attendeesEl = document.getElementById('gallery-modal-attendees');
-    const techEl = document.getElementById('gallery-modal-tech');
+    // Conectar botones de navegación prev / next del modal
+    const prevBtn = document.getElementById('btn-gallery-prev');
+    const nextBtn = document.getElementById('btn-gallery-next');
     const closeBtn = document.getElementById('btn-close-gallery-modal');
 
-    if (titleEl) titleEl.textContent = data.title;
-    if (phaseEl) phaseEl.textContent = `${data.tag} // ${data.subtitle}`;
-    if (descEl) descEl.textContent = data.desc;
-    if (iconEl) iconEl.textContent = data.icon;
-    if (attendeesEl) attendeesEl.textContent = data.attendees;
-    if (techEl) techEl.textContent = data.tech;
+    if (prevBtn) {
+      prevBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.cycleGalleryPhoto(-1, true);
+      };
+    }
+
+    if (nextBtn) {
+      nextBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.cycleGalleryPhoto(1, true);
+      };
+    }
 
     // Liberar pointer lock temporalmente para interactuar con el modal
     if (document.pointerLockElement) {
       document.exitPointerLock();
     }
 
+    this.updateGalleryModalContent();
     modal.classList.remove('hidden');
 
     const closeModal = () => {
       if (window.xrAudio) window.xrAudio.playHover();
       modal.classList.add('hidden');
-      // Re-solicitar pointer lock al cerrar si estamos en modo interactivo
       if (this.isInteractive3D && !this.isVR) {
         try {
           this.renderer.domElement.requestPointerLock();
@@ -1391,6 +1481,93 @@ class XRSceneController {
     modal.onclick = (e) => {
       if (e.target === modal) closeModal();
     };
+  }
+
+  updateGalleryModalContent() {
+    const modal = document.getElementById('workshop-gallery-modal');
+    if (!modal) return;
+
+    const current = this.galleryPhotos[this.galleryCurrentIndex] || this.galleryPhotos[0];
+    const total = this.galleryPhotos.length;
+
+    const titleEl = document.getElementById('gallery-modal-title');
+    const phaseEl = document.getElementById('gallery-modal-phase');
+    const captionEl = document.getElementById('gallery-modal-caption');
+    const descEl = document.getElementById('gallery-modal-desc');
+    const iconEl = document.getElementById('gallery-modal-icon');
+    const tagEl = document.getElementById('gallery-modal-tag');
+    const attendeesEl = document.getElementById('gallery-modal-attendees');
+    const techEl = document.getElementById('gallery-modal-tech');
+    const counterEl = document.getElementById('gallery-counter-badge');
+    const dotsRow = document.getElementById('gallery-dots-row');
+
+    if (titleEl) titleEl.textContent = current.title;
+    if (phaseEl) phaseEl.textContent = `${current.phase} // SYNAPSIA XR 2026`;
+    if (captionEl) captionEl.textContent = current.caption;
+    if (descEl) descEl.textContent = current.desc;
+    if (iconEl) iconEl.textContent = current.icon;
+    if (tagEl) tagEl.textContent = current.tag;
+    if (attendeesEl) attendeesEl.textContent = current.attendees;
+    if (techEl) techEl.textContent = current.tech;
+    if (counterEl) counterEl.textContent = `${this.galleryCurrentIndex + 1} / ${total}`;
+
+    // Renderizar imagen o arte dinámico en el canvas del modal
+    const modalCanvas = document.getElementById('gallery-modal-canvas');
+    if (modalCanvas) {
+      const mctx = modalCanvas.getContext('2d');
+      mctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+
+      const mgrad = mctx.createLinearGradient(0, 0, modalCanvas.width, modalCanvas.height);
+      mgrad.addColorStop(0, '#02182e');
+      mgrad.addColorStop(0.5, '#052b4f');
+      mgrad.addColorStop(1, '#010e1d');
+      mctx.fillStyle = mgrad;
+      mctx.fillRect(0, 0, modalCanvas.width, modalCanvas.height);
+
+      // Marco del visor
+      mctx.strokeStyle = current.colorHex;
+      mctx.lineWidth = 4;
+      mctx.strokeRect(8, 8, modalCanvas.width - 16, modalCanvas.height - 16);
+
+      // Rejilla de fondo
+      mctx.fillStyle = 'rgba(0, 240, 255, 0.06)';
+      for (let x = 30; x < modalCanvas.width; x += 35) {
+        mctx.fillRect(x, 10, 1, modalCanvas.height - 20);
+      }
+      for (let y = 30; y < modalCanvas.height; y += 35) {
+        mctx.fillRect(10, y, modalCanvas.width - 20, 1);
+      }
+
+      // Emblema
+      mctx.font = '90px sans-serif';
+      mctx.textAlign = 'center';
+      mctx.fillText(current.icon, modalCanvas.width / 2, modalCanvas.height / 2 + 25);
+
+      // Rótulo inferior
+      mctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      mctx.fillRect(12, modalCanvas.height - 48, modalCanvas.width - 24, 40);
+      mctx.font = 'bold 16px Orbitron, sans-serif';
+      mctx.fillStyle = '#facc15';
+      mctx.fillText(current.caption, modalCanvas.width / 2, modalCanvas.height - 22);
+    }
+
+    // Indicadores Dots
+    if (dotsRow) {
+      dotsRow.innerHTML = this.galleryPhotos.map((_, i) =>
+        `<span class="gallery-dot ${i === this.galleryCurrentIndex ? 'active' : ''}" data-idx="${i}"></span>`
+      ).join('');
+
+      dotsRow.querySelectorAll('.gallery-dot').forEach(dot => {
+        dot.onclick = (e) => {
+          e.stopPropagation();
+          const targetIdx = parseInt(dot.getAttribute('data-idx'), 10);
+          this.galleryCurrentIndex = targetIdx;
+          this.updatePanoramicCarouselTexture();
+          this.updateGalleryModalContent();
+          if (window.xrAudio) window.xrAudio.playHover();
+        };
+      });
+    }
   }
 
   /* ----------------------------------------------------
@@ -1652,8 +1829,14 @@ class XRSceneController {
           if (promptEl) {
             promptEl.classList.add('visible');
             if (promptText) {
-              const data = galleryObj.userData.galleryData;
-              promptText.textContent = `VER MEMORIA: ${data.title}`;
+              const action = galleryObj.userData.action;
+              if (action === 'prev') {
+                promptText.textContent = '◀ FOTO ANTERIOR';
+              } else if (action === 'next') {
+                promptText.textContent = 'SIGUIENTE FOTO ▶';
+              } else {
+                promptText.textContent = 'VER MEMORIA EN PANTALLA COMPLETA 🔍';
+              }
             }
           }
         } else {

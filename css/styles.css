@@ -2140,9 +2140,10 @@ html, body {
   margin-bottom: 1.3rem;
 }
 
-/* Modal Galería del Taller */
+/* Modal Galería del Taller & Carrusel */
 .gallery-modal-card {
-  max-width: 580px;
+  max-width: 660px;
+  width: 92vw;
   border-color: rgba(0, 240, 255, 0.4);
 }
 
@@ -2150,6 +2151,106 @@ html, body {
   color: #38bdf8;
   background: rgba(0, 240, 255, 0.12);
   border-color: rgba(0, 240, 255, 0.45);
+}
+
+.gallery-photo-viewport {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.15);
+  background: #020814;
+}
+
+.gallery-photo-canvas-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-modal-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16 / 9;
+}
+
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: rgba(2, 12, 28, 0.85);
+  border: 1.5px solid #00f0ff;
+  color: #ffffff;
+  font-size: 26px;
+  line-height: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+.gallery-nav-btn:hover {
+  background: #00f0ff;
+  color: #010814;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-nav-btn.prev {
+  left: 12px;
+}
+
+.gallery-nav-btn.next {
+  right: 12px;
+}
+
+.gallery-counter-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: rgba(1, 10, 24, 0.85);
+  border: 1px solid rgba(250, 204, 21, 0.6);
+  color: #facc15;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  letter-spacing: 1px;
+}
+
+.gallery-dots-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.2rem;
+}
+
+.gallery-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.gallery-dot.active {
+  background: #00f0ff;
+  width: 24px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00f0ff;
 }
 
 .gallery-highlights-box {
