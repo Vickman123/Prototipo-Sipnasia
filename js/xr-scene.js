@@ -91,76 +91,42 @@ class XRSceneController {
     this.galleryTexture = null;
     this.galleryCurrentIndex = 0;
     this.galleryAutoTimer = null;
+    this.galleryLoadedImages = {};
     this.galleryPhotos = [
       {
-        id: 'inauguracion',
-        title: 'SESIÓN INAUGURAL // FESTIVAL SYNAPSIA XR',
-        phase: 'HITO 01 • INMERSIÓN',
-        icon: '🥽',
+        id: 'foto-1',
+        imageSrc: 'assets/hero_title_synapsia_xr.png',
         colorHex: '#00f0ff',
         colorThree: 0x00f0ff,
-        caption: 'AUDITORIO PRINCIPAL UNAM // PC PUMA',
-        desc: 'Bienvenida institucional y presentación oficial del Festival Synapsia XR 2026. Alumnos y profesores exploraron las posibilidades pedagógicas y la arquitectura de la Realidad Virtual y WebXR con visores Meta Quest 3S.',
-        tag: 'Sesión Presencial',
-        attendees: '45+ Universitarios',
-        tech: 'Meta Quest 3S • WebXR 6DoF • Three.js',
-        imageSrc: 'assets/hero_title_synapsia_xr.png'
+        icon: '📸'
       },
       {
-        id: 'taller-vxr',
-        title: 'DESARROLLO EN VIVO CON FRAMEWORK VXR',
-        phase: 'HITO 02 • CODIFICACIÓN',
-        icon: '⚡',
+        id: 'foto-2',
+        imageSrc: 'assets/hero-synapsia.png',
         colorHex: '#d59b2d',
         colorThree: 0xd59b2d,
-        caption: 'MÓDULO PRÁCTICO // SALAS XRROOM & FÍSICAS',
-        desc: 'Sesión de programación en vivo utilizando el Framework VXR de Vickman123. Se modelaron laboratorios procedurales, mandos hápticos, iluminación en tiempo real y detección precisa de colisiones espaciales.',
-        tag: 'Laboratorio de Código',
-        attendees: 'Desarrolladores & Diseñadores',
-        tech: 'Framework VXR • TypeScript • Procedural Mesh',
-        imageSrc: 'assets/powered_by_vxr_badge.png'
+        icon: '📷'
       },
       {
-        id: 'playtesting',
-        title: 'PLAYTESTING DE EXPERIENCIAS EDUCATIVAS',
-        phase: 'HITO 03 • EVALUACIÓN',
-        icon: '🎯',
+        id: 'foto-3',
+        imageSrc: 'assets/logos-synapsia-sheet.png',
         colorHex: '#ff007f',
         colorThree: 0xff007f,
-        caption: 'TESTING DIRECTO EN VISORES QUEST 3S',
-        desc: 'Pruebas masivas con los estudiantes del Simulador de Operador PC PUMA y Shooter Virus Purge. Recopilación de telemetría de rendimiento a 90 FPS estables y validación de la curva de aprendizaje.',
-        tag: 'Pruebas de Usuario',
-        attendees: 'Comunidad Universitaria',
-        tech: '90 FPS Optimizado • Audio Espacial 3D',
-        imageSrc: 'assets/logo_synapsia_brand.png'
+        icon: '🖼️'
       },
       {
-        id: 'innovacion',
-        title: 'CREACIÓN COLABORATIVA // AULA ZOMBIE',
-        phase: 'HITO 04 • CO-CREACIÓN',
-        icon: '🧟',
+        id: 'foto-4',
+        imageSrc: 'assets/logo_synapsia_brand.png',
         colorHex: '#22c55e',
         colorThree: 0x22c55e,
-        caption: 'CO-DISEÑO EN TIEMPO REAL',
-        desc: 'Desarrollo en vivo de la cuarta experiencia interactiva durante la dinámica del taller: un entorno escolar 3D con armas personalizadas y mecánicas de supervivencia adaptadas con ideas de los participantes.',
-        tag: 'Co-Creación en Vivo',
-        attendees: 'Estudiantes & Mentores',
-        tech: 'IA Zombie • Drops Interactivos • WebGL',
-        imageSrc: 'assets/hero-synapsia.png'
+        icon: '🥽'
       },
       {
-        id: 'clausura',
-        title: 'ENTREGA DE PROYECTOS & CLAUSURA',
-        phase: 'HITO 05 • COMUNIDAD',
-        icon: '🏆',
+        id: 'foto-5',
+        imageSrc: 'assets/powered_by_vxr_badge.png',
         colorHex: '#a855f7',
         colorThree: 0xa855f7,
-        caption: 'MEMORIA & FUTURO // SYNAPSIA XR',
-        desc: 'Exposición de resultados finales, reconocimiento a los participantes y despliegue del portal público en GitHub Pages para acceso libre desde cualquier navegador o visor VR.',
-        tag: 'Clausura del Taller',
-        attendees: 'Comunidad Synapsia UNAM',
-        tech: 'Despliegue Abierto • Ecosistema UNAM',
-        imageSrc: 'assets/logos-synapsia-sheet.png'
+        icon: '✨'
       }
     ];
   }
@@ -755,15 +721,15 @@ class XRSceneController {
     ctx.strokeRect(12, 12, 1512, 552);
 
     // Borde Neón Sutil
-    ctx.strokeStyle = current.colorHex;
+    ctx.strokeStyle = current.colorHex || '#00f0ff';
     ctx.lineWidth = 2;
     ctx.strokeRect(20, 20, 1496, 536);
 
-    // 2. ENCABEZADO SUPERIOR LIMPIO
+    // 2. ENCABEZADO SUPERIOR LIMPIO Y ÚNICO PARA TODAS LAS FOTOS
     ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('// GALERÍA DEL TALLER // SYNAPSIA XR', 48, 56);
+    ctx.fillText('// GALERÍA DE FOTOS DEL TALLER // FESTIVAL SYNAPSIA XR', 48, 56);
 
     ctx.textAlign = 'right';
     ctx.fillStyle = '#facc15';
@@ -778,11 +744,11 @@ class XRSceneController {
     ctx.lineTo(1488, 72);
     ctx.stroke();
 
-    // 3. ÁREA CENTRAL DE FOTO / VISUAL PRINCIPAL (1440 x 390)
+    // 3. ÁREA CENTRAL DE FOTO / VISUAL PRINCIPAL (1440 x 420)
     const photoBoxX = 48;
-    const photoBoxY = 88;
+    const photoBoxY = 86;
     const photoBoxW = 1440;
-    const photoBoxH = 390;
+    const photoBoxH = 415;
 
     // Fondo del visor fotográfico
     const photoGrad = ctx.createLinearGradient(photoBoxX, photoBoxY, photoBoxX, photoBoxY + photoBoxH);
@@ -791,56 +757,76 @@ class XRSceneController {
     ctx.fillStyle = photoGrad;
     ctx.fillRect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
 
-    // Marco del visor de foto con el color de acento
-    ctx.strokeStyle = current.colorHex;
+    // Si la imagen está precargada, dibujarla ocupando limpiamente el recuadro (manteniendo aspect ratio)
+    let img = this.galleryLoadedImages[current.imageSrc];
+    if (!img) {
+      img = new Image();
+      img.src = current.imageSrc;
+      img.onload = () => {
+        this.galleryLoadedImages[current.imageSrc] = img;
+        this.updatePanoramicCarouselTexture();
+      };
+      this.galleryLoadedImages[current.imageSrc] = img;
+    }
+
+    if (img && img.complete && img.naturalWidth > 0) {
+      // Dibujar imagen centrada con aspect-ratio contenido (contain / fit)
+      const imgAspect = img.naturalWidth / img.naturalHeight;
+      const boxAspect = photoBoxW / photoBoxH;
+      let drawW, drawH, drawX, drawY;
+
+      if (imgAspect > boxAspect) {
+        drawW = photoBoxW - 40;
+        drawH = drawW / imgAspect;
+        drawX = photoBoxX + 20;
+        drawY = photoBoxY + (photoBoxH - drawH) / 2;
+      } else {
+        drawH = photoBoxH - 30;
+        drawW = drawH * imgAspect;
+        drawX = photoBoxX + (photoBoxW - drawW) / 2;
+        drawY = photoBoxY + 15;
+      }
+
+      ctx.save();
+      // Leve brillo / filtro
+      ctx.shadowColor = current.colorHex || '#00f0ff';
+      ctx.shadowBlur = 15;
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      ctx.restore();
+    } else {
+      // Fallback mientras carga la imagen: Gran Emblema Fotográfico
+      ctx.font = '140px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(current.icon || '📸', photoBoxX + photoBoxW / 2, photoBoxY + 240);
+    }
+
+    // Marco del visor de foto
+    ctx.strokeStyle = current.colorHex || '#00f0ff';
     ctx.lineWidth = 3;
     ctx.strokeRect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
 
-    // Cuadrícula sutil de fondo en el visor
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.05)';
-    for (let x = photoBoxX + 40; x < photoBoxX + photoBoxW; x += 60) {
-      ctx.fillRect(x, photoBoxY + 8, 1, photoBoxH - 16);
-    }
-    for (let y = photoBoxY + 40; y < photoBoxY + photoBoxH; y += 60) {
-      ctx.fillRect(photoBoxX + 8, y, photoBoxW - 16, 1);
-    }
-
-    // Gran Emblema Fotográfico Centrado
-    ctx.font = '130px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(current.icon, photoBoxX + photoBoxW / 2, photoBoxY + 185);
-
-    // Título y Leyenda de la Foto sobre el visor
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px Orbitron, sans-serif';
-    ctx.fillText(current.title, photoBoxX + photoBoxW / 2, photoBoxY + 280);
-
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 22px monospace';
-    ctx.fillText(`[ ${current.phase} ]  —  ${current.caption}`, photoBoxX + photoBoxW / 2, photoBoxY + 328);
-
     // 4. FLECHAS DIRECTAS VISIBLES EN LOS EXTREMOS DEL PANEL
     // Flecha izquierda [ ◀ ANTERIOR ]
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
-    ctx.fillRect(photoBoxX + 16, photoBoxY + 140, 90, 110);
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+    ctx.fillRect(photoBoxX + 16, photoBoxY + 155, 84, 105);
     ctx.strokeStyle = '#00f0ff';
     ctx.lineWidth = 2;
-    ctx.strokeRect(photoBoxX + 16, photoBoxY + 140, 90, 110);
+    ctx.strokeRect(photoBoxX + 16, photoBoxY + 155, 84, 105);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 50px monospace';
+    ctx.font = 'bold 46px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('◀', photoBoxX + 61, photoBoxY + 215);
+    ctx.fillText('◀', photoBoxX + 58, photoBoxY + 225);
 
     // Flecha derecha [ SIGUIENTE ▶ ]
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
-    ctx.fillRect(photoBoxX + photoBoxW - 106, photoBoxY + 140, 90, 110);
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+    ctx.fillRect(photoBoxX + photoBoxW - 100, photoBoxY + 155, 84, 105);
     ctx.strokeStyle = '#00f0ff';
     ctx.lineWidth = 2;
-    ctx.strokeRect(photoBoxX + photoBoxW - 106, photoBoxY + 140, 90, 110);
+    ctx.strokeRect(photoBoxX + photoBoxW - 100, photoBoxY + 155, 84, 105);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 50px monospace';
+    ctx.font = 'bold 46px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('▶', photoBoxX + photoBoxW - 61, photoBoxY + 215);
+    ctx.fillText('▶', photoBoxX + photoBoxW - 58, photoBoxY + 225);
 
     // 5. BARRA INFERIOR SIMPLE DE CONTROLES E INDICADORES (DOTS)
     const dotSpacing = 36;
@@ -849,7 +835,7 @@ class XRSceneController {
       const dotX = dotsStartX + i * dotSpacing;
       const isCur = (i === this.galleryCurrentIndex);
       ctx.beginPath();
-      ctx.arc(dotX, 520, isCur ? 10 : 6, 0, Math.PI * 2);
+      ctx.arc(dotX, 532, isCur ? 10 : 6, 0, Math.PI * 2);
       ctx.fillStyle = isCur ? '#00f0ff' : 'rgba(255, 255, 255, 0.3)';
       ctx.fill();
       if (isCur) {
@@ -861,12 +847,12 @@ class XRSceneController {
 
     // Indicación de clic directa
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
     ctx.font = 'bold 16px monospace';
-    ctx.fillText('◄ BOTÓN [ ◀ ] CAMBIAR', 52, 526);
+    ctx.fillText('◄ BOTÓN [ ◀ ] ANTERIOR', 52, 536);
 
     ctx.textAlign = 'right';
-    ctx.fillText('BOTÓN [ ▶ ] CAMBIAR ►', 1484, 526);
+    ctx.fillText('SIGUIENTE [ ▶ ] ►', 1484, 536);
   }
 
   createPortalMonolith(exp) {
@@ -1520,33 +1506,20 @@ class XRSceneController {
     const current = this.galleryPhotos[this.galleryCurrentIndex] || this.galleryPhotos[0];
     const total = this.galleryPhotos.length;
 
-    const titleEl = document.getElementById('gallery-modal-title');
     const phaseEl = document.getElementById('gallery-modal-phase');
-    const captionEl = document.getElementById('gallery-modal-caption');
-    const descEl = document.getElementById('gallery-modal-desc');
-    const iconEl = document.getElementById('gallery-modal-icon');
-    const tagEl = document.getElementById('gallery-modal-tag');
-    const attendeesEl = document.getElementById('gallery-modal-attendees');
-    const techEl = document.getElementById('gallery-modal-tech');
     const counterEl = document.getElementById('gallery-counter-badge');
     const dotsRow = document.getElementById('gallery-dots-row');
 
-    if (titleEl) titleEl.textContent = current.title;
-    if (phaseEl) phaseEl.textContent = `${current.phase} // SYNAPSIA XR 2026`;
-    if (captionEl) captionEl.textContent = current.caption;
-    if (descEl) descEl.textContent = current.desc;
-    if (iconEl) iconEl.textContent = current.icon;
-    if (tagEl) tagEl.textContent = current.tag;
-    if (attendeesEl) attendeesEl.textContent = current.attendees;
-    if (techEl) techEl.textContent = current.tech;
+    if (phaseEl) phaseEl.textContent = 'FOTOS DEL TALLER // SYNAPSIA XR';
     if (counterEl) counterEl.textContent = `${this.galleryCurrentIndex + 1} / ${total}`;
 
-    // Renderizar imagen o arte dinámico en el canvas del modal
+    // Renderizar imagen directa en el canvas del modal (960 x 540)
     const modalCanvas = document.getElementById('gallery-modal-canvas');
     if (modalCanvas) {
       const mctx = modalCanvas.getContext('2d');
       mctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
 
+      // Fondo azul noche
       const mgrad = mctx.createLinearGradient(0, 0, modalCanvas.width, modalCanvas.height);
       mgrad.addColorStop(0, '#02182e');
       mgrad.addColorStop(0.5, '#052b4f');
@@ -1554,31 +1527,51 @@ class XRSceneController {
       mctx.fillStyle = mgrad;
       mctx.fillRect(0, 0, modalCanvas.width, modalCanvas.height);
 
-      // Marco del visor
-      mctx.strokeStyle = current.colorHex;
+      // Dibujar imagen si está cargada
+      let img = this.galleryLoadedImages[current.imageSrc];
+      if (!img) {
+        img = new Image();
+        img.src = current.imageSrc;
+        img.onload = () => {
+          this.galleryLoadedImages[current.imageSrc] = img;
+          this.updateGalleryModalContent();
+        };
+        this.galleryLoadedImages[current.imageSrc] = img;
+      }
+
+      if (img && img.complete && img.naturalWidth > 0) {
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const canvasAspect = modalCanvas.width / modalCanvas.height;
+        let dw, dh, dx, dy;
+
+        if (imgAspect > canvasAspect) {
+          dw = modalCanvas.width - 24;
+          dh = dw / imgAspect;
+          dx = 12;
+          dy = (modalCanvas.height - dh) / 2;
+        } else {
+          dh = modalCanvas.height - 24;
+          dw = dh * imgAspect;
+          dx = (modalCanvas.width - dw) / 2;
+          dy = 12;
+        }
+
+        mctx.save();
+        mctx.shadowColor = current.colorHex || '#00f0ff';
+        mctx.shadowBlur = 18;
+        mctx.drawImage(img, dx, dy, dw, dh);
+        mctx.restore();
+      } else {
+        // Fallback
+        mctx.font = '110px sans-serif';
+        mctx.textAlign = 'center';
+        mctx.fillText(current.icon || '📸', modalCanvas.width / 2, modalCanvas.height / 2 + 35);
+      }
+
+      // Marco del visor con acento de color
+      mctx.strokeStyle = current.colorHex || '#00f0ff';
       mctx.lineWidth = 4;
-      mctx.strokeRect(8, 8, modalCanvas.width - 16, modalCanvas.height - 16);
-
-      // Rejilla de fondo
-      mctx.fillStyle = 'rgba(0, 240, 255, 0.06)';
-      for (let x = 30; x < modalCanvas.width; x += 35) {
-        mctx.fillRect(x, 10, 1, modalCanvas.height - 20);
-      }
-      for (let y = 30; y < modalCanvas.height; y += 35) {
-        mctx.fillRect(10, y, modalCanvas.width - 20, 1);
-      }
-
-      // Emblema
-      mctx.font = '90px sans-serif';
-      mctx.textAlign = 'center';
-      mctx.fillText(current.icon, modalCanvas.width / 2, modalCanvas.height / 2 + 25);
-
-      // Rótulo inferior
-      mctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      mctx.fillRect(12, modalCanvas.height - 48, modalCanvas.width - 24, 40);
-      mctx.font = 'bold 16px Orbitron, sans-serif';
-      mctx.fillStyle = '#facc15';
-      mctx.fillText(current.caption, modalCanvas.width / 2, modalCanvas.height - 22);
+      mctx.strokeRect(6, 6, modalCanvas.width - 12, modalCanvas.height - 12);
     }
 
     // Indicadores Dots
