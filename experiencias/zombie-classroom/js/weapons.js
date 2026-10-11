@@ -8,7 +8,7 @@
  * - Modelos procedurales 3D Three.js, físicas y animaciones de golpe melee y recarga
  */
 
-import * as THREE from 'three';
+import * as THREE from '../libs/three.module.js';
 
 export const WEAPON_CONFIGS = {
   bat: {
@@ -175,13 +175,13 @@ export class WeaponManager {
     batGroup.add(pommel);
 
     // Cuerpo de madera de roble barnizada del bate
-    const barrelGeo = new THREE.CylinderGeometry(0.038, 0.019, 0.54, 16);
+    const batBodyGeo = new THREE.CylinderGeometry(0.038, 0.019, 0.54, 16);
     const batWoodMat = new THREE.MeshStandardMaterial({
       color: 0xd97706,
       roughness: 0.4,
       metalness: 0.08
     });
-    const batBody = new THREE.Mesh(barrelGeo, batWoodMat);
+    const batBody = new THREE.Mesh(batBodyGeo, batWoodMat);
     batBody.position.set(0, 0.22, 0);
     batGroup.add(batBody);
 
@@ -217,7 +217,6 @@ export class WeaponManager {
     const bloodMat = new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.2 });
     const bloodSplat = new THREE.Mesh(bloodGeo, bloodMat);
     bloodSplat.scale.set(0.9, 1.3, 0.9);
-    bloodSplat.position.set(0, 0.35, 0);
     bloodSplat.position.set(0, 0.35, 0);
     batGroup.add(bloodSplat);
 

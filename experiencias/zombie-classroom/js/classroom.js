@@ -4,7 +4,7 @@
  * pasillos anchos, pizarrón panorámico, pupitres, casilleros y ventanales con tormenta.
  */
 
-import * as THREE from 'three';
+import * as THREE from '../libs/three.module.js';
 
 export class ClassroomEnvironment {
   constructor(scene) {

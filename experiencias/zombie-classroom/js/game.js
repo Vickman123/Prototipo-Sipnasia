@@ -4,8 +4,8 @@
  * Orquestador de oleadas, HUD, combate, colisiones y drops.
  */
 
-import * as THREE from 'three';
-import { VRButton } from 'three/addons/webxr/VRButton.js';
+import * as THREE from '../libs/three.module.js';
+import { VRButton } from '../libs/VRButton.js';
 import { ZombieAudioEngine } from './audio.js';
 import { WeaponManager } from './weapons.js';
 import { ZombieManager, ZOMBIE_TYPES } from './zombies.js';
@@ -73,10 +73,15 @@ export class ZombieGame {
     this.isPaused = false;
     this.isGameStarted = false;
 
-    this.init();
+    try {
+      this.init();
+    } catch (err) {
+      console.error('Error al inicializar ZombieGame:', err);
+    }
   }
 
-  async init() {
+  init() {
+    console.log('[Aula Zombie] Inicializando motor Three.js y recursos locales...');
     this.setupThree();
     this.weapons = new WeaponManager(this.audio);
     this.zombies = new ZombieManager(this.scene, this.audio, this.weapons);
@@ -130,6 +135,7 @@ export class ZombieGame {
     this.renderer.setAnimationLoop((time, frame) => this.renderLoop(time, frame));
 
     window.addEventListener('resize', () => this.onWindowResize());
+    console.log('[Aula Zombie] Motor Three.js inicializado y renderloop activo.');
   }
 
   startGameFromTutorial() {
@@ -183,10 +189,16 @@ export class ZombieGame {
     this.container.appendChild(this.renderer.domElement);
 
     // Botón oficial de Three.js VRButton
-    const vrBtn = VRButton.createButton(this.renderer);
-    vrBtn.id = 'VRButton';
-    vrBtn.classList.add('custom-vr-btn');
-    document.body.appendChild(vrBtn);
+    try {
+      const vrBtn = VRButton.createButton(this.renderer);
+      if (vrBtn && vrBtn.style) {
+        vrBtn.id = 'VRButton';
+        vrBtn.classList.add('custom-vr-btn');
+        document.body.appendChild(vrBtn);
+      }
+    } catch (e) {
+      console.warn('VRButton no disponible:', e);
+    }
   }
 
   /* ----------------------------------------------------
@@ -1197,10 +1209,19 @@ export class ZombieGame {
 }
 
 // Inicialización automática robusta
+function bootZombieGame() {
+  try {
+    if (!window.zombieGame) {
+      window.zombieGame = new ZombieGame();
+      console.log('✅ [Aula Zombie] Instancia de juego iniciada con éxito en window.zombieGame');
+    }
+  } catch (err) {
+    console.error('❌ [Aula Zombie] Error fatal instanciando ZombieGame:', err);
+  }
+}
+
 if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', () => {
-    window.zombieGame = new ZombieGame();
-  });
+  window.addEventListener('DOMContentLoaded', bootZombieGame);
 } else {
-  window.zombieGame = new ZombieGame();
+  bootZombieGame();
 }

@@ -32,16 +32,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
-  <!-- Estilos Compartidos y del Juego -->
-  <link rel="stylesheet" href="../shared-experience-hub.css" />
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Anti-cache meta tags para evitar scripts o estilos cacheados -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
-  <!-- Import Map para Three.js y Addons -->
+  <!-- Estilos Compartidos y del Juego -->
+  <link rel="stylesheet" href="../shared-experience-hub.css?v=179174" />
+  <link rel="stylesheet" href="styles.css?v=179174" />
+
+  <!-- Import Map para Three.js y Addons (Local para carga instantánea 100% offline y online) -->
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        "three": "./libs/three.module.js",
+        "three/addons/": "./libs/"
       }
     }
   </script>
@@ -314,7 +319,7 @@
       </div>
 
       <div class="tutorial-footer" style="margin-top: 6px;">
-        <button id="btn-start-game" class="btn-primary-action btn-start-game" type="button" onclick="if(window.zombieGame){window.zombieGame.startGameFromTutorial();}else{document.getElementById('tutorial-modal').classList.add('hidden');}">
+        <button id="btn-start-game" class="btn-primary-action btn-start-game" type="button" onclick="if(window.zombieGame){window.zombieGame.startGameFromTutorial();} document.getElementById('tutorial-modal').classList.add('hidden');">
           ▶ ¡ENTENDIDO, COMENZAR AHORA!
         </button>
       </div>
@@ -360,7 +365,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared-experience-hub.js"></script>
-  <script type="module" src="js/game.js"></script>
+  <script src="../shared-experience-hub.js?v=2"></script>
+  <script type="module" src="js/game.js?v=2"></script>
 </body>
 </html>
