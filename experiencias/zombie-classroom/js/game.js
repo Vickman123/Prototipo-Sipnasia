@@ -86,6 +86,13 @@ export class ZombieGame {
     this.camera.add(this.weapons.weaponGroup);
     this.scene.add(this.camera);
 
+    // Luz de fogonazo dinámico en tiempo real (Raytraced Muzzle Bounce)
+    this.muzzleLight = new THREE.PointLight(0xffaa33, 0, 20);
+    this.muzzleLight.castShadow = true;
+    this.muzzleLight.shadow.bias = -0.001;
+    this.muzzleLight.position.set(0.18, -0.12, -0.4);
+    this.camera.add(this.muzzleLight);
+
     this.setupWebXR();
     this.setupDesktopControls();
     this.setupMobileControls();
@@ -140,6 +147,8 @@ export class ZombieGame {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.25;
     this.renderer.xr.enabled = true;
 
     this.container.appendChild(this.renderer.domElement);
@@ -179,8 +188,12 @@ export class ZombieGame {
       });
 
       controller.addEventListener('squeezestart', () => {
-        // Grip button cambia de arma
-        this.weapons.cycleWeapon(1);
+        // Mando secundario recarga arma, mando primario cambia de arma
+        if (i === 1) {
+          this.weapons.reload(performance.now());
+        } else {
+          this.weapons.cycleWeapon(1);
+        }
         this.updateHUD();
       });
 
@@ -442,6 +455,15 @@ export class ZombieGame {
       setTimeout(() => crosshair.classList.remove('kick'), 70);
     }
 
+    // Iluminación dinámica de fogonazo en tiempo real (Raytraced Room Bounce)
+    if (this.muzzleLight) {
+      this.muzzleLight.color.setHex(weapon.colorThree || 0xffaa33);
+      this.muzzleLight.intensity = 5.5;
+      setTimeout(() => {
+        if (this.muzzleLight) this.muzzleLight.intensity = 0;
+      }, 45);
+    }
+
     // Disparo según arma: Proyectil Plasma o Raycast Perdigones/Balas
     if (weapon.isProjectile) {
       this.spawnPlasmaProjectile(origin, direction, weapon);
@@ -468,13 +490,16 @@ export class ZombieGame {
     // Trazador visual del disparo
     this.spawnBulletTracer(origin, direction, weapon);
 
-    // Objetos a comprobar: partes de zombies (hitbox cilíndrica, cabeza, torso)
+    // Objetos a comprobar: partes anatómicas de zombis con desmembramiento activo
     const targetObjects = [];
     this.zombies.zombies.forEach(z => {
-      if (!z.isDying) {
-        if (z.parts.hitboxMesh) targetObjects.push(z.parts.hitboxMesh);
-        if (z.parts.head) targetObjects.push(z.parts.head);
+      if (!z.isDying && z.parts) {
+        if (z.limbsState.hasHead && z.parts.head) targetObjects.push(z.parts.head);
         if (z.parts.torso) targetObjects.push(z.parts.torso);
+        if (z.limbsState.hasLeftArm && z.parts.leftArm) targetObjects.push(z.parts.leftArm);
+        if (z.limbsState.hasRightArm && z.parts.rightArm) targetObjects.push(z.parts.rightArm);
+        if (z.limbsState.hasLeftLeg && z.parts.leftLeg) targetObjects.push(z.parts.leftLeg);
+        if (z.limbsState.hasRightLeg && z.parts.rightLeg) targetObjects.push(z.parts.rightLeg);
       }
     });
 
@@ -485,11 +510,13 @@ export class ZombieGame {
         let current = hit.object;
         let zombieObj = null;
         let isHeadshot = false;
+        let limbName = 'torso';
 
         while (current) {
           if (current.userData && current.userData.zombieObj) {
             zombieObj = current.userData.zombieObj;
-            if (current.userData.isHeadshot) isHeadshot = true;
+            limbName = current.userData.limb || 'torso';
+            if (current.userData.isHeadshot || limbName === 'head') isHeadshot = true;
             break;
           }
           current = current.parent;
@@ -497,12 +524,13 @@ export class ZombieGame {
 
         if (zombieObj && !zombieObj.isDying) {
           const s = zombieObj.config.scale;
-          // Si el tiro impactó en la zona superior de la cabeza
-          if (hit.point.y >= zombieObj.mesh.position.y + 1.32 * s) {
+          // Fallback de altura para disparo a la cabeza
+          if (hit.point.y >= zombieObj.mesh.position.y + 1.38 * s) {
             isHeadshot = true;
+            limbName = 'head';
           }
 
-          const result = this.zombies.damageZombie(zombieObj, weapon.damage, isHeadshot, hit.point);
+          const result = this.zombies.damageZombie(zombieObj, weapon.damage, isHeadshot, hit.point, limbName, weapon);
           this.triggerHitmarker(isHeadshot);
 
           if (result && result.killed) {
@@ -955,7 +983,31 @@ export class ZombieGame {
 
     const currentW = this.weapons.getCurrentWeapon();
     if (weaponNameEl) weaponNameEl.textContent = currentW.name;
-    if (ammoMagEl) ammoMagEl.textContent = `${currentW.currentMag}`;
+
+    const reloadBanner = document.getElementById('reload-banner');
+    const lowAmmoWarning = document.getElementById('low-ammo-warning');
+
+    if (this.weapons.isReloading) {
+      if (ammoMagEl) {
+        ammoMagEl.textContent = '...';
+        ammoMagEl.classList.add('reloading');
+      }
+      if (reloadBanner) reloadBanner.classList.remove('hidden');
+      if (lowAmmoWarning) lowAmmoWarning.classList.add('hidden');
+    } else {
+      if (ammoMagEl) {
+        ammoMagEl.textContent = `${currentW.currentMag}`;
+        ammoMagEl.classList.remove('reloading');
+      }
+      if (reloadBanner) reloadBanner.classList.add('hidden');
+
+      if (currentW.currentMag === 0) {
+        if (lowAmmoWarning) lowAmmoWarning.classList.remove('hidden');
+      } else {
+        if (lowAmmoWarning) lowAmmoWarning.classList.add('hidden');
+      }
+    }
+
     if (ammoResEl) ammoResEl.textContent = currentW.reserveAmmo === Infinity ? '∞' : `${currentW.reserveAmmo}`;
 
     // Actualizar slots de armas desbloqueadas

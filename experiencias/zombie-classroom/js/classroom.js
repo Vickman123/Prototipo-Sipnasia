@@ -15,6 +15,7 @@ export class ClassroomEnvironment {
     this.lightningTimer = 0;
     this.clockHand = null;
     this.obstacles = []; // Objetos con colisión táctica
+    this.lightShafts = []; // Haces de luz volumétricos (God Rays)
 
     this.buildClassroom();
   }
@@ -25,13 +26,13 @@ export class ClassroomEnvironment {
     const D = 24;  // Profundidad (Z: -12 a +12)
     const H = 5.2; // Altura (Y: 0 a 5.2)
 
-    // 1. SUELO: Linóleo / Madera de Salón Escolar con textura procedural
+    // 1. SUELO: Linóleo / Madera de Salón Escolar con acabado pulido reflectivo
     const floorTexture = this.createFloorTexture();
     const floorGeo = new THREE.PlaneGeometry(W, D);
     const floorMat = new THREE.MeshStandardMaterial({
       map: floorTexture,
-      roughness: 0.65,
-      metalness: 0.1
+      roughness: 0.25,
+      metalness: 0.22
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
@@ -338,6 +339,22 @@ export class ClassroomEnvironment {
       );
       frame.position.set(posZ, 0, 0);
       winGroup.add(frame);
+
+      // Haz de luz volumétrica (God Ray / Raytraced Shaft) entrando por la ventana
+      const shaftGeo = new THREE.CylinderGeometry(0.8, 3.2, 11, 12, 1, true);
+      const shaftMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.08,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+      shaft.position.set(-W / 2 + 3.8, 2.1, posZ);
+      shaft.rotation.z = Math.PI / 3.4;
+      this.scene.add(shaft);
+      this.lightShafts.push(shaft);
     });
 
     this.scene.add(winGroup);
@@ -423,16 +440,26 @@ export class ClassroomEnvironment {
   }
 
   /* ----------------------------------------------------
-     ILUMINACIÓN FLUORESCENTE DISTRIBUIDA
+     ILUMINACIÓN FLUORESCENTE Y SOMBRAS SUAVES
      ---------------------------------------------------- */
   setupLighting(W, D, H) {
     // 1. Luz Ambiental
-    const ambient = new THREE.AmbientLight(0x1e293b, 1.35);
+    const ambient = new THREE.AmbientLight(0x1e293b, 1.25);
     this.scene.add(ambient);
 
-    // 2. Luz de luna azulina a través de las ventanas
-    const moonLight = new THREE.DirectionalLight(0x38bdf8, 0.85);
-    moonLight.position.set(-14, 8, 0);
+    // 2. Luz de luna azulina a través de las ventanas con sombras de proyección
+    const moonLight = new THREE.DirectionalLight(0x38bdf8, 1.1);
+    moonLight.position.set(-15, 9, 0);
+    moonLight.castShadow = true;
+    moonLight.shadow.mapSize.width = 1024;
+    moonLight.shadow.mapSize.height = 1024;
+    moonLight.shadow.camera.near = 1.0;
+    moonLight.shadow.camera.far = 40;
+    moonLight.shadow.camera.left = -14;
+    moonLight.shadow.camera.right = 14;
+    moonLight.shadow.camera.top = 14;
+    moonLight.shadow.camera.bottom = -14;
+    moonLight.shadow.bias = -0.0006;
     this.scene.add(moonLight);
 
     // 3. Luces de tubos fluorescentes distribuidas uniformemente
@@ -446,8 +473,12 @@ export class ClassroomEnvironment {
     ];
 
     lampPositions.forEach((pos, idx) => {
-      const tubeLight = new THREE.PointLight(0xf1f5f9, 1.8, 16);
+      const tubeLight = new THREE.PointLight(0xf1f5f9, 1.8, 18);
       tubeLight.position.set(pos[0], pos[1], pos[2]);
+      if (idx === 2 || idx === 3) {
+        tubeLight.castShadow = true;
+        tubeLight.shadow.bias = -0.001;
+      }
       this.scene.add(tubeLight);
 
       // Uno de ellos parpadea tenuemente
@@ -465,16 +496,21 @@ export class ClassroomEnvironment {
       }
     }
 
-    // Relámpagos periódicos en la tormenta exterior
+    // Relámpagos periódicos en la tormenta exterior y pulso de God Rays
     if (now >= this.lightningTimer) {
       if (Math.random() < 0.08) {
-        this.lightningLight.intensity = 5.0;
+        this.lightningLight.intensity = 5.5;
+        this.lightShafts.forEach(s => { s.material.opacity = 0.38; });
+
         setTimeout(() => {
-          if (this.lightningLight) this.lightningLight.intensity = 0.6;
+          if (this.lightningLight) this.lightningLight.intensity = 0.8;
           setTimeout(() => {
-            if (this.lightningLight) this.lightningLight.intensity = 4.2;
+            if (this.lightningLight) this.lightningLight.intensity = 4.5;
+            this.lightShafts.forEach(s => { s.material.opacity = 0.45; });
+
             setTimeout(() => {
               if (this.lightningLight) this.lightningLight.intensity = 0;
+              this.lightShafts.forEach(s => { s.material.opacity = 0.08; });
             }, 60);
           }, 80);
         }, 50);

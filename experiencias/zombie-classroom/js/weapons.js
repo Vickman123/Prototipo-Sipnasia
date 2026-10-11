@@ -291,6 +291,7 @@ export class WeaponManager {
     const w = this.getCurrentWeapon();
     if (!this.canShoot(now)) {
       if (w.currentMag <= 0 && !this.isReloading) {
+        if (this.audio) this.audio.playDryFire();
         this.reload(now);
       }
       return null;
@@ -324,7 +325,10 @@ export class WeaponManager {
   reload(now) {
     const w = this.getCurrentWeapon();
     if (this.isReloading || w.currentMag >= w.magSize) return false;
-    if (w.reserveAmmo !== Infinity && w.reserveAmmo <= 0) return false;
+    if (w.reserveAmmo !== Infinity && w.reserveAmmo <= 0) {
+      if (this.audio) this.audio.playDryFire();
+      return false;
+    }
 
     this.isReloading = true;
     this.reloadingUntil = now + w.reloadTime;
@@ -354,8 +358,18 @@ export class WeaponManager {
     }
     const currentMesh = this.weaponMeshes[this.currentWeaponId];
     if (currentMesh) {
-      currentMesh.position.z = -0.38 + this.recoilOffset;
-      currentMesh.position.y = -0.16 + (this.isReloading ? Math.sin(now * 0.008) * 0.04 : 0);
+      if (this.isReloading) {
+        // Animación táctica de recarga 3D (bajar arma, vibración de cargador y retorno)
+        currentMesh.position.z = -0.34;
+        currentMesh.position.y = -0.27 + Math.sin(now * 0.015) * 0.025;
+        currentMesh.rotation.x = 0.35 + Math.sin(now * 0.018) * 0.05;
+        currentMesh.rotation.z = -0.16;
+      } else {
+        currentMesh.position.z = -0.38 + this.recoilOffset;
+        currentMesh.position.y = -0.16;
+        currentMesh.rotation.x = 0;
+        currentMesh.rotation.z = 0;
+      }
     }
 
     // Actualización de drops en el suelo (rotación y flotación)

@@ -556,4 +556,78 @@ export class ZombieAudioEngine {
       osc2.stop(t2 + 0.13);
     }, 180);
   }
+
+  /* ----------------------------------------------------
+     DESMEMBRAMIENTO Y ATAQUE DE MORDIDAS
+     ---------------------------------------------------- */
+  playLimbSever() {
+    this.ensureContext();
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    // Sonido viscoso de corte / amputación
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(450, t);
+    osc.frequency.exponentialRampToValueAtTime(90, t + 0.18);
+    gain.gain.setValueAtTime(0.65, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.19);
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.createNoiseBuffer(0.2);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(900, t);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.7, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.sfxGain);
+    noise.start(t);
+  }
+
+  playBiteAttack() {
+    this.ensureContext();
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    // Doble chasquido rápido de mandíbula cerrándose
+    for (let i = 0; i < 2; i++) {
+      const dt = i * 0.09;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(800, t + dt);
+      osc.frequency.exponentialRampToValueAtTime(120, t + dt + 0.06);
+      gain.gain.setValueAtTime(0.75, t + dt);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + dt + 0.06);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(t + dt);
+      osc.stop(t + dt + 0.07);
+    }
+  }
+
+  playDryFire() {
+    this.ensureContext();
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1400, t);
+    osc.frequency.exponentialRampToValueAtTime(400, t + 0.04);
+    gain.gain.setValueAtTime(0.4, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.05);
+  }
 }
