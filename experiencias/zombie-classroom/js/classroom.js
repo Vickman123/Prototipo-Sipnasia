@@ -1,8 +1,7 @@
 /**
- * SIPNASIA XR - Entorno 3D del Salón de Clases (School Classroom)
- * Diseñado con Three.js procedural para máximo rendimiento en Meta Quest y PC.
- * Incluye pizarrón con tiza, pupitres volcados, casilleros, escritorio del profesor,
- * ventanales con tormenta exterior, relámpagos y luces fluorescentes parpadeantes.
+ * SIPNASIA XR - Entorno 3D Ampliado del Salón de Clases (School Classroom)
+ * Diseñado con Three.js procedural con gran amplitud, espacio para combate,
+ * pasillos anchos, pizarrón panorámico, pupitres, casilleros y ventanales con tormenta.
  */
 
 import * as THREE from 'three';
@@ -21,9 +20,10 @@ export class ClassroomEnvironment {
   }
 
   buildClassroom() {
-    const W = 16;  // Ancho (X: -8 a +8)
-    const D = 13;  // Profundidad (Z: -6.5 a +6.5)
-    const H = 4.2; // Altura (Y: 0 a 4.2)
+    // Dimensiones ampliadas tipo Aula Magna / Salón de Conferencias Universitario
+    const W = 26;  // Ancho (X: -13 a +13)
+    const D = 24;  // Profundidad (Z: -12 a +12)
+    const H = 5.2; // Altura (Y: 0 a 5.2)
 
     // 1. SUELO: Linóleo / Madera de Salón Escolar con textura procedural
     const floorTexture = this.createFloorTexture();
@@ -41,7 +41,7 @@ export class ClassroomEnvironment {
     // 2. TECHO: Paneles acústicos escolares
     const ceilingGeo = new THREE.PlaneGeometry(W, D);
     const ceilingMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
+      color: 0x182030,
       roughness: 0.9
     });
     const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
@@ -49,9 +49,9 @@ export class ClassroomEnvironment {
     ceiling.rotation.x = Math.PI / 2;
     this.scene.add(ceiling);
 
-    // 3. PAREDES DE DOS TONOS (Crema arriba, Verde institucional abajo)
+    // 3. PAREDES DE DOS TONOS (Crema arriba, Verde/Azul institucional abajo)
     const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x334155,
+      color: 0x243248,
       roughness: 0.85
     });
 
@@ -84,7 +84,7 @@ export class ClassroomEnvironment {
     // 5. ESCRITORIO DEL PROFESOR Y COMPUTADORA PC PUMA
     this.buildTeacherDesk(D);
 
-    // 6. PUPITRES Y SILLAS DE ESTUDIANTES (Algunos volcados para cobertura táctica)
+    // 6. PUPITRES Y SILLAS DE ESTUDIANTES (Distribuidos con pasillos amplios)
     this.buildStudentDesks();
 
     // 7. VENTANALES Y NOCHE CON TORMENTA (Pared Izquierda)
@@ -106,11 +106,11 @@ export class ClassroomEnvironment {
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Tablones de madera desgastados
+    // Tablones de madera pulidos
     ctx.fillStyle = '#3a2e22';
     ctx.fillRect(0, 0, 512, 512);
 
-    ctx.strokeStyle = '#241b12';
+    ctx.strokeStyle = '#221910';
     ctx.lineWidth = 2;
     for (let y = 0; y < 512; y += 32) {
       ctx.beginPath();
@@ -125,7 +125,7 @@ export class ClassroomEnvironment {
       ctx.stroke();
     }
 
-    // Manchas oscuras y arañazos de horror
+    // Manchas oscuras sutiles de tensión
     ctx.fillStyle = 'rgba(70, 10, 10, 0.35)';
     ctx.beginPath();
     ctx.arc(140, 260, 45, 0, Math.PI * 2);
@@ -135,71 +135,71 @@ export class ClassroomEnvironment {
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(6, 5);
+    texture.repeat.set(12, 11);
     return texture;
   }
 
   /* ----------------------------------------------------
-     PIZARRÓN ESCOLAR
+     PIZARRÓN ESCOLAR PANORÁMICO
      ---------------------------------------------------- */
   buildBlackboard(roomDepth) {
     const canvas = document.createElement('canvas');
-    canvas.width = 1024;
+    canvas.width = 1280;
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
     // Verde pizarra clásico
     ctx.fillStyle = '#1e382b';
-    ctx.fillRect(0, 0, 1024, 512);
+    ctx.fillRect(0, 0, 1280, 512);
 
     // Tizas y fórmulas
     ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 36px "Rajdhani", sans-serif';
-    ctx.fillText('FACULTAD // PC PUMA UNAM', 60, 70);
+    ctx.font = 'bold 40px "Rajdhani", sans-serif';
+    ctx.fillText('FACULTAD // PC PUMA UNAM // AULA MAGNA', 80, 75);
 
     ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 52px "Orbitron", sans-serif';
-    ctx.fillText('EXAMEN FINAL: SOBREVIVIR', 60, 150);
+    ctx.font = 'bold 56px "Orbitron", sans-serif';
+    ctx.fillText('EXAMEN FINAL: SOBREVIVIR AL BROTE', 80, 155);
 
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '28px "Share Tech Mono", monospace';
-    ctx.fillText('• REGLA 1: Apunta a la cabeza para daño crítico (x2.5)', 60, 220);
-    ctx.fillText('• REGLA 2: Recoge armas arrojadas por los zombis caídos', 60, 265);
-    ctx.fillText('• REGLA 3: Mantén distancia de los Químicos y Titanes', 60, 310);
-    ctx.fillText('• REGLA 4: Si escuchas un grito, prepárate para correr', 60, 355);
+    ctx.fillText('• REGLA 1: Apunta a la cabeza para tiros críticos (x2.5 daño)', 80, 230);
+    ctx.fillText('• REGLA 2: Recoge armas arrojadas por los zombis caídos (Drops con haz de luz)', 80, 280);
+    ctx.fillText('• REGLA 3: Mantén distancia de los Químicos y Titanes pesados', 80, 330);
+    ctx.fillText('• REGLA 4: Si escuchas un grito, prepárate para correr y esquivar', 80, 380);
 
     // Fórmulas matemáticas en esquina
     ctx.fillStyle = 'rgba(254, 240, 138, 0.85)';
     ctx.font = '24px monospace';
-    ctx.fillText('E = mc²   |   ∇ × B = μ₀J   |   HP = 0 => GAME OVER', 60, 430);
+    ctx.fillText('E = mc²   |   ∇ × B = μ₀J   |   SOBREVIVENCIA = 100%', 80, 455);
 
     // Manchas de borrador de tiza
     ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    for (let i = 0; i < 20; i++) {
-      ctx.fillRect(Math.random() * 900, Math.random() * 450, 150, 40);
+    for (let i = 0; i < 25; i++) {
+      ctx.fillRect(Math.random() * 1100, Math.random() * 450, 160, 45);
     }
 
     const boardTexture = new THREE.CanvasTexture(canvas);
-    const boardGeo = new THREE.PlaneGeometry(7.2, 2.6);
+    const boardGeo = new THREE.PlaneGeometry(10.5, 3.2);
     const boardMat = new THREE.MeshStandardMaterial({
       map: boardTexture,
       roughness: 0.85
     });
     const board = new THREE.Mesh(boardGeo, boardMat);
-    board.position.set(0, 2.1, -roomDepth / 2 + 0.03);
+    board.position.set(0, 2.6, -roomDepth / 2 + 0.03);
     this.scene.add(board);
 
     // Marco de madera del pizarrón
-    const frameGeo = new THREE.BoxGeometry(7.4, 2.75, 0.06);
+    const frameGeo = new THREE.BoxGeometry(10.7, 3.35, 0.06);
     const frameMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.6 });
     const frame = new THREE.Mesh(frameGeo, frameMat);
-    frame.position.set(0, 2.1, -roomDepth / 2 + 0.01);
+    frame.position.set(0, 2.6, -roomDepth / 2 + 0.01);
     this.scene.add(frame);
 
     // Repisa de tizas con borrador
-    const trayGeo = new THREE.BoxGeometry(7.0, 0.04, 0.14);
+    const trayGeo = new THREE.BoxGeometry(10.2, 0.04, 0.16);
     const tray = new THREE.Mesh(trayGeo, frameMat);
-    tray.position.set(0, 0.72, -roomDepth / 2 + 0.08);
+    tray.position.set(0, 0.95, -roomDepth / 2 + 0.08);
     this.scene.add(tray);
   }
 
@@ -208,41 +208,41 @@ export class ClassroomEnvironment {
      ---------------------------------------------------- */
   buildTeacherDesk(roomDepth) {
     const deskGroup = new THREE.Group();
-    deskGroup.position.set(0, 0, -roomDepth / 2 + 1.8);
+    deskGroup.position.set(0, 0, -roomDepth / 2 + 2.8);
 
     const woodMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.5 });
-    const topGeo = new THREE.BoxGeometry(2.2, 0.08, 1.1);
+    const topGeo = new THREE.BoxGeometry(2.6, 0.08, 1.2);
     const top = new THREE.Mesh(topGeo, woodMat);
     top.position.y = 0.85;
     deskGroup.add(top);
 
     // Patas
     const legGeo = new THREE.BoxGeometry(0.08, 0.85, 0.08);
-    const l1 = new THREE.Mesh(legGeo, woodMat); l1.position.set(-1.0, 0.425, -0.45);
-    const l2 = new THREE.Mesh(legGeo, woodMat); l2.position.set(1.0, 0.425, -0.45);
-    const l3 = new THREE.Mesh(legGeo, woodMat); l3.position.set(-1.0, 0.425, 0.45);
-    const l4 = new THREE.Mesh(legGeo, woodMat); l4.position.set(1.0, 0.425, 0.45);
+    const l1 = new THREE.Mesh(legGeo, woodMat); l1.position.set(-1.2, 0.425, -0.5);
+    const l2 = new THREE.Mesh(legGeo, woodMat); l2.position.set(1.2, 0.425, -0.5);
+    const l3 = new THREE.Mesh(legGeo, woodMat); l3.position.set(-1.2, 0.425, 0.5);
+    const l4 = new THREE.Mesh(legGeo, woodMat); l4.position.set(1.2, 0.425, 0.5);
     deskGroup.add(l1, l2, l3, l4);
 
     // Laptop PC PUMA UNAM en el escritorio
-    const laptopBaseGeo = new THREE.BoxGeometry(0.36, 0.015, 0.26);
+    const laptopBaseGeo = new THREE.BoxGeometry(0.38, 0.015, 0.28);
     const laptopMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 });
     const laptopBase = new THREE.Mesh(laptopBaseGeo, laptopMat);
-    laptopBase.position.set(-0.35, 0.9, 0);
+    laptopBase.position.set(-0.4, 0.9, 0);
     deskGroup.add(laptopBase);
 
-    const laptopScreenGeo = new THREE.BoxGeometry(0.36, 0.24, 0.015);
+    const laptopScreenGeo = new THREE.BoxGeometry(0.38, 0.26, 0.015);
     const laptopScreenMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
     const laptopScreen = new THREE.Mesh(laptopScreenGeo, laptopScreenMat);
-    laptopScreen.position.set(-0.35, 1.02, -0.12);
+    laptopScreen.position.set(-0.4, 1.04, -0.13);
     laptopScreen.rotation.x = -0.2;
     deskGroup.add(laptopScreen);
 
     // Pila de libros / exámenes
-    const bookGeo = new THREE.BoxGeometry(0.24, 0.1, 0.18);
+    const bookGeo = new THREE.BoxGeometry(0.26, 0.12, 0.2);
     const bookMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c });
     const book = new THREE.Mesh(bookGeo, bookMat);
-    book.position.set(0.5, 0.94, 0.1);
+    book.position.set(0.6, 0.94, 0.1);
     book.rotation.y = 0.3;
     deskGroup.add(book);
 
@@ -251,53 +251,54 @@ export class ClassroomEnvironment {
   }
 
   /* ----------------------------------------------------
-     PUPITRES Y SILLAS DE ESTUDIANTES
+     PUPITRES Y SILLAS DE ESTUDIANTES (CON PASILLO CENTRAL AMPLIO)
      ---------------------------------------------------- */
   buildStudentDesks() {
     const deskMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 });
     const metalMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8 });
 
-    // Matriz de pupitres (Filas y Columnas)
-    const rows = 3;
+    const rows = 4;
     const cols = 4;
-    const startX = -4.5;
-    const startZ = -1.8;
-    const spacingX = 3.0;
-    const spacingZ = 2.4;
+    const spacingX = 4.2;
+    const spacingZ = 2.6;
+    const startX = -6.8;
+    const startZ = -5.0;
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const deskGroup = new THREE.Group();
-        const posX = startX + c * spacingX;
+        // Abrir un pasillo central de 3.2m entre c=1 y c=2
+        let posX = startX + c * spacingX;
+        if (c >= 2) posX += 1.4;
         const posZ = startZ + r * spacingZ;
 
-        // Algunos pupitres volcados por el ataque zombie
+        // Algunos pupitres volcados por el caos
         const isFlipped = (r === 1 && c === 1) || (r === 2 && c === 3);
 
-        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.05, 0.65), deskMat);
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.05, 0.7), deskMat);
         tableTop.position.y = 0.74;
         deskGroup.add(tableTop);
 
         // Patas metálicas
         const legGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.74, 8);
-        const leg1 = new THREE.Mesh(legGeo, metalMat); leg1.position.set(-0.54, 0.37, -0.26);
-        const leg2 = new THREE.Mesh(legGeo, metalMat); leg2.position.set(0.54, 0.37, -0.26);
-        const leg3 = new THREE.Mesh(legGeo, metalMat); leg3.position.set(-0.54, 0.37, 0.26);
-        const leg4 = new THREE.Mesh(legGeo, metalMat); leg4.position.set(0.54, 0.37, 0.26);
+        const leg1 = new THREE.Mesh(legGeo, metalMat); leg1.position.set(-0.58, 0.37, -0.28);
+        const leg2 = new THREE.Mesh(legGeo, metalMat); leg2.position.set(0.58, 0.37, -0.28);
+        const leg3 = new THREE.Mesh(legGeo, metalMat); leg3.position.set(-0.58, 0.37, 0.28);
+        const leg4 = new THREE.Mesh(legGeo, metalMat); leg4.position.set(0.58, 0.37, 0.28);
         deskGroup.add(leg1, leg2, leg3, leg4);
 
         // Silla adjunta
-        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.04, 0.44), deskMat);
-        seat.position.set(0, 0.45, 0.55);
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.46), deskMat);
+        seat.position.set(0, 0.45, 0.6);
         deskGroup.add(seat);
 
-        const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.35, 0.03), deskMat);
-        backrest.position.set(0, 0.72, 0.75);
+        const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.36, 0.03), deskMat);
+        backrest.position.set(0, 0.72, 0.82);
         deskGroup.add(backrest);
 
         if (isFlipped) {
           deskGroup.rotation.z = Math.PI / 2.2;
-          deskGroup.rotation.y = 0.4;
+          deskGroup.rotation.y = 0.35;
           deskGroup.position.set(posX, 0.15, posZ);
         } else {
           deskGroup.position.set(posX, 0, posZ);
@@ -310,45 +311,45 @@ export class ClassroomEnvironment {
   }
 
   /* ----------------------------------------------------
-     VENTANALES Y NOCHE CON TORMENTA
+     VENTANALES Y NOCHE CON TORMENTA (PARED IZQUIERDA)
      ---------------------------------------------------- */
   buildWindows(roomWidth) {
     const winGroup = new THREE.Group();
-    winGroup.position.set(-roomWidth / 2 + 0.04, 2.2, 0);
+    winGroup.position.set(-roomWidth / 2 + 0.04, 2.6, 0);
     winGroup.rotation.y = Math.PI / 2;
 
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
     const glassMat = new THREE.MeshBasicMaterial({
       color: 0x0284c7,
       transparent: true,
-      opacity: 0.22
+      opacity: 0.24
     });
 
-    // 3 Ventanales altos
-    for (let i = -1; i <= 1; i++) {
-      const pane = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.2), glassMat);
-      pane.position.set(i * 3.6, 0, 0);
+    // 5 Ventanales altos a lo largo de la pared
+    const windowOffsets = [-8, -4, 0, 4, 8];
+    windowOffsets.forEach(posZ => {
+      const pane = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 2.6), glassMat);
+      pane.position.set(posZ, 0, 0);
       winGroup.add(pane);
 
       // Marco
       const frame = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.BoxGeometry(2.8, 2.2, 0.05)),
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(3.0, 2.6, 0.05)),
         new THREE.LineBasicMaterial({ color: 0x334155 })
       );
-      frame.position.set(i * 3.6, 0, 0);
+      frame.position.set(posZ, 0, 0);
       winGroup.add(frame);
-    }
+    });
 
     this.scene.add(winGroup);
 
-    // Luz de relámpago exterior que ilumina a través de las ventanas
+    // Luz de relámpago exterior
     this.lightningLight = new THREE.DirectionalLight(0x93c5fd, 0);
-    this.lightningLight.position.set(-15, 6, 0);
+    this.lightningLight.position.set(-20, 8, 0);
     this.scene.add(this.lightningLight);
   }
 
   /* ----------------------------------------------------
-     CASILLEROS ESCOLARES Y PUERTA BARRICADA
+     CASILLEROS ESCOLARES Y PUERTA BARRICADA (PARED TRASERA)
      ---------------------------------------------------- */
   buildLockersAndBackdoor(roomDepth) {
     const lockerMat = new THREE.MeshStandardMaterial({
@@ -357,33 +358,37 @@ export class ClassroomEnvironment {
       roughness: 0.35
     });
 
-    // Casilleros a la izquierda de la pared trasera
-    const lockerGeo = new THREE.BoxGeometry(2.8, 2.4, 0.55);
-    const lockers = new THREE.Mesh(lockerGeo, lockerMat);
-    lockers.position.set(-4.5, 1.2, roomDepth / 2 - 0.3);
-    this.scene.add(lockers);
+    // Casilleros a la izquierda y derecha de la pared trasera
+    const lockerGeo = new THREE.BoxGeometry(3.6, 2.6, 0.6);
+    const lockersLeft = new THREE.Mesh(lockerGeo, lockerMat);
+    lockersLeft.position.set(-7.5, 1.3, roomDepth / 2 - 0.35);
+    this.scene.add(lockersLeft);
 
-    // Puerta de salida barricada con tablas de madera
-    const doorGeo = new THREE.BoxGeometry(1.4, 2.6, 0.06);
+    const lockersRight = new THREE.Mesh(lockerGeo, lockerMat);
+    lockersRight.position.set(7.5, 1.3, roomDepth / 2 - 0.35);
+    this.scene.add(lockersRight);
+
+    // Puerta de salida barricada al fondo de la pared trasera
+    const doorGeo = new THREE.BoxGeometry(1.6, 2.8, 0.06);
     const doorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
     const door = new THREE.Mesh(doorGeo, doorMat);
-    door.position.set(0, 1.3, roomDepth / 2 - 0.04);
+    door.position.set(0, 1.4, roomDepth / 2 - 0.04);
     this.scene.add(door);
 
     // Letrero de SALIDA DE EMERGENCIA BLOQUEADA
-    const signGeo = new THREE.BoxGeometry(0.9, 0.28, 0.03);
+    const signGeo = new THREE.BoxGeometry(1.1, 0.32, 0.03);
     const signMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
     const sign = new THREE.Mesh(signGeo, signMat);
-    sign.position.set(0, 2.4, roomDepth / 2 - 0.02);
+    sign.position.set(0, 2.7, roomDepth / 2 - 0.02);
     this.scene.add(sign);
 
-    // Tablas de madera cruzadas
+    // Tablas de madera cruzadas sobre la puerta
     const plankMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
-    const p1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.18, 0.04), plankMat);
-    p1.position.set(0, 1.4, roomDepth / 2 - 0.01);
+    const p1 = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 0.04), plankMat);
+    p1.position.set(0, 1.5, roomDepth / 2 - 0.01);
     p1.rotation.z = 0.35;
-    const p2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.18, 0.04), plankMat);
-    p2.position.set(0, 1.2, roomDepth / 2 - 0.01);
+    const p2 = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 0.04), plankMat);
+    p2.position.set(0, 1.25, roomDepth / 2 - 0.01);
     p2.rotation.z = -0.35;
     this.scene.add(p1, p2);
   }
@@ -393,70 +398,81 @@ export class ClassroomEnvironment {
      ---------------------------------------------------- */
   buildWallClock(roomDepth) {
     const clockGroup = new THREE.Group();
-    clockGroup.position.set(0, 3.4, -roomDepth / 2 + 0.05);
+    clockGroup.position.set(0, 4.4, -roomDepth / 2 + 0.05);
 
-    const faceGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.04, 24);
+    const faceGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.04, 24);
     const faceMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
     const face = new THREE.Mesh(faceGeo, faceMat);
     face.rotation.x = Math.PI / 2;
     clockGroup.add(face);
 
     // Borde negro
-    const rimGeo = new THREE.TorusGeometry(0.35, 0.025, 8, 24);
+    const rimGeo = new THREE.TorusGeometry(0.42, 0.03, 8, 24);
     const rimMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
     const rim = new THREE.Mesh(rimGeo, rimMat);
     clockGroup.add(rim);
 
     // Segundero rojo
-    const handGeo = new THREE.BoxGeometry(0.012, 0.22, 0.01);
+    const handGeo = new THREE.BoxGeometry(0.014, 0.26, 0.01);
     const handMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
     this.clockHand = new THREE.Mesh(handGeo, handMat);
-    this.clockHand.position.set(0, 0.08, 0.025);
+    this.clockHand.position.set(0, 0.1, 0.025);
     clockGroup.add(this.clockHand);
 
     this.scene.add(clockGroup);
   }
 
   /* ----------------------------------------------------
-     ILUMINACIÓN FLUORESCENTE Y EFECTO DE PARPADEO (FLICKER)
+     ILUMINACIÓN FLUORESCENTE DISTRIBUIDA
      ---------------------------------------------------- */
   setupLighting(W, D, H) {
-    // 1. Luz Ambiental baja y tenebrosa
-    const ambient = new THREE.AmbientLight(0x1e293b, 1.2);
+    // 1. Luz Ambiental
+    const ambient = new THREE.AmbientLight(0x1e293b, 1.35);
     this.scene.add(ambient);
 
-    // 2. Luz de relleno azulina de medianoche
-    const moonLight = new THREE.DirectionalLight(0x38bdf8, 0.7);
-    moonLight.position.set(-8, 5, 2);
+    // 2. Luz de luna azulina a través de las ventanas
+    const moonLight = new THREE.DirectionalLight(0x38bdf8, 0.85);
+    moonLight.position.set(-14, 8, 0);
     this.scene.add(moonLight);
 
-    // 3. Lámpara fluorescente central estable
-    const mainTube = new THREE.PointLight(0xf1f5f9, 2.2, 14);
-    mainTube.position.set(-2, H - 0.4, 0);
-    this.scene.add(mainTube);
+    // 3. Luces de tubos fluorescentes distribuidas uniformemente
+    const lampPositions = [
+      [-6, H - 0.4, -6],
+      [6, H - 0.4, -6],
+      [-6, H - 0.4, 0],
+      [6, H - 0.4, 0],
+      [-6, H - 0.4, 6],
+      [6, H - 0.4, 6]
+    ];
 
-    // 4. Lámpara fluorescente parpadeante (Flickering)
-    this.flickerLight = new THREE.PointLight(0xef4444, 2.5, 12);
-    this.flickerLight.position.set(3, H - 0.4, -1);
-    this.scene.add(this.flickerLight);
+    lampPositions.forEach((pos, idx) => {
+      const tubeLight = new THREE.PointLight(0xf1f5f9, 1.8, 16);
+      tubeLight.position.set(pos[0], pos[1], pos[2]);
+      this.scene.add(tubeLight);
+
+      // Uno de ellos parpadea tenuemente
+      if (idx === 3) {
+        this.flickerLight = tubeLight;
+      }
+    });
   }
 
   update(delta, now) {
     // Parpadeo ominoso de lámpara fluorescente
     if (this.flickerLight) {
       if (Math.random() < 0.12) {
-        this.flickerLight.intensity = Math.random() < 0.3 ? 0.2 : (2.0 + Math.random() * 1.5);
+        this.flickerLight.intensity = Math.random() < 0.3 ? 0.3 : (1.8 + Math.random() * 1.2);
       }
     }
 
     // Relámpagos periódicos en la tormenta exterior
     if (now >= this.lightningTimer) {
       if (Math.random() < 0.08) {
-        this.lightningLight.intensity = 4.5;
+        this.lightningLight.intensity = 5.0;
         setTimeout(() => {
-          if (this.lightningLight) this.lightningLight.intensity = 0.5;
+          if (this.lightningLight) this.lightningLight.intensity = 0.6;
           setTimeout(() => {
-            if (this.lightningLight) this.lightningLight.intensity = 3.8;
+            if (this.lightningLight) this.lightningLight.intensity = 4.2;
             setTimeout(() => {
               if (this.lightningLight) this.lightningLight.intensity = 0;
             }, 60);

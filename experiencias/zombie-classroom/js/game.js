@@ -30,7 +30,7 @@ export class ZombieGame {
       maxHealth: 100,
       armor: 50,
       maxArmor: 50,
-      position: new THREE.Vector3(0, 1.7, 4.0),
+      position: new THREE.Vector3(0, 1.7, 5.5),
       velocity: new THREE.Vector3(),
       isGrounded: true,
       score: 0,
@@ -155,9 +155,19 @@ export class ZombieGame {
      SOPORTE WEBXR (META QUEST 2/3/3S/PRO)
      ---------------------------------------------------- */
   setupWebXR() {
-    this.vrUserGroup.position.copy(this.player.position);
     this.scene.add(this.vrUserGroup);
-    this.vrUserGroup.add(this.camera);
+
+    // Conectar eventos WebXR para no desplazar la cámara en modo escritorio
+    this.renderer.xr.addEventListener('sessionstart', () => {
+      this.vrUserGroup.position.copy(this.player.position);
+      this.vrUserGroup.add(this.camera);
+      this.camera.position.set(0, 0, 0);
+    });
+
+    this.renderer.xr.addEventListener('sessionend', () => {
+      this.scene.add(this.camera);
+      this.camera.position.copy(this.player.position);
+    });
 
     // Mandos 6DoF
     for (let i = 0; i < 2; i++) {
@@ -732,17 +742,17 @@ export class ZombieGame {
     if (this.wave.spawnQueue.length === 0) return;
     const typeKey = this.wave.spawnQueue.shift();
 
-    // Puntos de aparición en las esquinas, puerta trasera y ventanales
+    // Puntos de aparición en las esquinas, puerta trasera y ventanales del aula ampliada
     const spawnPoints = [
-      new THREE.Vector3(-6.5, 0, -5.0),
-      new THREE.Vector3(6.5, 0, -5.0),
-      new THREE.Vector3(-6.5, 0, 4.5),
-      new THREE.Vector3(6.5, 0, 4.5),
-      new THREE.Vector3(0, 0, 5.5) // Puerta trasera
+      new THREE.Vector3(-11.5, 0, -10.5),
+      new THREE.Vector3(11.5, 0, -10.5),
+      new THREE.Vector3(-11.5, 0, 10.0),
+      new THREE.Vector3(11.5, 0, 10.0),
+      new THREE.Vector3(0, 0, 11.2) // Puerta trasera barricada
     ];
     const sp = spawnPoints[Math.floor(Math.random() * spawnPoints.length)].clone();
-    sp.x += (Math.random() - 0.5) * 1.5;
-    sp.z += (Math.random() - 0.5) * 1.5;
+    sp.x += (Math.random() - 0.5) * 2.0;
+    sp.z += (Math.random() - 0.5) * 2.0;
 
     this.zombies.spawnZombie(typeKey, sp);
   }
@@ -816,6 +826,10 @@ export class ZombieGame {
           }
         }
       }
+      // Limitar jugador también en VR
+      this.player.position.x = Math.max(-12.2, Math.min(12.2, this.player.position.x));
+      this.player.position.z = Math.max(-11.2, Math.min(11.2, this.player.position.z));
+      this.vrUserGroup.position.copy(this.player.position);
     } else {
       // Movimiento de teclado PC o Joystick táctil
       const move = new THREE.Vector3();
@@ -848,9 +862,9 @@ export class ZombieGame {
         this.player.isGrounded = true;
       }
 
-      // Límites del salón de clases (Evitar salir por las paredes)
-      this.player.position.x = Math.max(-7.4, Math.min(7.4, this.player.position.x));
-      this.player.position.z = Math.max(-5.8, Math.min(5.8, this.player.position.z));
+      // Límites del salón de clases (Evitar salir por las paredes del aula ampliada 26x24m)
+      this.player.position.x = Math.max(-12.2, Math.min(12.2, this.player.position.x));
+      this.player.position.z = Math.max(-11.2, Math.min(11.2, this.player.position.z));
 
       this.camera.position.copy(this.player.position);
     }
@@ -898,7 +912,7 @@ export class ZombieGame {
     this.player.headshots = 0;
     this.player.combo = 1;
     this.player.isDead = false;
-    this.player.position.set(0, 1.7, 4.0);
+    this.player.position.set(0, 1.7, 5.5);
 
     // Reiniciar armas
     this.weapons.weapons = JSON.parse(JSON.stringify(this.weapons.weapons));
