@@ -102,6 +102,9 @@ export class ZombieGame {
     const tutorialModal = document.getElementById('tutorial-modal');
     const btnStart = document.getElementById('btn-start-game');
 
+    // Inicializar HUD de inmediato con valores correctos
+    this.updateHUD();
+
     if (tutorialModal && btnStart) {
       this.isGameStarted = false;
       const startAction = (e) => {
@@ -116,7 +119,6 @@ export class ZombieGame {
     } else {
       this.isGameStarted = true;
       this.startWave(1);
-      this.updateHUD();
     }
 
     // Loop de render

@@ -36,6 +36,10 @@ html, body {
   font-family: var(--font-body);
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* Contenedor del Canvas 3D Three.js */
 #game-container {
   position: absolute;
@@ -443,6 +447,10 @@ html, body {
   backdrop-filter: blur(8px);
 }
 
+.reload-banner.hidden {
+  display: none !important;
+}
+
 .reload-spinner {
   width: 16px;
   height: 16px;
@@ -475,6 +483,10 @@ html, body {
   z-index: 15;
   animation: pulseWarning 0.9s ease-in-out infinite alternate;
   backdrop-filter: blur(8px);
+}
+
+.low-ammo-warning.hidden {
+  display: none !important;
 }
 
 @keyframes pulseWarning {
