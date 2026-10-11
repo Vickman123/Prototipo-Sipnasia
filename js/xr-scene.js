@@ -741,112 +741,132 @@ class XRSceneController {
     const current = this.galleryPhotos[this.galleryCurrentIndex] || this.galleryPhotos[0];
     const total = this.galleryPhotos.length;
 
-    // Fondo: Gradiente Azul Noche Futurista con Acabado Brillante
+    // 1. Fondo estilizado Azul Noche Tecnológico (1536 x 576)
     const bgGrad = ctx.createLinearGradient(0, 0, 1536, 576);
-    bgGrad.addColorStop(0, '#040b17');
-    bgGrad.addColorStop(0.5, '#0a192e');
-    bgGrad.addColorStop(1, '#030814');
+    bgGrad.addColorStop(0, '#030a16');
+    bgGrad.addColorStop(0.5, '#07152b');
+    bgGrad.addColorStop(1, '#020712');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 1536, 576);
 
-    // Marco exterior Oro Puma
+    // Borde exterior Oro Puma
     ctx.strokeStyle = '#D59B2D';
-    ctx.lineWidth = 8;
-    ctx.strokeRect(16, 16, 1504, 544);
+    ctx.lineWidth = 6;
+    ctx.strokeRect(12, 12, 1512, 552);
 
-    // Borde interior de acento temático
+    // Borde Neón Sutil
     ctx.strokeStyle = current.colorHex;
-    ctx.lineWidth = 3;
-    ctx.strokeRect(26, 26, 1484, 524);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, 1496, 536);
 
-    // ENCABEZADO SUPERIOR
+    // 2. ENCABEZADO SUPERIOR LIMPIO
     ctx.fillStyle = '#00f0ff';
     ctx.font = 'bold 22px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('// MEMORIA FOTOGRÁFICA DEL TALLER // FESTIVAL SYNAPSIA XR 2026', 50, 68);
+    ctx.fillText('// GALERÍA DEL TALLER // SYNAPSIA XR', 48, 56);
 
     ctx.textAlign = 'right';
     ctx.fillStyle = '#facc15';
     ctx.font = 'bold 22px monospace';
-    ctx.fillText(`FOTO ${this.galleryCurrentIndex + 1} DE ${total} • [CARRUSEL ACTIVO]`, 1486, 68);
+    ctx.fillText(`FOTO ${this.galleryCurrentIndex + 1} DE ${total}`, 1488, 56);
 
-    // Línea divisoria superior
-    ctx.strokeStyle = 'rgba(213, 155, 45, 0.4)';
-    ctx.lineWidth = 2;
+    // Línea separadora superior sutil
+    ctx.strokeStyle = 'rgba(213, 155, 45, 0.35)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(50, 85);
-    ctx.lineTo(1486, 85);
+    ctx.moveTo(48, 72);
+    ctx.lineTo(1488, 72);
     ctx.stroke();
 
-    // SECCIÓN IZQUIERDA: Visor / Marco Fotográfico Cinematográfico (Ancho: 720px, Alto: 410px)
-    const photoGrad = ctx.createLinearGradient(50, 110, 780, 520);
-    photoGrad.addColorStop(0, '#001a33');
-    photoGrad.addColorStop(1, '#022d54');
-    ctx.fillStyle = photoGrad;
-    ctx.fillRect(50, 110, 720, 375);
+    // 3. ÁREA CENTRAL DE FOTO / VISUAL PRINCIPAL (1440 x 390)
+    const photoBoxX = 48;
+    const photoBoxY = 88;
+    const photoBoxW = 1440;
+    const photoBoxH = 390;
 
+    // Fondo del visor fotográfico
+    const photoGrad = ctx.createLinearGradient(photoBoxX, photoBoxY, photoBoxX, photoBoxY + photoBoxH);
+    photoGrad.addColorStop(0, '#04162e');
+    photoGrad.addColorStop(1, '#010c1c');
+    ctx.fillStyle = photoGrad;
+    ctx.fillRect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
+
+    // Marco del visor de foto con el color de acento
     ctx.strokeStyle = current.colorHex;
     ctx.lineWidth = 3;
-    ctx.strokeRect(50, 110, 720, 375);
+    ctx.strokeRect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
 
-    // Rejilla de fondo en visor fotográfico
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.08)';
-    for (let x = 70; x < 760; x += 40) {
-      ctx.fillRect(x, 120, 1, 355);
+    // Cuadrícula sutil de fondo en el visor
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.05)';
+    for (let x = photoBoxX + 40; x < photoBoxX + photoBoxW; x += 60) {
+      ctx.fillRect(x, photoBoxY + 8, 1, photoBoxH - 16);
     }
-    for (let y = 130; y < 480; y += 40) {
-      ctx.fillRect(60, y, 700, 1);
+    for (let y = photoBoxY + 40; y < photoBoxY + photoBoxH; y += 60) {
+      ctx.fillRect(photoBoxX + 8, y, photoBoxW - 16, 1);
     }
 
-    // Gran Emblema / Fotografía Central
-    ctx.font = '120px sans-serif';
+    // Gran Emblema Fotográfico Centrado
+    ctx.font = '130px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(current.icon, 410, 310);
+    ctx.fillText(current.icon, photoBoxX + photoBoxW / 2, photoBoxY + 185);
 
-    // Banner inferior en la foto
-    ctx.fillStyle = 'rgba(1, 8, 18, 0.85)';
-    ctx.fillRect(52, 435, 716, 48);
-    ctx.fillStyle = '#facc15';
-    ctx.font = 'bold 18px Orbitron, sans-serif';
-    ctx.fillText(current.caption, 410, 466);
-
-    // SECCIÓN DERECHA: Datos del Hito, Resumen e Indicadores
-    ctx.textAlign = 'left';
-
-    // Badge de Fase
-    ctx.fillStyle = current.colorHex;
-    ctx.font = 'bold 20px monospace';
-    ctx.fillText(`[ ${current.phase} ]`, 810, 142);
-
-    // Título Principal del Hito
+    // Título y Leyenda de la Foto sobre el visor
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 36px Orbitron, sans-serif';
-    this.wrapText(ctx, current.title, 810, 195, 680, 44);
-
-    // Línea separadora derecha
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(810, 290);
-    ctx.lineTo(1470, 290);
-    ctx.stroke();
-
-    // Descripción del hito
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '22px -apple-system, sans-serif';
-    this.wrapText(ctx, current.desc, 810, 335, 660, 32);
-
-    // Barra de navegación inferior en el canvas (Indicador de botones 3D)
-    ctx.fillStyle = '#01152a';
-    ctx.fillRect(810, 440, 660, 46);
-    ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(810, 440, 660, 46);
+    ctx.fillText(current.title, photoBoxX + photoBoxW / 2, photoBoxY + 280);
 
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 16px monospace';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(`[ ${current.phase} ]  —  ${current.caption}`, photoBoxX + photoBoxW / 2, photoBoxY + 328);
+
+    // 4. FLECHAS DIRECTAS VISIBLES EN LOS EXTREMOS DEL PANEL
+    // Flecha izquierda [ ◀ ANTERIOR ]
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
+    ctx.fillRect(photoBoxX + 16, photoBoxY + 140, 90, 110);
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(photoBoxX + 16, photoBoxY + 140, 90, 110);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 50px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('◄ APUNTA A LOS BOTONES INFERIORES [◀] Y [▶] PARA CAMBIAR DE FOTO ►', 1140, 470);
+    ctx.fillText('◀', photoBoxX + 61, photoBoxY + 215);
+
+    // Flecha derecha [ SIGUIENTE ▶ ]
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
+    ctx.fillRect(photoBoxX + photoBoxW - 106, photoBoxY + 140, 90, 110);
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(photoBoxX + photoBoxW - 106, photoBoxY + 140, 90, 110);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 50px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('▶', photoBoxX + photoBoxW - 61, photoBoxY + 215);
+
+    // 5. BARRA INFERIOR SIMPLE DE CONTROLES E INDICADORES (DOTS)
+    const dotSpacing = 36;
+    const dotsStartX = (1536 - (total - 1) * dotSpacing) / 2;
+    for (let i = 0; i < total; i++) {
+      const dotX = dotsStartX + i * dotSpacing;
+      const isCur = (i === this.galleryCurrentIndex);
+      ctx.beginPath();
+      ctx.arc(dotX, 520, isCur ? 10 : 6, 0, Math.PI * 2);
+      ctx.fillStyle = isCur ? '#00f0ff' : 'rgba(255, 255, 255, 0.3)';
+      ctx.fill();
+      if (isCur) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // Indicación de clic directa
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('◄ BOTÓN [ ◀ ] CAMBIAR', 52, 526);
+
+    ctx.textAlign = 'right';
+    ctx.fillText('BOTÓN [ ▶ ] CAMBIAR ►', 1484, 526);
   }
 
   createPortalMonolith(exp) {
@@ -1419,8 +1439,18 @@ class XRSceneController {
         this.cycleGalleryPhoto(-1, true);
       } else if (action === 'next') {
         this.cycleGalleryPhoto(1, true);
-      } else {
-        // 'view': abrir modal detallado del carrusel
+      } else if (action === 'view') {
+        // Al hacer clic en la pantalla central, verificar el punto de impacto local si está disponible
+        if (this.lastGalleryHitU !== undefined) {
+          if (this.lastGalleryHitU < 0.28) {
+            this.cycleGalleryPhoto(-1, true);
+            return;
+          } else if (this.lastGalleryHitU > 0.72) {
+            this.cycleGalleryPhoto(1, true);
+            return;
+          }
+        }
+        // Centro o clic directo: abrir visor limpio
         if (window.xrAudio) window.xrAudio.playSelect();
         this.openGalleryModal();
       }
@@ -1825,22 +1855,26 @@ class XRSceneController {
         } else if (intersects.length > 0 && intersects[0].object?.userData?.isGallery) {
           const galleryObj = intersects[0].object;
           this.hoveredPortal = galleryObj;
+          if (intersects[0].uv) {
+            this.lastGalleryHitU = intersects[0].uv.x;
+          }
           if (crosshair) crosshair.classList.add('hovering');
           if (promptEl) {
             promptEl.classList.add('visible');
             if (promptText) {
               const action = galleryObj.userData.action;
-              if (action === 'prev') {
+              if (action === 'prev' || (galleryObj === this.galleryMesh && this.lastGalleryHitU < 0.28)) {
                 promptText.textContent = '◀ FOTO ANTERIOR';
-              } else if (action === 'next') {
+              } else if (action === 'next' || (galleryObj === this.galleryMesh && this.lastGalleryHitU > 0.72)) {
                 promptText.textContent = 'SIGUIENTE FOTO ▶';
               } else {
-                promptText.textContent = 'VER MEMORIA EN PANTALLA COMPLETA 🔍';
+                promptText.textContent = 'VER FOTO EN PANTALLA COMPLETA 🔍';
               }
             }
           }
         } else {
           this.hoveredPortal = null;
+          this.lastGalleryHitU = undefined;
           if (crosshair) crosshair.classList.remove('hovering');
           if (promptEl) promptEl.classList.remove('visible');
         }
@@ -1852,8 +1886,12 @@ class XRSceneController {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.interactables, false);
         if (intersects.length > 0 && (intersects[0].object?.userData?.isPortal || intersects[0].object?.userData?.isGallery)) {
+          if (intersects[0].uv) {
+            this.lastGalleryHitU = intersects[0].uv.x;
+          }
           document.body.style.cursor = 'pointer';
         } else {
+          this.lastGalleryHitU = undefined;
           document.body.style.cursor = 'default';
         }
       }
@@ -1878,6 +1916,9 @@ class XRSceneController {
         this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera);
         const intersects = this.raycaster.intersectObjects(this.interactables, false);
         if (intersects.length > 0) {
+          if (intersects[0].uv) {
+            this.lastGalleryHitU = intersects[0].uv.x;
+          }
           this.handleObjectClick(intersects[0].object);
         }
       }
