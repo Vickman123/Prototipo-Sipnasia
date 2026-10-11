@@ -134,6 +134,22 @@ class XRSceneController {
         icon: '✨'
       }
     ];
+
+    // Diapositivas Académicas Oficiales del Taller (11 Láminas en Alta Definición)
+    this.presentationCurrentIndex = 0;
+    this.presentationSlides = [
+      { id: 'slide-01', title: 'TALLER // VIVE LA EXPERIENCIA XR + IA', src: 'assets/presentacion/diapositiva_01.jpg' },
+      { id: 'slide-02', title: 'FUNDAMENTOS // ¿QUÉ ES XR? (VR, AR, MR)', src: 'assets/presentacion/diapositiva_02.jpg' },
+      { id: 'slide-03', title: 'APLICACIONES // XR MÁS ALLÁ DE LOS VIDEOJUEGOS', src: 'assets/presentacion/diapositiva_03.jpg' },
+      { id: 'slide-04', title: 'CONTEXTO INSTITUCIONAL // UNAM + PC PUMA', src: 'assets/presentacion/diapositiva_04.jpg' },
+      { id: 'slide-05', title: 'ECOSISTEMA // EXPERIENCIAS XR EN ACCIÓN', src: 'assets/presentacion/diapositiva_05.jpg' },
+      { id: 'slide-06', title: 'TECNOLOGÍAS // HERRAMIENTAS DETRÁS DE LA EXPERIENCIA', src: 'assets/presentacion/diapositiva_06.jpg' },
+      { id: 'slide-07', title: 'METODOLOGÍA // DINÁMICA DEL TALLER EN EQUIPOS', src: 'assets/presentacion/diapositiva_07.jpg' },
+      { id: 'slide-08', title: 'CO-DISEÑO // CREA TU PROPIO VIDEOJUEGO XR', src: 'assets/presentacion/diapositiva_08.jpg' },
+      { id: 'slide-09', title: 'DESARROLLO // DE LA VOTACIÓN AL PROMPT CON IA', src: 'assets/presentacion/diapositiva_09.jpg' },
+      { id: 'slide-10', title: 'PLAYTESTING // EXPLORA Y EVALÚA EN TIEMPO REAL', src: 'assets/presentacion/diapositiva_10.jpg' },
+      { id: 'slide-11', title: 'CIERRE // LA TECNOLOGÍA ES EL MEDIO, TU IMAGINACIÓN EL LÍMITE', src: 'assets/presentacion/diapositiva_11.jpg' }
+    ];
   }
 
   async init() {
@@ -626,6 +642,79 @@ class XRSceneController {
     const viewBtn = new THREE.Mesh(viewBtnGeo, viewBtnMat);
     viewBtn.position.set(0, -1.25, 0.14);
     group.add(viewBtn);
+
+    // 6. Podio / Pantalla Gemela Interactiva para Diapositivas Académicas (X = -5.8, Y = 1.3, Z = 5.2, RotY = 2.7)
+    const podiumGroup = new THREE.Group();
+    podiumGroup.position.set(-5.6, -0.45, -0.8);
+    podiumGroup.rotation.y = 0.55;
+
+    // Columna base del podio
+    const podColGeo = new THREE.CylinderGeometry(0.28, 0.38, 1.4, 24);
+    const podColMat = new THREE.MeshStandardMaterial({
+      color: 0x091424,
+      roughness: 0.35,
+      metalness: 0.8
+    });
+    const podCol = new THREE.Mesh(podColGeo, podColMat);
+    podiumGroup.add(podCol);
+
+    // Pantalla inclinada del atril
+    const podScreenGeo = new THREE.BoxGeometry(1.65, 1.05, 0.06);
+    const podScreenMat = new THREE.MeshStandardMaterial({
+      color: 0x07111e,
+      roughness: 0.25,
+      metalness: 0.7
+    });
+    const podScreen = new THREE.Mesh(podScreenGeo, podScreenMat);
+    podScreen.position.set(0, 0.82, 0.12);
+    podScreen.rotation.x = -0.32;
+    podiumGroup.add(podScreen);
+
+    // Borde Oro Puma del atril
+    const podEdges = new THREE.EdgesGeometry(podScreenGeo);
+    const podEdgesMat = new THREE.LineBasicMaterial({ color: 0xd59b2d, linewidth: 2 });
+    const podLine = new THREE.LineSegments(podEdges, podEdgesMat);
+    podScreen.add(podLine);
+
+    // Cristal frontal con textura de portada de presentación
+    const slideTexture = this.createPresentationPodiumTexture();
+    this.presentationPodiumTexture = slideTexture;
+    const podGlassGeo = new THREE.PlaneGeometry(1.58, 0.98);
+    const podGlassMat = new THREE.MeshBasicMaterial({
+      map: slideTexture,
+      transparent: true,
+      opacity: 0.98
+    });
+    const podGlass = new THREE.Mesh(podGlassGeo, podGlassMat);
+    podGlass.position.z = 0.035;
+    podScreen.add(podGlass);
+    this.presentationPodiumMesh = podGlass;
+
+    // Botón táctil 3D flotante para abrir las 11 láminas
+    const podBtnGeo = new THREE.BoxGeometry(1.2, 0.22, 0.05);
+    const podBtnMat = new THREE.MeshStandardMaterial({
+      color: 0x1f1602,
+      emissive: 0xd59b2d,
+      emissiveIntensity: 0.7,
+      roughness: 0.2
+    });
+    const podBtn = new THREE.Mesh(podBtnGeo, podBtnMat);
+    podBtn.position.set(0, 0.2, 0.35);
+    podBtn.rotation.x = -0.32;
+    podiumGroup.add(podBtn);
+
+    // UserData interactiva del atril de presentación
+    const presUserData = {
+      isPresentation: true,
+      action: 'openPresentation'
+    };
+    podGlass.userData = presUserData;
+    podBtn.userData = presUserData;
+
+    this.registerInteractable(podGlass);
+    this.registerInteractable(podBtn);
+
+    group.add(podiumGroup);
 
     // Metadata interactiva para Raycaster de WebXR y Retícula FPS
     const screenUserData = {
@@ -1471,6 +1560,9 @@ class XRSceneController {
         if (window.xrAudio) window.xrAudio.playSelect();
         this.openGalleryModal();
       }
+    } else if (object.userData.isPresentation) {
+      if (window.xrAudio) window.xrAudio.playSelect();
+      this.openPresentationModal();
     } else if (object.userData.isDynamicNode) {
       if (window.SipnasiaXR) {
         window.SipnasiaXR.handleNodeHit(object);
@@ -1623,6 +1715,232 @@ class XRSceneController {
           this.galleryCurrentIndex = targetIdx;
           this.updatePanoramicCarouselTexture();
           this.updateGalleryModalContent();
+          if (window.xrAudio) window.xrAudio.playHover();
+        };
+  }
+
+  /* ----------------------------------------------------
+     Generador de Textura para el Atril de Presentación 3D
+     ---------------------------------------------------- */
+  createPresentationPodiumTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 640;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo Azul Noche con marco Dorado Oro Puma
+    const grad = ctx.createLinearGradient(0, 0, 1024, 640);
+    grad.addColorStop(0, '#040d1c');
+    grad.addColorStop(0.5, '#081730');
+    grad.addColorStop(1, '#020712');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 640);
+
+    // Borde Oro Puma
+    ctx.strokeStyle = '#d59b2d';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(12, 12, 1000, 616);
+
+    // Línea Neón interior
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(22, 22, 980, 596);
+
+    // Cabecera institucional
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 24px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('// MATERIAL DIDÁCTICO DEL TALLER // PC PUMA UNAM', 512, 68);
+
+    // Emblema
+    ctx.font = '85px sans-serif';
+    ctx.fillText('📑', 512, 175);
+
+    // Título de la presentación
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Orbitron, sans-serif';
+    ctx.fillText('VIVE LA EXPERIENCIA XR + IA', 512, 245);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText('11 LÁMINAS ACADÉMICAS OFICIALES', 512, 290);
+
+    // Cuadro explicativo
+    ctx.fillStyle = 'rgba(2, 20, 42, 0.75)';
+    ctx.fillRect(80, 325, 864, 160);
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(80, 325, 864, 160);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '20px -apple-system, sans-serif';
+    ctx.fillText('• Fundamentos de Realidad Extendida (VR, AR, MR)', 512, 365);
+    ctx.fillText('• Aplicaciones Educativas en la UNAM & Framework VXR', 512, 405);
+    ctx.fillText('• Dinámica de Co-Creación de Videojuegos con IA', 512, 445);
+
+    // Botón de llamado a la acción
+    ctx.fillStyle = 'rgba(213, 155, 45, 0.25)';
+    ctx.fillRect(220, 515, 584, 70);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(220, 515, 584, 70);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px monospace';
+    ctx.fillText('🔍 HAZ CLIC PARA ABRIR DIAPOSITIVAS', 512, 558);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  /* ----------------------------------------------------
+     Visor Modal de Diapositivas Académicas (Presentación)
+     ---------------------------------------------------- */
+  openPresentationModal() {
+    const modal = document.getElementById('presentation-modal');
+    if (!modal) return;
+
+    const prevBtn = document.getElementById('btn-presentation-prev');
+    const nextBtn = document.getElementById('btn-presentation-next');
+    const closeBtn = document.getElementById('btn-close-presentation-modal');
+
+    if (prevBtn) {
+      prevBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.cyclePresentationSlide(-1);
+      };
+    }
+
+    if (nextBtn) {
+      nextBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.cyclePresentationSlide(1);
+      };
+    }
+
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+
+    this.updatePresentationModalContent();
+    modal.classList.remove('hidden');
+
+    const closeModal = () => {
+      if (window.xrAudio) window.xrAudio.playHover();
+      modal.classList.add('hidden');
+      if (this.isInteractive3D && !this.isVR) {
+        try {
+          this.renderer.domElement.requestPointerLock();
+        } catch (e) {}
+      }
+    };
+
+    if (closeBtn) {
+      closeBtn.onclick = closeModal;
+    }
+    modal.onclick = (e) => {
+      if (e.target === modal) closeModal();
+    };
+  }
+
+  cyclePresentationSlide(direction = 1) {
+    if (!this.presentationSlides || this.presentationSlides.length === 0) return;
+    this.presentationCurrentIndex =
+      (this.presentationCurrentIndex + direction + this.presentationSlides.length) %
+      this.presentationSlides.length;
+
+    this.updatePresentationModalContent();
+    if (window.xrAudio) window.xrAudio.playHover();
+  }
+
+  updatePresentationModalContent() {
+    const modal = document.getElementById('presentation-modal');
+    if (!modal) return;
+
+    const current = this.presentationSlides[this.presentationCurrentIndex] || this.presentationSlides[0];
+    const total = this.presentationSlides.length;
+
+    const counterEl = document.getElementById('presentation-counter-badge');
+    const captionEl = document.getElementById('presentation-slide-caption');
+    const dotsRow = document.getElementById('presentation-dots-row');
+
+    if (counterEl) counterEl.textContent = `${this.presentationCurrentIndex + 1} / ${total}`;
+    if (captionEl) captionEl.textContent = current.title;
+
+    // Renderizar diapositiva en el canvas del modal
+    const modalCanvas = document.getElementById('presentation-modal-canvas');
+    if (modalCanvas) {
+      const mctx = modalCanvas.getContext('2d');
+      mctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+
+      // Fondo
+      const mgrad = mctx.createLinearGradient(0, 0, modalCanvas.width, modalCanvas.height);
+      mgrad.addColorStop(0, '#020c18');
+      mgrad.addColorStop(1, '#051830');
+      mctx.fillStyle = mgrad;
+      mctx.fillRect(0, 0, modalCanvas.width, modalCanvas.height);
+
+      let img = this.galleryLoadedImages[current.src];
+      if (!img) {
+        img = new Image();
+        img.src = current.src;
+        img.onload = () => {
+          this.galleryLoadedImages[current.src] = img;
+          this.updatePresentationModalContent();
+        };
+        this.galleryLoadedImages[current.src] = img;
+      }
+
+      if (img && img.complete && img.naturalWidth > 0) {
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const canvasAspect = modalCanvas.width / modalCanvas.height;
+        let dw, dh, dx, dy;
+
+        if (imgAspect > canvasAspect) {
+          dw = modalCanvas.width - 16;
+          dh = dw / imgAspect;
+          dx = 8;
+          dy = (modalCanvas.height - dh) / 2;
+        } else {
+          dh = modalCanvas.height - 16;
+          dw = dh * imgAspect;
+          dx = (modalCanvas.width - dw) / 2;
+          dy = 8;
+        }
+
+        mctx.save();
+        mctx.shadowColor = '#d59b2d';
+        mctx.shadowBlur = 12;
+        mctx.drawImage(img, dx, dy, dw, dh);
+        mctx.restore();
+      } else {
+        mctx.fillStyle = '#facc15';
+        mctx.font = 'bold 26px Orbitron, sans-serif';
+        mctx.textAlign = 'center';
+        mctx.fillText('CARGANDO DIAPOSITIVA...', modalCanvas.width / 2, modalCanvas.height / 2);
+      }
+
+      // Marco dorado
+      mctx.strokeStyle = '#d59b2d';
+      mctx.lineWidth = 4;
+      mctx.strokeRect(4, 4, modalCanvas.width - 8, modalCanvas.height - 8);
+    }
+
+    // Indicadores Dots para las 11 láminas
+    if (dotsRow) {
+      dotsRow.innerHTML = this.presentationSlides.map((_, i) =>
+        `<span class="gallery-dot ${i === this.presentationCurrentIndex ? 'active' : ''}" data-pidx="${i}" style="${i === this.presentationCurrentIndex ? 'background: #d59b2d; box-shadow: 0 0 10px #d59b2d; width: 22px;' : 'border-color: rgba(213, 155, 45, 0.4);'}"></span>`
+      ).join('');
+
+      dotsRow.querySelectorAll('.gallery-dot').forEach(dot => {
+        dot.onclick = (e) => {
+          e.stopPropagation();
+          const targetIdx = parseInt(dot.getAttribute('data-pidx'), 10);
+          this.presentationCurrentIndex = targetIdx;
+          this.updatePresentationModalContent();
           if (window.xrAudio) window.xrAudio.playHover();
         };
       });
@@ -1901,6 +2219,16 @@ class XRSceneController {
               }
             }
           }
+        } else if (intersects.length > 0 && intersects[0].object?.userData?.isPresentation) {
+          const presObj = intersects[0].object;
+          this.hoveredPortal = presObj;
+          if (crosshair) crosshair.classList.add('hovering');
+          if (promptEl) {
+            promptEl.classList.add('visible');
+            if (promptText) {
+              promptText.textContent = 'ABRIR DIAPOSITIVAS DEL TALLER 📑';
+            }
+          }
         } else {
           this.hoveredPortal = null;
           this.lastGalleryHitU = undefined;
@@ -1914,7 +2242,7 @@ class XRSceneController {
 
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.interactables, false);
-        if (intersects.length > 0 && (intersects[0].object?.userData?.isPortal || intersects[0].object?.userData?.isGallery)) {
+        if (intersects.length > 0 && (intersects[0].object?.userData?.isPortal || intersects[0].object?.userData?.isGallery || intersects[0].object?.userData?.isPresentation)) {
           if (intersects[0].uv) {
             this.lastGalleryHitU = intersects[0].uv.x;
           }

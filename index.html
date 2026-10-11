@@ -404,11 +404,42 @@
         </div>
         <button id="btn-gallery-prev" class="gallery-nav-btn prev" type="button" aria-label="Foto Anterior">‹</button>
         <button id="btn-gallery-next" class="gallery-nav-btn next" type="button" aria-label="Siguiente Foto">›</button>
-        <div id="gallery-counter-badge" class="gallery-counter-badge">1 / 5</div>
+        <div id="gallery-counter-badge" class="gallery-counter-badge">1 / 4</div>
       </div>
 
       <!-- Indicadores de puntos (Dots) para saltar rápido de foto -->
       <div id="gallery-dots-row" class="gallery-dots-row"></div>
+    </div>
+  </div>
+
+  <!-- Modal Visor de Diapositivas Académicas (Presentación Oficial del Taller) -->
+  <div id="presentation-modal" class="portal-mini-hub-modal hidden" role="dialog" aria-modal="true">
+    <div class="mini-hub-modal-card gallery-modal-card" style="border-color: rgba(213, 155, 45, 0.5);">
+      <div class="gallery-modal-top-bar">
+        <div class="mini-hub-badge" style="background: rgba(213, 155, 45, 0.15); border-color: #d59b2d; color: #facc15; margin-bottom: 0;">
+          <span class="pulse-dot" style="background: #facc15; box-shadow: 0 0 10px #facc15;"></span>
+          <span id="presentation-modal-title">LÁMINAS ACADÉMICAS // TALLER XR + IA</span>
+        </div>
+        <button id="btn-close-presentation-modal" class="btn-close-gallery" type="button" aria-label="Cerrar Presentación">✕</button>
+      </div>
+
+      <!-- Visor de Diapositiva -->
+      <div class="gallery-photo-viewport" style="border-color: rgba(213, 155, 45, 0.4); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(213, 155, 45, 0.2);">
+        <div class="gallery-photo-canvas-wrap">
+          <canvas id="presentation-modal-canvas" width="960" height="540" class="gallery-modal-canvas"></canvas>
+        </div>
+        <button id="btn-presentation-prev" class="gallery-nav-btn prev" type="button" aria-label="Lámina Anterior" style="border-color: #d59b2d;">‹</button>
+        <button id="btn-presentation-next" class="gallery-nav-btn next" type="button" aria-label="Siguiente Lámina" style="border-color: #d59b2d;">›</button>
+        <div id="presentation-counter-badge" class="gallery-counter-badge" style="border-color: #00f0ff; color: #00f0ff;">1 / 11</div>
+      </div>
+
+      <!-- Título de la lámina activa -->
+      <div style="margin-top: 0.85rem; text-align: center;">
+        <span id="presentation-slide-caption" style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px;">TALLER // VIVE LA EXPERIENCIA XR + IA</span>
+      </div>
+
+      <!-- Indicadores de puntos (Dots) -->
+      <div id="presentation-dots-row" class="gallery-dots-row" style="margin-top: 0.65rem;"></div>
     </div>
   </div>
 
