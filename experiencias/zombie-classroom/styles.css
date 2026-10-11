@@ -1,0 +1,687 @@
+/* ==========================================================================
+   SIPNASIA XR - ZOMBIE CLASSROOM: ESTILOS DE SUPERVIVENCIA ESCOLAR
+   Alineado con el ecosistema WebXR, Meta Quest Browser y PC de Sipnasia
+   ========================================================================== */
+
+:root {
+  --font-display: 'Orbitron', -apple-system, sans-serif;
+  --font-body: 'Rajdhani', -apple-system, sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+
+  --bg-dark: #030712;
+  --bg-card: rgba(8, 16, 32, 0.90);
+  --border-cyan: #00f0ff;
+  --toxic-green: #22c55e;
+  --toxic-green-glow: rgba(34, 197, 94, 0.45);
+  --crimson-red: #ef4444;
+  --crimson-glow: rgba(239, 68, 68, 0.5);
+  --unam-gold: #d59b2d;
+  --unam-gold-bright: #facc15;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  color: #f8fafc;
+  font-family: var(--font-body);
+}
+
+/* Contenedor del Canvas 3D Three.js */
+#game-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#game-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Botón flotante para salir al Hub Principal */
+.floating-hub-btn {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(213, 155, 45, 0.5);
+  color: #f8fafc;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.floating-hub-btn:hover {
+  background: var(--unam-gold);
+  color: #020617;
+  border-color: var(--unam-gold-bright);
+  box-shadow: 0 0 16px rgba(213, 155, 45, 0.5);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   HUD DE COMBATE Y SUPERVIVENCIA
+   -------------------------------------------------------------------------- */
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 68px 24px 24px 24px;
+}
+
+/* Barra Superior del HUD */
+.hud-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.hud-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 18px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+.wave-status-box {
+  border-left: 4px solid var(--toxic-green);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-title-mini {
+  font-size: 0.72rem;
+  font-family: var(--font-display);
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.hud-wave-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--toxic-green);
+  text-shadow: 0 0 14px var(--toxic-green-glow);
+}
+
+.hud-zombies-count {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.score-status-box {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-right: 4px solid var(--unam-gold);
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--unam-gold-bright);
+}
+
+.combo-val {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   BARRA INFERIOR: SALUD, ARMADURA Y ARMAS
+   -------------------------------------------------------------------------- */
+.hud-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+/* Salud y Armadura */
+.player-vitals-box {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vital-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vital-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.vital-bar-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vital-bar-fill {
+  height: 100%;
+  transition: width 0.2s ease-out;
+}
+
+.vital-bar-fill.hp {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  box-shadow: 0 0 12px var(--crimson-glow);
+}
+
+.vital-bar-fill.armor {
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+/* Armamento y Munición */
+.weapon-status-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.weapon-info-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 3px solid var(--border-cyan);
+}
+
+.weapon-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.ammo-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-mono);
+}
+
+.ammo-mag {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--border-cyan);
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+}
+
+.ammo-slash {
+  font-size: 1.4rem;
+  color: #64748b;
+}
+
+.ammo-reserve {
+  font-size: 1.3rem;
+  color: #94a3b8;
+}
+
+/* Selector de Armas 1-4 */
+.weapon-slots-strip {
+  display: flex;
+  gap: 8px;
+}
+
+.weapon-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.weapon-slot .slot-key {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.weapon-slot .slot-icon {
+  font-size: 1.1rem;
+}
+
+.weapon-slot .slot-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.weapon-slot.active {
+  border-color: var(--border-cyan);
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+
+.weapon-slot.active .slot-name {
+  color: var(--border-cyan);
+}
+
+.weapon-slot.locked {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+/* --------------------------------------------------------------------------
+   RETÍCULA (CROSSHAIR) Y HITMARKER
+   -------------------------------------------------------------------------- */
+#crosshair-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 15;
+  transition: opacity 0.2s ease;
+}
+
+.crosshair-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background: #38bdf8;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.crosshair-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.crosshair-line.top {
+  top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 7px;
+}
+.crosshair-line.bottom {
+  bottom: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 7px;
+}
+.crosshair-line.left {
+  left: 0; top: 50%; transform: translateY(-50%); width: 7px; height: 2px;
+}
+.crosshair-line.right {
+  right: 0; top: 50%; transform: translateY(-50%); width: 7px; height: 2px;
+}
+
+/* Hitmarker de Acierto */
+.hitmarker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.05s ease;
+}
+
+.hitmarker.show {
+  opacity: 1;
+}
+
+.hitmarker::before,
+.hitmarker::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.hitmarker::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.hitmarker::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.hitmarker.headshot::before,
+.hitmarker.headshot::after {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  width: 20px;
+  height: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   BANNERS Y TOASTS DE EVENTOS
+   -------------------------------------------------------------------------- */
+#wave-banner {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(3, 7, 18, 0.94);
+  border: 2px solid var(--toxic-green);
+  border-radius: 14px;
+  padding: 16px 36px;
+  text-align: center;
+  box-shadow: 0 0 30px var(--toxic-green-glow);
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 20;
+}
+
+#wave-banner.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#wave-banner-title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: var(--toxic-green);
+  text-shadow: 0 0 18px var(--toxic-green-glow);
+}
+
+#wave-banner-subtitle {
+  font-size: 1.05rem;
+  color: #cbd5e1;
+  margin-top: 4px;
+}
+
+#drop-toast {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%) translateY(15px);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--unam-gold);
+  border-radius: 9999px;
+  padding: 8px 24px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--unam-gold-bright);
+  box-shadow: 0 0 18px rgba(213, 155, 45, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 20;
+  white-space: nowrap;
+}
+
+#drop-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   MODAL DE FIN DE JUEGO (GAME OVER)
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(16px);
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.game-over-card {
+  background: rgba(15, 23, 42, 0.96);
+  border: 2px solid var(--crimson-red);
+  box-shadow: 0 0 45px var(--crimson-glow);
+  border-radius: 18px;
+  padding: 32px 40px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.game-over-title {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  font-weight: 900;
+  color: var(--crimson-red);
+  text-shadow: 0 0 24px var(--crimson-glow);
+}
+
+.game-over-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 10px 0;
+}
+
+.go-stat-item {
+  background: rgba(2, 6, 23, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.go-stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-family: var(--font-display);
+}
+
+.go-stat-val {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-top: 4px;
+}
+
+.game-over-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-primary-action {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  border: none;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px var(--crimson-glow);
+}
+
+.btn-secondary-action {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  text-decoration: none;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary-action:hover {
+  background: rgba(51, 65, 85, 0.9);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   CONTROLES TÁCTILES MÓVIL (VIRTUAL JOYSTICK & TOUCH BUTTONS)
+   -------------------------------------------------------------------------- */
+#mobile-touch-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 12;
+  display: none;
+}
+
+@media (pointer: coarse), (max-width: 900px) {
+  #mobile-touch-controls {
+    display: block;
+  }
+}
+
+.touch-stick-zone {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.touch-stick-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--toxic-green);
+  box-shadow: 0 0 14px var(--toxic-green-glow);
+  pointer-events: none;
+}
+
+.touch-look-area {
+  position: absolute;
+  top: 80px;
+  right: 0;
+  width: 55%;
+  height: 65%;
+  pointer-events: auto;
+}
+
+.touch-actions-group {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.btn-touch-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid var(--border-cyan);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-touch-circle.fire {
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  border-color: #f87171;
+  box-shadow: 0 0 16px var(--crimson-glow);
+}
+
+/* Ocultar botón nativo VR si no es necesario */
+.custom-vr-btn {
+  display: none !important;
+}

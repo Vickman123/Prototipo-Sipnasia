@@ -438,17 +438,17 @@ class XRSceneController {
         isUpcoming: false
       },
       {
-        id: 'proximamente',
-        title: 'EN DESARROLLO // TALLER DE XR',
-        category: 'Actividad en Vivo',
-        badge: 'EN DESARROLLO',
-        url: '#proximamente',
-        colorHex: '#10b981',
-        colorThree: 0x10b981,
-        icon: '🔒',
+        id: 'zombie-classroom',
+        title: 'AULA ZOMBIE // SUPERVIVENCIA',
+        category: 'Survival FPS Escolar',
+        badge: 'QUEST 6DOF / PC',
+        url: './experiencias/zombie-classroom/',
+        colorHex: '#22c55e',
+        colorThree: 0x22c55e,
+        icon: '🧟',
         pos: new THREE.Vector3(5.5, 1.6, -5.0),
         rotY: -0.38,
-        isUpcoming: true
+        isUpcoming: false
       }
     ];
 
@@ -587,8 +587,24 @@ class XRSceneController {
       });
       const arch = new THREE.Mesh(archGeo, archMat);
       group.add(arch);
+    } else if (exp.id === 'zombie-classroom') {
+      // Artefacto Biológico / Cráneo Zombi Mutante Holográfico
+      const skullGeo = new THREE.DodecahedronGeometry(0.18, 0);
+      const skullMat = new THREE.MeshStandardMaterial({
+        color: 0x22c55e,
+        emissive: 0x22c55e,
+        emissiveIntensity: 0.85,
+        wireframe: true
+      });
+      const skull = new THREE.Mesh(skullGeo, skullMat);
+      group.add(skull);
+
+      const ringGeo = new THREE.TorusGeometry(0.28, 0.015, 16, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x4ade80 });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      group.add(ring);
     } else {
-      // PRÓXIMAMENTE: Cubo Cuántico Bloqueado con Anillo Criptográfico
+      // Bloque genérico
       const cubeGeo = new THREE.BoxGeometry(0.24, 0.24, 0.24);
       const cubeMat = new THREE.MeshStandardMaterial({
         color: 0x10b981,
@@ -598,11 +614,6 @@ class XRSceneController {
       });
       const cube = new THREE.Mesh(cubeGeo, cubeMat);
       group.add(cube);
-
-      const lockRingGeo = new THREE.TorusGeometry(0.32, 0.015, 16, 32);
-      const lockRingMat = new THREE.MeshBasicMaterial({ color: 0x34d399 });
-      const lockRing = new THREE.Mesh(lockRingGeo, lockRingMat);
-      group.add(lockRing);
     }
 
     return group;
@@ -1066,6 +1077,14 @@ class XRSceneController {
         '📐 Escala 1:1 Inmersiva',
         '🥽 Passthrough AR para Meta Quest',
         '🔍 Inspección de Mobiliario Modular'
+      ];
+    } else if (data.id === 'zombie-classroom' || (data.url && data.url.includes('zombie-classroom'))) {
+      icon = '🧟';
+      features = [
+        '🏫 Salón de Clases Detallado 3D',
+        '🧟 5 Clases de Zombis (Titanes, Químicos, Corredores)',
+        '🔫 4 Armas Especiales y Drops Enemigos',
+        '🌊 Oleadas Progresivas de Supervivencia'
       ];
     }
 
