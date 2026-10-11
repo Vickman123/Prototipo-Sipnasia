@@ -86,6 +86,11 @@ export class ZombieGame {
     this.camera.add(this.weapons.weaponGroup);
     this.scene.add(this.camera);
 
+    // Luz suave dedicada para iluminar el arma del jugador en primera persona
+    this.gunFillLight = new THREE.PointLight(0xffffff, 1.4, 3.5);
+    this.gunFillLight.position.set(0.2, 0.05, -0.2);
+    this.camera.add(this.gunFillLight);
+
     // Luz de fogonazo dinámico en tiempo real (Raytraced Muzzle Bounce)
     this.muzzleLight = new THREE.PointLight(0xffaa33, 0, 20);
     this.muzzleLight.castShadow = true;
@@ -153,8 +158,8 @@ export class ZombieGame {
      ---------------------------------------------------- */
   setupThree() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x060c18);
-    this.scene.fog = new THREE.FogExp2(0x060c18, 0.045);
+    this.scene.background = new THREE.Color(0x0f172a);
+    this.scene.fog = new THREE.Fog(0x0f172a, 22, 55);
 
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -163,14 +168,16 @@ export class ZombieGame {
       100
     );
     this.camera.position.copy(this.player.position);
+    this.camera.rotation.order = 'YXZ';
+    this.camera.rotation.set(0, 0, 0);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.25;
+    this.renderer.toneMappingExposure = 1.35;
     this.renderer.xr.enabled = true;
 
     this.container.appendChild(this.renderer.domElement);
@@ -851,7 +858,17 @@ export class ZombieGame {
     this.wave.totalInWave = queue.length;
     this.wave.remainingInWave = queue.length;
     this.wave.spawnQueue = queue;
-    this.wave.nextSpawnTime = performance.now() + 1000;
+
+    if (waveNum === 1) {
+      // En la oleada 1, hacer aparecer el primer zombi de inmediato en el pasillo frontal
+      this.wave.nextSpawnTime = performance.now() + 1800;
+      const firstZombieType = this.wave.spawnQueue.shift();
+      if (firstZombieType) {
+        this.zombies.spawnZombie(firstZombieType, new THREE.Vector3(0, 0, -5.5));
+      }
+    } else {
+      this.wave.nextSpawnTime = performance.now() + 1000;
+    }
 
     if (this.audio) this.audio.playWaveStart();
     this.showBanner(`¡OLEADA ${waveNum} COMIENZA!`, 'Sobrevive al salón de clases');

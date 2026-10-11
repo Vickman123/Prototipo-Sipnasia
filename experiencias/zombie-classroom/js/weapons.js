@@ -177,8 +177,8 @@ export class WeaponManager {
     // Cuerpo de madera de roble barnizada del bate
     const barrelGeo = new THREE.CylinderGeometry(0.038, 0.019, 0.54, 16);
     const batWoodMat = new THREE.MeshStandardMaterial({
-      color: 0xb45309,
-      roughness: 0.45,
+      color: 0xd97706,
+      roughness: 0.4,
       metalness: 0.08
     });
     const batBody = new THREE.Mesh(barrelGeo, batWoodMat);
@@ -186,7 +186,7 @@ export class WeaponManager {
     batGroup.add(batBody);
 
     // Alambre de púas enrollado alrededor de la cabeza del bate
-    const wireMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.85 });
+    const wireMat = new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.25, metalness: 0.9 });
     for (let c = 0; c < 4; c++) {
       const coilGeo = new THREE.TorusGeometry(0.041, 0.004, 6, 16);
       const coil = new THREE.Mesh(coilGeo, wireMat);
@@ -196,7 +196,7 @@ export class WeaponManager {
     }
 
     // Clavos sobresalientes
-    const nailMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9, roughness: 0.3 });
+    const nailMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.9, roughness: 0.3 });
     const nailGeo = new THREE.ConeGeometry(0.007, 0.05, 6);
     const nailPositions = [
       [0.036, 0.32, 0, 0, 0, -Math.PI / 2],
@@ -218,6 +218,7 @@ export class WeaponManager {
     const bloodSplat = new THREE.Mesh(bloodGeo, bloodMat);
     bloodSplat.scale.set(0.9, 1.3, 0.9);
     bloodSplat.position.set(0, 0.35, 0);
+    bloodSplat.position.set(0, 0.35, 0);
     batGroup.add(bloodSplat);
 
     batGroup.position.set(0.24, -0.22, -0.42);
@@ -229,20 +230,20 @@ export class WeaponManager {
     // 1. PISTOLA 9mm
     const pistolGroup = new THREE.Group();
     const slideGeo = new THREE.BoxGeometry(0.045, 0.055, 0.22);
-    const darkGunMat = new THREE.MeshStandardMaterial({ color: 0x181e26, roughness: 0.35, metalness: 0.85 });
+    const darkGunMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.35, metalness: 0.65 });
     const slideMesh = new THREE.Mesh(slideGeo, darkGunMat);
     slideMesh.position.set(0, 0.04, -0.04);
     pistolGroup.add(slideMesh);
 
     const barrelGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.06, 12);
-    const silverMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.2, metalness: 0.9 });
+    const silverMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.2, metalness: 0.85 });
     const barrel = new THREE.Mesh(barrelGeo, silverMat);
     barrel.rotation.x = Math.PI / 2;
     barrel.position.set(0, 0.045, -0.16);
     pistolGroup.add(barrel);
 
     const gripGeo = new THREE.BoxGeometry(0.04, 0.12, 0.055);
-    const gripMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7 });
+    const gripMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65 });
     const grip = new THREE.Mesh(gripGeo, gripMat);
     grip.position.set(0, -0.04, 0.02);
     grip.rotation.x = 0.25;

@@ -31,29 +31,33 @@ export class ClassroomEnvironment {
     const floorGeo = new THREE.PlaneGeometry(W, D);
     const floorMat = new THREE.MeshStandardMaterial({
       map: floorTexture,
-      roughness: 0.25,
-      metalness: 0.22
+      roughness: 0.35,
+      metalness: 0.12
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.scene.add(floor);
 
-    // 2. TECHO: Paneles acústicos escolares
+    // 2. TECHO: Paneles acústicos escolares claros
     const ceilingGeo = new THREE.PlaneGeometry(W, D);
     const ceilingMat = new THREE.MeshStandardMaterial({
-      color: 0x182030,
-      roughness: 0.9
+      color: 0xcfd8dc,
+      roughness: 0.8,
+      side: THREE.DoubleSide
     });
     const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
     ceiling.position.y = H;
     ceiling.rotation.x = Math.PI / 2;
     this.scene.add(ceiling);
 
-    // 3. PAREDES DE DOS TONOS (Crema arriba, Verde/Azul institucional abajo)
+    // 3. PAREDES DE DOS TONOS (Crema marfil arriba, moldura de madera, zócalo azul UNAM abajo)
+    const wallTexture = this.createWallTexture();
     const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x243248,
-      roughness: 0.85
+      map: wallTexture,
+      roughness: 0.6,
+      metalness: 0.05,
+      side: THREE.DoubleSide
     });
 
     // Pared Frontal (Z = -D/2)
@@ -101,18 +105,45 @@ export class ClassroomEnvironment {
     this.setupLighting(W, D, H);
   }
 
+  createWallTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Parte superior: Pared marfil / crema institucional luminosa
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(0, 0, 512, 340);
+
+    // Moldura de madera divisoria de guardapolvo
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(0, 334, 512, 12);
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(0, 336, 512, 4);
+
+    // Parte inferior: Zócalo institucional azul pizarra UNAM
+    ctx.fillStyle = '#1e3a5f';
+    ctx.fillRect(0, 346, 512, 166);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.repeat.set(5, 1);
+    return texture;
+  }
+
   createFloorTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Tablones de madera pulidos
-    ctx.fillStyle = '#3a2e22';
+    // Tablones de madera de roble barnizada en tono cálido luminoso
+    ctx.fillStyle = '#78350f';
     ctx.fillRect(0, 0, 512, 512);
 
-    ctx.strokeStyle = '#221910';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 2.5;
     for (let y = 0; y < 512; y += 32) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -126,8 +157,14 @@ export class ClassroomEnvironment {
       ctx.stroke();
     }
 
+    // Veteado de madera realista
+    ctx.fillStyle = 'rgba(146, 64, 14, 0.4)';
+    for (let i = 0; i < 16; i++) {
+      ctx.fillRect(0, i * 32 + 6, 512, 8);
+    }
+
     // Manchas oscuras sutiles de tensión
-    ctx.fillStyle = 'rgba(70, 10, 10, 0.35)';
+    ctx.fillStyle = 'rgba(70, 10, 10, 0.45)';
     ctx.beginPath();
     ctx.arc(140, 260, 45, 0, Math.PI * 2);
     ctx.arc(380, 120, 30, 0, Math.PI * 2);
@@ -443,45 +480,66 @@ export class ClassroomEnvironment {
      ILUMINACIÓN FLUORESCENTE Y SOMBRAS SUAVES
      ---------------------------------------------------- */
   setupLighting(W, D, H) {
-    // 1. Luz Ambiental
-    const ambient = new THREE.AmbientLight(0x1e293b, 1.25);
+    // 1. Luz Hemisférica para relleno natural cielo/suelo realista
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 1.8);
+    this.scene.add(hemiLight);
+
+    // 2. Luz Ambiental clara
+    const ambient = new THREE.AmbientLight(0xf8fafc, 1.3);
     this.scene.add(ambient);
 
-    // 2. Luz de luna azulina a través de las ventanas con sombras de proyección
-    const moonLight = new THREE.DirectionalLight(0x38bdf8, 1.1);
-    moonLight.position.set(-15, 9, 0);
-    moonLight.castShadow = true;
-    moonLight.shadow.mapSize.width = 1024;
-    moonLight.shadow.mapSize.height = 1024;
-    moonLight.shadow.camera.near = 1.0;
-    moonLight.shadow.camera.far = 40;
-    moonLight.shadow.camera.left = -14;
-    moonLight.shadow.camera.right = 14;
-    moonLight.shadow.camera.top = 14;
-    moonLight.shadow.camera.bottom = -14;
-    moonLight.shadow.bias = -0.0006;
-    this.scene.add(moonLight);
+    // 3. Luz directiva desde los ventanales con tono azul luna tenue
+    const windowDirLight = new THREE.DirectionalLight(0x7dd3fc, 1.6);
+    windowDirLight.position.set(-11, 4.2, 0);
+    windowDirLight.target.position.set(0, 1.2, 0);
+    this.scene.add(windowDirLight);
+    this.scene.add(windowDirLight.target);
 
-    // 3. Luces de tubos fluorescentes distribuidas uniformemente
+    // 4. Lámparas fluorescentes físicas 3D en el techo con PointLight potente
     const lampPositions = [
-      [-6, H - 0.4, -6],
-      [6, H - 0.4, -6],
-      [-6, H - 0.4, 0],
-      [6, H - 0.4, 0],
-      [-6, H - 0.4, 6],
-      [6, H - 0.4, 6]
+      [-6, H - 0.25, -6],
+      [6, H - 0.25, -6],
+      [-6, H - 0.25, 0],
+      [6, H - 0.25, 0],
+      [-6, H - 0.25, 6],
+      [6, H - 0.25, 6]
     ];
 
+    const fixtureBodyGeo = new THREE.BoxGeometry(2.4, 0.08, 0.6);
+    const fixtureBodyMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+    const tubePanelGeo = new THREE.PlaneGeometry(2.2, 0.45);
+    const tubePanelMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0xf1f5f9,
+      emissiveIntensity: 2.5,
+      roughness: 0.1
+    });
+
     lampPositions.forEach((pos, idx) => {
-      const tubeLight = new THREE.PointLight(0xf1f5f9, 1.8, 18);
-      tubeLight.position.set(pos[0], pos[1], pos[2]);
+      // Estructura 3D visible de la lámpara en el techo
+      const lampMesh = new THREE.Group();
+      lampMesh.position.set(pos[0], pos[1], pos[2]);
+
+      const casing = new THREE.Mesh(fixtureBodyGeo, fixtureBodyMat);
+      lampMesh.add(casing);
+
+      const panel = new THREE.Mesh(tubePanelGeo, tubePanelMat);
+      panel.rotation.x = Math.PI / 2;
+      panel.position.y = -0.042;
+      lampMesh.add(panel);
+
+      this.scene.add(lampMesh);
+
+      // Fuente de luz fluorescente
+      const tubeLight = new THREE.PointLight(0xf8fafc, 9.0, 24, 1.1);
+      tubeLight.position.set(pos[0], pos[1] - 0.2, pos[2]);
       if (idx === 2 || idx === 3) {
         tubeLight.castShadow = true;
         tubeLight.shadow.bias = -0.001;
       }
       this.scene.add(tubeLight);
 
-      // Uno de ellos parpadea tenuemente
+      // Una de las lámparas parpadea ligeramente
       if (idx === 3) {
         this.flickerLight = tubeLight;
       }
