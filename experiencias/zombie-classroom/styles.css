@@ -871,6 +871,10 @@ html, body {
   font-size: 1.05rem !important;
   padding: 14px !important;
   width: 100%;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 100005 !important;
 }
 
 .btn-start-game:hover {

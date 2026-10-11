@@ -308,7 +308,7 @@
       </div>
 
       <div class="tutorial-footer" style="margin-top: 6px;">
-        <button id="btn-start-game" class="btn-primary-action btn-start-game" type="button">
+        <button id="btn-start-game" class="btn-primary-action btn-start-game" type="button" onclick="if(window.zombieGame){window.zombieGame.startGameFromTutorial();}else{document.getElementById('tutorial-modal').classList.add('hidden');}">
           ▶ ¡ENTENDIDO, COMENZAR AHORA!
         </button>
       </div>

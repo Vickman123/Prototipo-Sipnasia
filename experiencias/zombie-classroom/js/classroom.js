@@ -351,7 +351,7 @@ export class ClassroomEnvironment {
         depthWrite: false
       });
       const shaft = new THREE.Mesh(shaftGeo, shaftMat);
-      shaft.position.set(-W / 2 + 3.8, 2.1, posZ);
+      shaft.position.set(-roomWidth / 2 + 3.8, 2.1, posZ);
       shaft.rotation.z = Math.PI / 3.4;
       this.scene.add(shaft);
       this.lightShafts.push(shaft);

@@ -104,16 +104,15 @@ export class ZombieGame {
 
     if (tutorialModal && btnStart) {
       this.isGameStarted = false;
-      btnStart.addEventListener('click', () => {
-        tutorialModal.classList.add('hidden');
-        this.isGameStarted = true;
-        this.audio.ensureContext();
-        if (!this.renderer.xr.isPresenting) {
-          this.renderer.domElement.requestPointerLock();
+      const startAction = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
         }
-        this.startWave(1);
-        this.updateHUD();
-      });
+        this.startGameFromTutorial();
+      };
+      btnStart.addEventListener('click', startAction);
+      btnStart.addEventListener('touchend', startAction);
     } else {
       this.isGameStarted = true;
       this.startWave(1);
@@ -124,6 +123,27 @@ export class ZombieGame {
     this.renderer.setAnimationLoop((time, frame) => this.renderLoop(time, frame));
 
     window.addEventListener('resize', () => this.onWindowResize());
+  }
+
+  startGameFromTutorial() {
+    const tutorialModal = document.getElementById('tutorial-modal');
+    if (tutorialModal) tutorialModal.classList.add('hidden');
+    this.isGameStarted = true;
+    this.audio.ensureContext();
+
+    if (this.renderer && !this.renderer.xr.isPresenting) {
+      try {
+        const lockPromise = this.renderer.domElement.requestPointerLock();
+        if (lockPromise && typeof lockPromise.catch === 'function') {
+          lockPromise.catch(() => {});
+        }
+      } catch (e) {
+        console.warn('Pointer lock no disponible:', e);
+      }
+    }
+
+    this.startWave(1);
+    this.updateHUD();
   }
 
   /* ----------------------------------------------------
@@ -1063,7 +1083,11 @@ export class ZombieGame {
   }
 }
 
-// Inicialización automática
-window.addEventListener('DOMContentLoaded', () => {
+// Inicialización automática robusta
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', () => {
+    window.zombieGame = new ZombieGame();
+  });
+} else {
   window.zombieGame = new ZombieGame();
-});
+}
