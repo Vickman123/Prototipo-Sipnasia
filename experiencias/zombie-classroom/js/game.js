@@ -71,6 +71,7 @@ export class ZombieGame {
     // Tiempo
     this.clock = new THREE.Clock();
     this.isPaused = false;
+    this.isGameStarted = false;
 
     this.init();
   }
@@ -90,8 +91,27 @@ export class ZombieGame {
     this.setupMobileControls();
     this.setupUIEvents();
 
-    this.startWave(1);
-    this.updateHUD();
+    // Comprobar modal de tutorial de inicio
+    const tutorialModal = document.getElementById('tutorial-modal');
+    const btnStart = document.getElementById('btn-start-game');
+
+    if (tutorialModal && btnStart) {
+      this.isGameStarted = false;
+      btnStart.addEventListener('click', () => {
+        tutorialModal.classList.add('hidden');
+        this.isGameStarted = true;
+        this.audio.ensureContext();
+        if (!this.renderer.xr.isPresenting) {
+          this.renderer.domElement.requestPointerLock();
+        }
+        this.startWave(1);
+        this.updateHUD();
+      });
+    } else {
+      this.isGameStarted = true;
+      this.startWave(1);
+      this.updateHUD();
+    }
 
     // Loop de render
     this.renderer.setAnimationLoop((time, frame) => this.renderLoop(time, frame));
@@ -184,7 +204,7 @@ export class ZombieGame {
     document.addEventListener('pointerlockchange', () => {
       this.isPointerLocked = (document.pointerLockElement === canvas);
       const crosshair = document.getElementById('crosshair-container');
-      if (crosshair) crosshair.style.opacity = this.isPointerLocked ? '1' : '0.6';
+      if (crosshair) crosshair.style.opacity = this.isPointerLocked ? '1' : '0.7';
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -199,14 +219,25 @@ export class ZombieGame {
       this.camera.rotation.x = this.pitch;
     });
 
-    document.addEventListener('mousedown', (e) => {
-      if (e.button === 0 && this.isPointerLocked) {
+    // Disparar en Mousedown (¡Sin requerir bloqueo previo!)
+    window.addEventListener('mousedown', (e) => {
+      if (e.button === 0) {
+        // Ignorar clics dentro de modales interactivos o barra superior
+        if (e.target && e.target.closest && e.target.closest('.modal-overlay:not(.hidden), #sipnasia-mini-hub-bar, .floating-hub-btn, #btn-sound-toggle, #mobile-touch-controls')) {
+          return;
+        }
+        if (!this.isGameStarted) return;
+
+        this.audio.ensureContext();
+        if (!this.isPointerLocked && !this.renderer.xr.isPresenting) {
+          canvas.requestPointerLock();
+        }
         this.isMouseDown = true;
         this.performShoot(false);
       }
     });
 
-    document.addEventListener('mouseup', (e) => {
+    window.addEventListener('mouseup', (e) => {
       if (e.button === 0) this.isMouseDown = false;
     });
 
@@ -394,6 +425,13 @@ export class ZombieGame {
       this.camera.getWorldDirection(direction);
     }
 
+    // Efecto visual de retroceso en retícula
+    const crosshair = document.getElementById('crosshair-container');
+    if (crosshair) {
+      crosshair.classList.add('kick');
+      setTimeout(() => crosshair.classList.remove('kick'), 70);
+    }
+
     // Disparo según arma: Proyectil Plasma o Raycast Perdigones/Balas
     if (weapon.isProjectile) {
       this.spawnPlasmaProjectile(origin, direction, weapon);
@@ -415,34 +453,102 @@ export class ZombieGame {
   }
 
   castBulletRay(origin, direction, weapon) {
-    const raycaster = new THREE.Raycaster(origin, direction, 0.1, 60);
+    const raycaster = new THREE.Raycaster(origin, direction, 0.1, 70);
 
-    // Objetos a comprobar: partes de zombies y drops
-    const targetMeshes = [];
+    // Trazador visual del disparo
+    this.spawnBulletTracer(origin, direction, weapon);
+
+    // Objetos a comprobar: partes de zombies (hitbox cilíndrica, cabeza, torso)
+    const targetObjects = [];
     this.zombies.zombies.forEach(z => {
       if (!z.isDying) {
-        targetMeshes.push(z.parts.head, z.parts.torso);
+        if (z.parts.hitboxMesh) targetObjects.push(z.parts.hitboxMesh);
+        if (z.parts.head) targetObjects.push(z.parts.head);
+        if (z.parts.torso) targetObjects.push(z.parts.torso);
       }
     });
 
-    const intersects = raycaster.intersectObjects(targetMeshes, false);
+    const intersects = raycaster.intersectObjects(targetObjects, true);
 
     if (intersects.length > 0) {
-      const hit = intersects[0];
-      const data = hit.object.userData;
+      for (const hit of intersects) {
+        let current = hit.object;
+        let zombieObj = null;
+        let isHeadshot = false;
 
-      if (data && data.isZombie) {
-        const isHeadshot = data.isHeadshot;
-        const result = this.zombies.damageZombie(data.zombieObj, weapon.damage, isHeadshot, hit.point);
+        while (current) {
+          if (current.userData && current.userData.zombieObj) {
+            zombieObj = current.userData.zombieObj;
+            if (current.userData.isHeadshot) isHeadshot = true;
+            break;
+          }
+          current = current.parent;
+        }
 
-        // Retroalimentación de acierto (Hitmarker)
-        this.triggerHitmarker(isHeadshot);
+        if (zombieObj && !zombieObj.isDying) {
+          const s = zombieObj.config.scale;
+          // Si el tiro impactó en la zona superior de la cabeza
+          if (hit.point.y >= zombieObj.mesh.position.y + 1.32 * s) {
+            isHeadshot = true;
+          }
 
-        if (result && result.killed) {
-          this.onZombieKilled(result.score, isHeadshot);
+          const result = this.zombies.damageZombie(zombieObj, weapon.damage, isHeadshot, hit.point);
+          this.triggerHitmarker(isHeadshot);
+
+          if (result && result.killed) {
+            this.onZombieKilled(result.score, isHeadshot);
+          }
+          break; // Impacto confirmado en zombie
         }
       }
     }
+
+    // Comprobar si disparó a un drop de arma/botiquín para recogerlo a distancia
+    if (this.weapons.drops.length > 0) {
+      const dropMeshes = this.weapons.drops.map(d => d.mesh);
+      const dropHits = raycaster.intersectObjects(dropMeshes, true);
+      if (dropHits.length > 0) {
+        for (const dh of dropHits) {
+          let curr = dh.object;
+          while (curr) {
+            const idx = this.weapons.drops.findIndex(d => d.mesh === curr);
+            if (idx !== -1) {
+              const drop = this.weapons.drops[idx];
+              const res = this.weapons.collectDrop(drop, this.player);
+              if (res) {
+                this.showToast(res.message);
+                this.scene.remove(drop.mesh);
+                this.weapons.drops.splice(idx, 1);
+                this.updateHUD();
+              }
+              break;
+            }
+            curr = curr.parent;
+          }
+        }
+      }
+    }
+  }
+
+  spawnBulletTracer(origin, direction, weapon) {
+    const endPoint = origin.clone().addScaledVector(direction, 35);
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+      origin.clone().addScaledVector(direction, 0.4),
+      endPoint
+    ]);
+    const lineMat = new THREE.LineBasicMaterial({
+      color: weapon.colorThree || 0xffeb3b,
+      transparent: true,
+      opacity: 0.85
+    });
+    const tracer = new THREE.Line(lineGeo, lineMat);
+    this.scene.add(tracer);
+
+    setTimeout(() => {
+      this.scene.remove(tracer);
+      lineGeo.dispose();
+      lineMat.dispose();
+    }, 45);
   }
 
   spawnPlasmaProjectile(origin, direction, weapon) {
@@ -647,6 +753,12 @@ export class ZombieGame {
   renderLoop(time, frame) {
     const delta = Math.min(this.clock.getDelta(), 0.1);
     const now = performance.now();
+
+    if (!this.isGameStarted) {
+      this.classroom.update(delta, now);
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
 
     if (!this.player.isDead) {
       this.updatePlayerMovement(delta);

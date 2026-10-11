@@ -101,6 +101,7 @@ export class ZombieManager {
     this.zombies = [];
     this.acidProjectiles = [];
     this.deathParticles = [];
+    this.damageTexts = [];
   }
 
   /* ----------------------------------------------------
@@ -237,13 +238,19 @@ export class ZombieManager {
     const barFillMat = new THREE.MeshBasicMaterial({ color: config.eyeColor, side: THREE.DoubleSide });
     const barFill = new THREE.Mesh(barFillGeo, barFillMat);
     barFill.position.set(0, 1.95 * s, 0.005);
-    root.add(barBg, barFill);
+    // 6. Hitbox cilíndrica generosa para impacto infalible de disparos
+    const hitboxGeo = new THREE.CylinderGeometry(0.58 * s, 0.58 * s, 1.95 * s, 10);
+    const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
+    const hitboxMesh = new THREE.Mesh(hitboxGeo, hitboxMat);
+    hitboxMesh.position.y = 1.0 * s;
+    root.add(hitboxMesh);
 
     return {
       root,
       headGroup,
       head,
       torso,
+      hitboxMesh,
       leftArmPivot,
       rightArmPivot,
       leftLegPivot,
@@ -284,6 +291,7 @@ export class ZombieManager {
     };
 
     // Referencias para detección de disparos (Hitboxes)
+    parts.hitboxMesh.userData = { isZombie: true, zombieObj, isHitbox: true };
     parts.head.userData = { isZombie: true, zombieObj, isHeadshot: true };
     parts.torso.userData = { isZombie: true, zombieObj, isHeadshot: false };
     parts.root.userData = { isZombie: true, zombieObj, isHeadshot: false };
@@ -306,7 +314,7 @@ export class ZombieManager {
     zombie.parts.barFill.scale.x = hpRatio;
     zombie.parts.barFill.position.x = -(zombie.parts.barWidth * (1 - hpRatio)) / 2;
 
-    // Flash rojo de daño en el cuerpo
+    // Flash blanco de daño en el cuerpo
     zombie.parts.torso.material.color.setHex(0xffffff);
     setTimeout(() => {
       if (zombie.parts && zombie.parts.torso) {
@@ -314,7 +322,11 @@ export class ZombieManager {
       }
     }, 70);
 
-    // Efecto de retroceso leve por disparo
+    // Texto flotante de daño numérico
+    const damagePos = hitPoint ? hitPoint.clone() : zombie.mesh.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+    this.spawnDamageNumber(damagePos, actualDamage, isHeadshot);
+
+    // Efecto de partículas de sangre
     if (hitPoint) {
       this.spawnBloodParticles(hitPoint, isHeadshot);
     }
@@ -373,6 +385,33 @@ export class ZombieManager {
       velocities,
       positions,
       pGeo,
+      spawnTime: performance.now()
+    });
+  }
+
+  spawnDamageNumber(position, damage, isHeadshot) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = isHeadshot ? '#ef4444' : '#facc15';
+    ctx.font = `bold ${isHeadshot ? '36px' : '28px'} sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(`${damage}${isHeadshot ? '!' : ''}`, 64, 32);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 1 });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(isHeadshot ? 0.85 : 0.65, isHeadshot ? 0.45 : 0.35, 1);
+    sprite.position.copy(position);
+    sprite.position.y += 0.3;
+    this.scene.add(sprite);
+
+    this.damageTexts.push({
+      sprite,
       spawnTime: performance.now()
     });
   }
@@ -455,6 +494,19 @@ export class ZombieManager {
      ACTUALIZACIÓN DE COMPORTAMIENTO, ANIMACIÓN Y FÍSICA
      ---------------------------------------------------- */
   update(now, delta, playerPos, playerStats, camera) {
+    // 0. Textos flotantes de daño
+    for (let i = this.damageTexts.length - 1; i >= 0; i--) {
+      const dt = this.damageTexts[i];
+      const age = (now - dt.spawnTime) / 1000;
+      if (age > 0.75) {
+        this.scene.remove(dt.sprite);
+        this.damageTexts.splice(i, 1);
+        continue;
+      }
+      dt.sprite.position.y += delta * 1.3;
+      dt.sprite.material.opacity = Math.max(0, 1 - (age / 0.75));
+    }
+
     // 1. Partículas de sangre
     for (let i = this.deathParticles.length - 1; i >= 0; i--) {
       const dp = this.deathParticles[i];
@@ -602,5 +654,7 @@ export class ZombieManager {
     this.acidProjectiles = [];
     this.deathParticles.forEach(dp => this.scene.remove(dp.system));
     this.deathParticles = [];
+    this.damageTexts.forEach(dt => this.scene.remove(dt.sprite));
+    this.damageTexts = [];
   }
 }

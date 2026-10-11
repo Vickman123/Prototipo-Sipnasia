@@ -337,7 +337,11 @@ html, body {
   height: 32px;
   pointer-events: none;
   z-index: 15;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.05s ease-out;
+}
+
+#crosshair-container.kick {
+  transform: translate(-50%, -50%) scale(1.45);
 }
 
 .crosshair-dot {
@@ -684,4 +688,117 @@ html, body {
 /* Ocultar botón nativo VR si no es necesario */
 .custom-vr-btn {
   display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   MODAL DE TUTORIAL RÁPIDO DE INICIO
+   -------------------------------------------------------------------------- */
+.tutorial-card {
+  background: rgba(10, 18, 34, 0.96);
+  border: 2px solid var(--toxic-green);
+  box-shadow: 0 0 50px var(--toxic-green-glow);
+  border-radius: 20px;
+  padding: 28px 34px;
+  max-width: 620px;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: tutFadeIn 0.3s ease;
+}
+
+@keyframes tutFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.tutorial-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid var(--toxic-green);
+  color: var(--toxic-green);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.tutorial-title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.tutorial-subtitle {
+  color: #94a3b8;
+  font-size: 0.92rem;
+  margin-top: -6px;
+}
+
+.tutorial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+@media (max-width: 640px) {
+  .tutorial-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tutorial-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.tutorial-item.highlight {
+  border-color: rgba(213, 155, 45, 0.5);
+  background: rgba(213, 155, 45, 0.08);
+  grid-column: 1 / -1;
+}
+
+.tut-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.tut-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+.tut-text strong {
+  font-family: var(--font-display);
+  color: #f8fafc;
+  font-size: 0.85rem;
+}
+
+.btn-start-game {
+  background: linear-gradient(135deg, #15803d 0%, #22c55e 100%) !important;
+  box-shadow: 0 0 24px var(--toxic-green-glow) !important;
+  font-size: 1.05rem !important;
+  padding: 14px !important;
+  width: 100%;
+}
+
+.btn-start-game:hover {
+  box-shadow: 0 0 35px var(--toxic-green-glow) !important;
+  transform: translateY(-2px);
 }
