@@ -200,13 +200,28 @@ class XRSceneController {
     this.dolly.add(this.camera);
     this.scene.add(this.dolly);
 
-    // 4. Renderer WebGL Optimizado para Meta Quest 3S
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance'
-    });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    // 4. Renderer WebGL Optimizado para Meta Quest 3S y Móviles
+    try {
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance'
+      });
+    } catch (err) {
+      console.warn('[SipnasiaXR] WebGL high-performance falló, usando modo compatible:', err);
+      try {
+        this.renderer = new THREE.WebGLRenderer({
+          antialias: false,
+          alpha: true
+        });
+      } catch (err2) {
+        console.error('[SipnasiaXR] Error crítico al crear contexto WebGL:', err2);
+      }
+    }
+
+    if (!this.renderer) return;
+
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.xr.enabled = true;
     this.renderer.shadowMap.enabled = false;
@@ -1757,6 +1772,8 @@ class XRSceneController {
           this.updateGalleryModalContent();
           if (window.xrAudio) window.xrAudio.playHover();
         };
+      });
+    }
   }
 
   /* ----------------------------------------------------
