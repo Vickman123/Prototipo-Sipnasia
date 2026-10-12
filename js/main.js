@@ -294,8 +294,16 @@ function initHeroInteractions() {
 
   // Manejador del botón CTA: Activa el Hub 3D XR en PC o WebXR en Meta Quest
   if (ctaBtn) {
-    ctaBtn.addEventListener('click', (e) => {
-      e.preventDefault();
+    let lastTriggerTime = 0;
+    const handleCtaTrigger = (e) => {
+      const now = performance.now();
+      if (now - lastTriggerTime < 500) return; // Evitar doble ejecución touchend + click
+      lastTriggerTime = now;
+
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       if (window.xrAudio) window.xrAudio.playWarp();
 
       if (isQuest) {
@@ -310,9 +318,25 @@ function initHeroInteractions() {
         // En PC / Desktop / Móvil: Activar Hub 3D interactivo
         if (window.XRSceneManager) {
           window.XRSceneManager.toggleInteractive3D(true);
+        } else {
+          // Esperar activamente si el módulo ES está terminando de cargar
+          let retries = 0;
+          const pollInterval = setInterval(() => {
+            retries++;
+            if (window.XRSceneManager) {
+              clearInterval(pollInterval);
+              window.XRSceneManager.toggleInteractive3D(true);
+            } else if (retries > 60) {
+              clearInterval(pollInterval);
+              console.warn('[SipnasiaXR] Tiempo de espera agotado para cargar XRSceneManager.');
+            }
+          }, 50);
         }
       }
-    });
+    };
+
+    ctaBtn.addEventListener('click', handleCtaTrigger);
+    ctaBtn.addEventListener('touchend', handleCtaTrigger, { passive: false });
   }
 }
 
@@ -550,21 +574,41 @@ function init3DModeToggle() {
   const exit3DBtn = document.getElementById('btn-exit-3d');
 
   if (enter3DBtn) {
-    enter3DBtn.addEventListener('click', () => {
+    const handleEnter3D = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       if (window.xrAudio) window.xrAudio.playWarp();
       if (window.XRSceneManager) {
         window.XRSceneManager.toggleInteractive3D(true);
+      } else {
+        const poll = setInterval(() => {
+          if (window.XRSceneManager) {
+            clearInterval(poll);
+            window.XRSceneManager.toggleInteractive3D(true);
+          }
+        }, 50);
+        setTimeout(() => clearInterval(poll), 3000);
       }
-    });
+    };
+    enter3DBtn.addEventListener('click', handleEnter3D);
+    enter3DBtn.addEventListener('touchend', handleEnter3D, { passive: false });
   }
 
   if (exit3DBtn) {
-    exit3DBtn.addEventListener('click', () => {
+    const handleExit3D = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       if (window.xrAudio) window.xrAudio.playHover();
       if (window.XRSceneManager) {
         window.XRSceneManager.toggleInteractive3D(false);
       }
-    });
+    };
+    exit3DBtn.addEventListener('click', handleExit3D);
+    exit3DBtn.addEventListener('touchend', handleExit3D, { passive: false });
   }
 }
 

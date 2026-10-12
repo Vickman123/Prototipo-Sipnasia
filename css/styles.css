@@ -122,9 +122,16 @@ body.mobile-portrait-locked {
 }
 
 #ui-root.hidden-for-xr {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.97);
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.hub-3d-active {
+  overflow: hidden !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  touch-action: none !important;
 }
 
 .content-wrapper {

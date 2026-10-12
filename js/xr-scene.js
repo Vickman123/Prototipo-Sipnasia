@@ -170,7 +170,15 @@ class XRSceneController {
   }
 
   async init() {
-    if (!this.container) return;
+    if (this.isInitialized) return;
+    if (!this.container) {
+      this.container = document.getElementById('webxr-canvas-container');
+    }
+    if (!this.container) {
+      console.warn('[SipnasiaXR] Contenedor #webxr-canvas-container no encontrado en el DOM.');
+      return;
+    }
+    this.isInitialized = true;
 
     // 1. Escena de Laboratorio Futurista (Slate Tecnológico + Atmósfera Limpia)
     this.scene = new THREE.Scene();
@@ -2525,22 +2533,33 @@ class XRSceneController {
     }
   }
 
-  toggleInteractive3D(enable) {
+  async toggleInteractive3D(enable) {
+    if (enable && !this.renderer) {
+      console.log('[SipnasiaXR] Inicializando XRSceneManager en toggleInteractive3D...');
+      await this.init();
+    }
+
     this.isInteractive3D = enable;
-    const canvas = this.renderer.domElement;
+    if (!this.container) {
+      this.container = document.getElementById('webxr-canvas-container');
+    }
+    const canvas = this.renderer ? this.renderer.domElement : null;
     const crosshair = document.getElementById('hub-crosshair');
     const promptEl = document.getElementById('hub-portal-prompt');
     const mobileControls = document.getElementById('mobile-touch-controls');
 
     if (enable) {
-      this.container.classList.add('interactive-mode');
+      this.container?.classList.add('interactive-mode');
+      document.body.classList.add('hub-3d-active');
       document.getElementById('ui-root')?.classList.add('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.add('visible');
 
       // Colocar al jugador a nivel de ojos humanos en el Hub
-      this.camera.position.set(0, 1.6, 0);
-      this.camera.rotation.order = 'YXZ';
-      this.camera.rotation.set(0, 0, 0);
+      if (this.camera) {
+        this.camera.position.set(0, 1.6, 0);
+        this.camera.rotation.order = 'YXZ';
+        this.camera.rotation.set(0, 0, 0);
+      }
       this.yaw = 0;
       this.pitch = 0;
 
@@ -2552,7 +2571,7 @@ class XRSceneController {
         if (hudInfo) {
           hudInfo.textContent = '📱 CONTROLES MÓVILES // IZQUIERDA: MIRAR Y TOCAR | DERECHA: CAMINAR';
         }
-      } else {
+      } else if (canvas) {
         // Solicitar fijación de cámara automática al entrar en PC
         setTimeout(() => {
           try {
@@ -2568,7 +2587,8 @@ class XRSceneController {
         document.exitPointerLock();
       }
       this.isPointerLocked = false;
-      this.container.classList.remove('interactive-mode');
+      this.container?.classList.remove('interactive-mode');
+      document.body.classList.remove('hub-3d-active');
       document.getElementById('ui-root')?.classList.remove('hidden-for-xr');
       document.getElementById('xr-scene-hud')?.classList.remove('visible');
       if (crosshair) crosshair.classList.remove('visible');
@@ -2645,7 +2665,12 @@ class XRSceneController {
 // Instancia global del Gestor de Escena
 window.XRSceneManager = new XRSceneController();
 
-// Inicializar cuando el DOM esté listo
-window.addEventListener('DOMContentLoaded', () => {
+// Inicializar cuando el DOM esté listo o inmediatamente si ya cargó
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', () => {
+    window.XRSceneManager.init();
+  });
+} else {
+  // DOMContentLoaded ya ocurrió mientras se descargaban los módulos ES
   window.XRSceneManager.init();
-});
+}
